@@ -31,7 +31,7 @@ interface AppProps {}
 export default class App extends Component<AppProps, AppState> {
     state = {
         config: {
-            endpoint: "http://127.0.0.1"
+            apiEndpoint: "http://127.0.0.1"
         }
     };
     render = () => {

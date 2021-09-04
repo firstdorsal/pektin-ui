@@ -1,16 +1,16 @@
 import { ReactNode } from "react";
 import * as t from "./types";
 
-export const getDomains = async ({ endpoint }: t.RequestParams) => {
-    const res = await fetch(`${endpoint}/get`, { method: "POST", body: JSON.stringify({}) });
+export const getDomains = async ({ apiEndpoint }: t.RequestParams) => {
+    const res = await fetch(`${apiEndpoint}/get`, { method: "POST", body: JSON.stringify({}) });
     const parsedRes = await res.json().catch(e => {
         return [];
     });
     return parsedRes;
 };
 
-export const getRecords = async ({ endpoint, domainName }: t.getRecords) => {
-    const res = await fetch(`${endpoint}/get`, { method: "POST", body: JSON.stringify({}) });
+export const getRecords = async ({ apiEndpoint, domainName }: t.getRecords) => {
+    const res = await fetch(`${apiEndpoint}/get`, { method: "POST", body: JSON.stringify({}) });
     const parsedRes = await res.json().catch(e => {
         return [];
     });

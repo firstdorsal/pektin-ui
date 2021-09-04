@@ -62,7 +62,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
             if (event.target.name === "rname") soa.SOA.rname = lib.absoluteName(event.target.value).replace("@", ".");
 
             if (event.target.name === "name") {
-                rec0.name = lib.absoluteName(event.target.value) + ":" + "SOA";
+                rec0.name = lib.absoluteName(event.target.value) + ":SOA";
             }
 
             return { rec0, [event.target.name]: event.target.value };

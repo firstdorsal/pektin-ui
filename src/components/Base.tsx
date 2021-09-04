@@ -13,7 +13,7 @@ interface BaseState {
 export default class Base extends Component<BaseProps, BaseState> {
     state = { domains: [] };
     componentDidMount = async () => {
-        const domains = await lib.getDomains({ endpoint: this.props.config.endpoint });
+        const domains = await lib.getDomains({ apiEndpoint: this.props.config.apiEndpoint });
         this.setState({ domains });
     };
 

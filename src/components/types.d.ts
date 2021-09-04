@@ -1,5 +1,5 @@
 export interface Config {
-    endpoint: string;
+    apiEndpoint: string;
 }
 
 export interface getRecords extends RequestParams {
@@ -7,7 +7,7 @@ export interface getRecords extends RequestParams {
 }
 
 export interface RequestParams {
-    endpoint: string;
+    apiEndpoint: string;
 }
 
 export interface DomainMeta {

@@ -1,13 +1,117 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+    --b1: white;
+    --a1: crimson;
+    --a2: #37dbb8;
+    --f1: black;
+    --code-bg: whitesmoke;
+    padding: 0;
+    margin: 0;
+    font-family: Inter, sans-serif;
+    box-sizing: border-box;
+    user-select: none;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+html,
+body {
+    height: 100vh;
+    width: 100vw;
+
+    /*color: var(--f1);*/
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+h1 {
+    text-align: center;
+    padding-top: 20px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.caps {
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.cardHead {
+    padding-top: 20px;
+}
+.cardHead .label {
+    transform: translate(5px, -6px);
+    display: inline-block;
+}
+
+.groupName {
+    padding-top: 10px;
+}
+
+code > * {
+    padding: 10px;
+}
+
+code * {
+    font-family: monospace;
+    background: var(--code-bg);
+    user-select: text;
+}
+
+.__json-string__ {
+    color: var(--a2);
+}
+.__json-key__ {
+    color: var(--a1);
+}
+aside {
+    width: 15%;
+    height: 100%;
+    background: var(--a1);
+    resize: horizontal;
+    float: left;
+    padding: 10px;
+    color: var(--f1);
+}
+
+table td {
+    font-family: monospace !important;
+    user-select: text;
+}
+/*
+tr:hover {
+    transition: ease-in-out 200ms;
+    opacity: 90%;
+}
+*/
+
+.recRow {
+    border-left: 10px solid transparent;
+}
+
+.MuiSelect-select.MuiSelect-select {
+    padding-right: unset !important;
+}
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    background: var(--f1);
+}
+
+main {
+    float: left;
+    width: 85%;
+    height: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+    * {
+        --b1: #242424;
+        --a1: crimson;
+        --a2: #37dbb8;
+        --f1: white;
+        --code-bg: whitesmoke;
+    }
 }

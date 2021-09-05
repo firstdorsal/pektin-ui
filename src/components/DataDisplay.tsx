@@ -3,7 +3,7 @@ import { AccountTree, Message } from "@material-ui/icons";
 import { Component } from "react";
 import JSONPretty from "react-json-pretty";
 import * as t from "./types";
-import * as lib from "./lib";
+import * as l from "./lib";
 
 interface DataDisplayProps {
     data: t.Rec0;
@@ -37,7 +37,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                                 <span className="caps label">raw (bind syntax)</span>
                             </div>
                             <code>
-                                <pre>{lib.rec0ToBind(this.props.data)}</pre>
+                                <pre>{l.rec0ToBind(this.props.data)}</pre>
                             </code>
                             <br />
                         </Container>

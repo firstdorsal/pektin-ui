@@ -32,12 +32,12 @@ const defaultSOA: t.Rec0 = {
 interface AddDomainProps {}
 
 interface AddDomainState {
-    ttl: number;
-    mname: string;
-    rname: string;
-    name: string;
-    dnssec: boolean;
-    rec0: t.Rec0;
+    readonly ttl: number;
+    readonly mname: string;
+    readonly rname: string;
+    readonly name: string;
+    readonly dnssec: boolean;
+    readonly rec0: t.Rec0;
 }
 
 export default class AddDomain extends Component<AddDomainProps, AddDomainState> {
@@ -52,6 +52,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
 
     handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (!event?.target?.name || !event?.target?.value === undefined) return;
+
         this.setState((prevState): any => {
             const { rec0 } = prevState;
             const rec1 = rec0.value;
@@ -60,11 +61,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
             const soa = rec1.rr_set[0].value as t.SOA;
             if (event.target.name === "mname") soa.SOA.mname = lib.absoluteName(event.target.value);
             if (event.target.name === "rname") soa.SOA.rname = lib.absoluteName(event.target.value).replace("@", ".");
-
-            if (event.target.name === "name") {
-                rec0.name = lib.absoluteName(event.target.value) + ":SOA";
-            }
-
+            if (event.target.name === "name") rec0.name = lib.absoluteName(event.target.value) + ":SOA";
             return { rec0, [event.target.name]: event.target.value };
         });
     };

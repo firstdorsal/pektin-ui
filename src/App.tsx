@@ -6,6 +6,8 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import AddDomain from "./components/AddDomain";
 import Domain from "./components/Domain";
 import * as t from "./components/types";
+import * as l from "./components/lib";
+
 const theme = createTheme({
     palette: {
         primary: {
@@ -24,17 +26,36 @@ const theme = createTheme({
 });
 
 interface AppState {
-    config: t.Config;
+    readonly config: t.Config;
+    readonly db: l.PektinUiDb;
 }
 interface AppProps {}
 
 export default class App extends Component<AppProps, AppState> {
-    state = {
-        config: {
-            apiEndpoint: "http://127.0.0.1"
-        }
+    state: AppState = {
+        config: l.defaulConfig,
+        db: new l.PektinUiDb()
     };
+
+    initDb = async () => {
+        const db = this.state.db;
+        await db.config.add({ key: "config", value: l.defaulConfig }).catch(() => {});
+    };
+
+    loadConfig = async () => {
+        const db = this.state.db;
+        const config = (await db.config.get("config"))?.value;
+        if (config) this.setState({ config });
+    };
+
+    componentDidMount = async () => {
+        await this.initDb();
+        await this.loadConfig();
+    };
+
     render = () => {
+        console.log(this.state.config);
+
         return (
             <Router>
                 <ThemeProvider theme={theme}>

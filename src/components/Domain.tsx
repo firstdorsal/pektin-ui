@@ -2,15 +2,15 @@ import React, { Component } from "react";
 import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Checkbox } from "@material-ui/core";
 import * as t from "./types";
 import { AddCircle, Delete, Flare, Map, VerticalAlignCenter } from "@material-ui/icons";
-import * as lib from "./lib";
+import * as l from "./lib";
 import { cloneDeep, isEqual } from "lodash";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import Row from "./DomainRow";
 
 interface DomainState {
-    data: t.Rec0[];
-    meta: Array<any>;
-    ogData: t.Rec0[];
+    readonly data: t.Rec0[];
+    readonly meta: Array<Array<t.DomainMeta>>;
+    readonly ogData: t.Rec0[];
 }
 
 interface DomainRouterProps {
@@ -22,7 +22,7 @@ interface DomainProps extends RouteComponentProps<DomainRouterProps> {
 }
 
 class Domain extends Component<DomainProps, DomainState> {
-    state = {
+    state: DomainState = {
         data: [],
         meta: [],
         ogData: []
@@ -58,7 +58,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 const n = data[rec_index].name;
                 data[rec_index].name = n.substring(0, n.indexOf(".:") + 2) + e.target.value;
                 data[rec_index].value.rr_type = e.target.value;
-                data[rec_index].value.rr_set[0].value = lib.rrTemplates[e.target.value].template;
+                data[rec_index].value.rr_set[0].value = l.rrTemplates[e.target.value].template;
             } else if (fieldType === "switch") {
                 if (e.target.name === "dnssec") data[rec_index].value.dnssec = e.target.checked;
             }
@@ -79,7 +79,7 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     componentDidMount = async () => {
-        const d: t.Rec0[] = await lib.getRecords({ domainName: this.props.match.params.domainName, apiEndpoint: this.props.config.apiEndpoint });
+        const d: t.Rec0[] = await l.getRecords({ domainName: this.props.match.params.domainName, apiEndpoint: this.props.config.apiEndpoint });
         this.initData(d);
     };
     /*

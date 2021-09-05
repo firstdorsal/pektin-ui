@@ -1,4 +1,4 @@
-import * as lib from "./lib";
+import * as l from "./lib";
 import * as t from "./types";
 import React, { Component } from "react";
 import { Collapse, IconButton, TableCell, TableRow, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container, Switch } from "@material-ui/core";
@@ -35,7 +35,7 @@ export default class Row extends Component<RowProps, RowState> {
                     <div>
                         <TextField
                             onChange={e => this.props.handleChange(e, p.rec_index, p.rr_index, "rrField")}
-                            helperText={lib.rrTemplates["SOA"].fields[0].helperText}
+                            helperText={l.rrTemplates["SOA"].fields[0].helperText}
                             placeholder="ns1.example.com"
                             name="mname"
                             label="MNAME"
@@ -46,7 +46,7 @@ export default class Row extends Component<RowProps, RowState> {
                     <div>
                         <TextField
                             onChange={e => this.props.handleChange(e, p.rec_index, p.rr_index, "rrField")}
-                            helperText={lib.rrTemplates["SOA"].fields[1].helperText}
+                            helperText={l.rrTemplates["SOA"].fields[1].helperText}
                             placeholder="hostmaster.example.com"
                             name="rname"
                             label="RNAME"
@@ -61,7 +61,7 @@ export default class Row extends Component<RowProps, RowState> {
         const p = this.props;
 
         const v: any = rr.value[rec0.value.rr_type];
-        const fields = lib.rrTemplates[rec0.value.rr_type]?.fields;
+        const fields = l.rrTemplates[rec0.value.rr_type]?.fields;
         if (!fields) return;
         return (
             <Grid spacing={2} container className="simpleValues">
@@ -92,11 +92,11 @@ export default class Row extends Component<RowProps, RowState> {
         const p = this.props;
         const { rr, rec0 } = p;
         const editable = rec0.value.rr_type === "SOA" ? false : true;
-        const name = lib.getName(rec0);
+        const name = l.getName(rec0);
 
         return (
             <React.Fragment>
-                <TableRow className={`recRow `} style={{ borderColor: lib.rrTemplates[rec0.value.rr_type]?.color || "black" }}>
+                <TableRow className={`recRow `} style={{ borderColor: l.rrTemplates[rec0.value.rr_type]?.color || "black" }}>
                     <TableCell padding="checkbox">
                         <Checkbox checked={this.props.meta?.selected} onChange={e => this.props.changeMeta(e, p.rec_index, p.rr_index, "selected")} />
                     </TableCell>
@@ -135,7 +135,7 @@ export default class Row extends Component<RowProps, RowState> {
                 </TableRow>
                 <TableRow>
                     <TableCell
-                        style={{ padding: 0, borderLeft: `10px solid ${lib.rrTemplates[rec0.value.rr_type]?.color || "black"}`, borderBottom: this.props.meta?.expanded ? "" : "unset", width: "100%" }}
+                        style={{ padding: 0, borderLeft: `10px solid ${l.rrTemplates[rec0.value.rr_type]?.color || "black"}`, borderBottom: this.props.meta?.expanded ? "" : "unset", width: "100%" }}
                         colSpan={8}
                     >
                         <Collapse in={this.props.meta?.expanded} style={{ padding: "16px" }} timeout={{ appear: 100, enter: 100, exit: 100 }} unmountOnExit>
@@ -159,7 +159,7 @@ export default class Row extends Component<RowProps, RowState> {
                                                     <Info />
                                                     <span className="caps label">info</span>
                                                 </div>
-                                                <div>{lib.rrTemplates[rec0.value.rr_type]?.info}</div>
+                                                <div>{l.rrTemplates[rec0.value.rr_type]?.info}</div>
                                             </Container>
                                         </Paper>
                                     </Grid>

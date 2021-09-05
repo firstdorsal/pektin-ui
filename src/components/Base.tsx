@@ -1,6 +1,6 @@
 import { Component } from "react";
 import { Link } from "react-router-dom";
-import * as lib from "./lib";
+import * as l from "./lib";
 import * as t from "./types";
 
 interface BaseProps {
@@ -13,7 +13,7 @@ interface BaseState {
 export default class Base extends Component<BaseProps, BaseState> {
     state = { domains: [] };
     componentDidMount = async () => {
-        const domains = await lib.getDomains({ apiEndpoint: this.props.config.apiEndpoint });
+        const domains = await l.getDomains({ apiEndpoint: this.props.config.apiEndpoint });
         this.setState({ domains });
     };
 

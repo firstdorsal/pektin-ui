@@ -1,5 +1,26 @@
 import { ReactNode } from "react";
 import * as t from "./types";
+import Dexie from "dexie";
+
+interface DbConfig {
+    key: string;
+    value: t.Config;
+}
+export class PektinUiDb extends Dexie {
+    config: Dexie.Table<DbConfig>;
+
+    constructor() {
+        super("pektin-ui");
+        this.version(1).stores({
+            config: "key, value"
+        });
+        this.config = this.table("config");
+    }
+}
+
+export const defaulConfig: t.Config = {
+    apiEndpoint: ""
+};
 
 export const getDomains = async ({ apiEndpoint }: t.RequestParams) => {
     const res = await fetch(`${apiEndpoint}/get`, { method: "POST", body: JSON.stringify({}) });

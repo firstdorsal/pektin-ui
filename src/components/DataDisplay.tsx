@@ -1,9 +1,14 @@
 import { Container, Grid, Paper } from "@material-ui/core";
 import { AccountTree, Message } from "@material-ui/icons";
 import { Component } from "react";
-import JSONPretty from "react-json-pretty";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { dracula } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import * as t from "./types";
 import * as l from "./lib";
+/*
+import jsonParser from "prettier/parser-html";
+import prettier from "prettier/standalone";
+prettier.format(CODE, { parser: "json", plugins: [jsonParser] });*/
 
 interface DataDisplayProps {
     data: t.Rec0;
@@ -22,9 +27,11 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                                 <AccountTree />
                                 <span className="caps label">json</span>
                             </div>
-                            <code>
-                                <JSONPretty id="json-pretty" data={this.props.data}></JSONPretty>
-                            </code>
+
+                            <SyntaxHighlighter showLineNumbers={true} style={dracula} language="json">
+                                {JSON.stringify(this.props.data, null, "    ")}
+                            </SyntaxHighlighter>
+
                             <br />
                         </Container>
                     </Paper>
@@ -36,9 +43,9 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                                 <Message />
                                 <span className="caps label">raw (bind syntax)</span>
                             </div>
-                            <code>
-                                <pre>{l.rec0ToBind(this.props.data)}</pre>
-                            </code>
+                            <SyntaxHighlighter style={dracula} language="text">
+                                {l.rec0ToBind(this.props.data)}
+                            </SyntaxHighlighter>
                             <br />
                         </Container>
                     </Paper>

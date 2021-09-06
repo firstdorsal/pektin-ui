@@ -49,13 +49,8 @@ h1 {
     padding-top: 10px;
 }
 
-code > * {
-    padding: 10px;
-}
-
 code * {
     font-family: monospace;
-    background: var(--code-bg);
     user-select: text;
 }
 

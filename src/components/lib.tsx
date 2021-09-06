@@ -42,24 +42,29 @@ export class PektinUiDb extends Dexie {
         this.config = this.table("config");
     }
 }
-const defaultPuivAuth: t.PuivAuth = {
-    vaultEndpoint: "",
+const defaultVaultAuth: t.VaultAuth = {
+    endpoint: "",
+    token: ""
+};
+const defaultPektinApiAuth: t.PektinApiAuth = {
+    endpoint: "",
     token: ""
 };
 export const defaulConfig: t.Config = {
-    auth: defaultPuivAuth
+    vaultAuth: defaultVaultAuth,
+    pektinApiAuth: defaultPektinApiAuth
 };
 
-export const getDomains = async ({ apiEndpoint }: t.RequestParams) => {
-    const res = await fetch(`${apiEndpoint}/get`, { method: "POST", body: JSON.stringify({}) });
+export const getDomains = async ({ pektinApiAuth }: t.RequestParams) => {
+    const res = await fetch(`${pektinApiAuth.endpoint}/get`, { method: "POST", body: JSON.stringify({}) });
     const parsedRes = await res.json().catch(e => {
         return [];
     });
     return parsedRes;
 };
 
-export const getRecords = async ({ apiEndpoint, domainName }: t.getRecords) => {
-    const res = await fetch(`${apiEndpoint}/get`, { method: "POST", body: JSON.stringify({}) });
+export const getRecords = async ({ pektinApiAuth, domainName }: t.getRecords) => {
+    const res = await fetch(`${pektinApiAuth.endpoint}/get`, { method: "POST", body: JSON.stringify({}) });
     const parsedRes = await res.json().catch(e => {
         return [];
     });

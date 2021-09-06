@@ -56,6 +56,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
                     value = { vaultEndpoint: parsed.vaultEndpoint };
                     value.token = r.auth?.client_token;
                     authError = false;
+                    delete parsed.password;
                 }
             }
         } catch (err) {

@@ -79,7 +79,7 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     componentDidMount = async () => {
-        const d: t.Rec0[] = await l.getRecords({ domainName: this.props.match.params.domainName, apiEndpoint: this.props.config.apiEndpoint });
+        const d: t.Rec0[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
         this.initData(d);
     };
     /*
@@ -114,26 +114,28 @@ class Domain extends Component<DomainProps, DomainState> {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {this.state.data.length
-                                ? this.state.data.map((rec0: t.Rec0, i: number) => {
-                                      if (!rec0.value.rr_set?.length) return false;
-                                      return rec0.value.rr_set.map((rr: t.ResourceRecord, j: number) => {
-                                          return (
-                                              <Row
-                                                  handleChange={this.handleChange}
-                                                  saveRecord={this.saveRecord}
-                                                  changeMeta={this.changeMeta}
-                                                  key={j}
-                                                  rec_index={i}
-                                                  rr_index={j}
-                                                  rr={rr}
-                                                  rec0={rec0}
-                                                  meta={this.state.meta[i][j]}
-                                              />
-                                          );
-                                      });
-                                  })
-                                : ""}
+                            {this.state.data.length ? (
+                                this.state.data.map((rec0: t.Rec0, i: number) => {
+                                    if (!rec0.value.rr_set?.length) return false;
+                                    return rec0.value.rr_set.map((rr: t.ResourceRecord, j: number) => {
+                                        return (
+                                            <Row
+                                                handleChange={this.handleChange}
+                                                saveRecord={this.saveRecord}
+                                                changeMeta={this.changeMeta}
+                                                key={j}
+                                                rec_index={i}
+                                                rr_index={j}
+                                                rr={rr}
+                                                rec0={rec0}
+                                                meta={this.state.meta[i][j]}
+                                            />
+                                        );
+                                    });
+                                })
+                            ) : (
+                                <React.Fragment></React.Fragment>
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>

@@ -1,8 +1,8 @@
-import { Component } from "react";
+import React, { Component } from "react";
 import "@fontsource/inter";
 import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import Base from "./components/Base";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
 import AddDomain from "./components/AddDomain";
 import Domain from "./components/Domain";
 import * as t from "./components/types";
@@ -29,13 +29,15 @@ const theme = createTheme({
 interface AppState {
     readonly config: t.Config;
     readonly db: l.PektinUiDb;
+    readonly configLoaded: boolean;
 }
 interface AppProps {}
 
 export default class App extends Component<AppProps, AppState> {
     state: AppState = {
         config: l.defaulConfig,
-        db: new l.PektinUiDb()
+        db: new l.PektinUiDb(),
+        configLoaded: false
     };
 
     initDb = async () => {
@@ -50,13 +52,15 @@ export default class App extends Component<AppProps, AppState> {
     };
 
     loadAuth = () => {
-        const ssg = sessionStorage.getItem("puiv-auth");
-        if (ssg) {
-            const auth = JSON.parse(ssg);
+        const ssr = sessionStorage.getItem("vaultAuth");
+        if (ssr) {
+            const vaultAuth = JSON.parse(ssr);
             this.setState(({ config }) => {
-                config.auth = auth;
-                return { config };
+                config.vaultAuth = vaultAuth;
+                return { config, configLoaded: true };
             });
+        } else {
+            this.setState({ configLoaded: true });
         }
     };
 
@@ -66,32 +70,66 @@ export default class App extends Component<AppProps, AppState> {
         //await this.loadConfig();
     };
 
-    saveAuth = () => {};
+    saveAuth = (vaultAuth: t.VaultAuth) => {
+        sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
+        this.setState(({ config }) => {
+            config.vaultAuth = vaultAuth;
+            return { config };
+        });
+    };
 
     render = () => {
+        if (!this.state.configLoaded) return <div></div>;
         return (
             <Router>
                 <ThemeProvider theme={theme}>
-                    <Route path="/auth" render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />} />
+                    <Switch>
+                        <Route exact path="/auth" render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />} />
 
-                    <Route path="/add-domain">
-                        <Base config={this.state.config}>
-                            <AddDomain />
-                        </Base>
-                    </Route>
-                    <Route
-                        exact
-                        path={`/domain/:domainName`}
-                        render={routeProps => {
-                            return (
-                                <Base config={this.state.config}>
-                                    <Domain config={this.state.config} {...routeProps} />
-                                </Base>
-                            );
-                        }}
-                    />
+                        <PrivateRoute config={this.state.config} exact path="/">
+                            <Base config={this.state.config}></Base>
+                        </PrivateRoute>
+                        <PrivateRoute exact config={this.state.config} path="/add-domain">
+                            <Base config={this.state.config}>
+                                <AddDomain />
+                            </Base>
+                        </PrivateRoute>
+                        <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
+                            <Base config={this.state.config}>
+                                <Domain config={this.state.config} />
+                            </Base>
+                        </PrivateRoute>
+                    </Switch>
                 </ThemeProvider>
             </Router>
+        );
+    };
+}
+interface PrivateRouteProps {
+    config: t.Config;
+    [propName: string]: any;
+    children: any;
+}
+interface PrivateRouteState {}
+class PrivateRoute extends Component<PrivateRouteProps, PrivateRouteState> {
+    render = () => {
+        console.log(this.props.config);
+
+        return (
+            <Route
+                {...this.props.rest}
+                render={routeProps =>
+                    this.props.config.vaultAuth.token.length ? (
+                        React.cloneElement(this.props.children, { ...routeProps })
+                    ) : (
+                        <Redirect
+                            to={{
+                                pathname: "/auth"
+                            }}
+                        />
+                    )
+                }
+            />
         );
     };
 }

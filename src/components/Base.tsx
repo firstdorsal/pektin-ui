@@ -11,10 +11,10 @@ interface BaseState {
 }
 
 export default class Base extends Component<BaseProps, BaseState> {
-    state = { domains: [] };
+    state = { domains: ["vonforell.de"] };
     componentDidMount = async () => {
-        const domains = await l.getDomains({ apiEndpoint: this.props.config.apiEndpoint });
-        this.setState({ domains });
+        const domains = await l.getDomains({ pektinApiAuth: this.props.config?.pektinApiAuth });
+        //this.setState({ domains });
     };
 
     render = () => {

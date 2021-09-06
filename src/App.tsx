@@ -7,6 +7,7 @@ import AddDomain from "./components/AddDomain";
 import Domain from "./components/Domain";
 import * as t from "./components/types";
 import * as l from "./components/lib";
+import Auth from "./components/Auth";
 
 const theme = createTheme({
     palette: {
@@ -48,29 +49,47 @@ export default class App extends Component<AppProps, AppState> {
         if (config) this.setState({ config });
     };
 
-    componentDidMount = async () => {
-        await this.initDb();
-        await this.loadConfig();
+    loadAuth = () => {
+        const ssg = sessionStorage.getItem("puiv-auth");
+        if (ssg) {
+            const auth = JSON.parse(ssg);
+            this.setState(({ config }) => {
+                config.auth = auth;
+                return { config };
+            });
+        }
     };
 
-    render = () => {
-        console.log(this.state.config);
+    componentDidMount = async () => {
+        await this.initDb();
+        this.loadAuth();
+        //await this.loadConfig();
+    };
 
+    saveAuth = () => {};
+
+    render = () => {
         return (
             <Router>
                 <ThemeProvider theme={theme}>
-                    <Base config={this.state.config}>
-                        <Route path="/add-domain">
+                    <Route path="/auth" render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />} />
+
+                    <Route path="/add-domain">
+                        <Base config={this.state.config}>
                             <AddDomain />
-                        </Route>
-                        <Route
-                            exact
-                            path={`/domain/:domainName`}
-                            render={routeProps => {
-                                return <Domain config={this.state.config} {...routeProps} />;
-                            }}
-                        />
-                    </Base>
+                        </Base>
+                    </Route>
+                    <Route
+                        exact
+                        path={`/domain/:domainName`}
+                        render={routeProps => {
+                            return (
+                                <Base config={this.state.config}>
+                                    <Domain config={this.state.config} {...routeProps} />
+                                </Base>
+                            );
+                        }}
+                    />
                 </ThemeProvider>
             </Router>
         );

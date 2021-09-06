@@ -1,5 +1,11 @@
+// pektin-user-interface-vault
+export interface PuivAuth {
+    vaultEndpoint: string;
+    token: string;
+}
+
 export interface Config {
-    apiEndpoint: string;
+    auth: PuivAuth;
 }
 
 export interface getRecords extends RequestParams {

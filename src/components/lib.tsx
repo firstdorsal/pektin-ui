@@ -2,6 +2,31 @@ import { ReactNode } from "react";
 import * as t from "./types";
 import Dexie from "dexie";
 
+const f = fetch;
+interface VaultAuthJSON {
+    vaultEndpoint: string;
+    username: string;
+    password: string;
+}
+
+export const getVaultToken = async (auth: VaultAuthJSON): Promise<Object> => {
+    const loginCredRes: any = await f(`${auth.vaultEndpoint}/v1/auth/userpass/login/${auth.username}`, {
+        method: "POST",
+        mode: "cors",
+        body: JSON.stringify({
+            password: auth.password
+        })
+    }).catch(e => {
+        e = e.toString();
+        e = e.substring(e.indexOf(":") + 2);
+        return { error: e };
+    });
+
+    if (loginCredRes.error) return loginCredRes;
+
+    return await loginCredRes.json();
+};
+
 interface DbConfig {
     key: string;
     value: t.Config;
@@ -17,9 +42,12 @@ export class PektinUiDb extends Dexie {
         this.config = this.table("config");
     }
 }
-
+const defaultPuivAuth: t.PuivAuth = {
+    vaultEndpoint: "",
+    token: ""
+};
 export const defaulConfig: t.Config = {
-    apiEndpoint: ""
+    auth: defaultPuivAuth
 };
 
 export const getDomains = async ({ apiEndpoint }: t.RequestParams) => {
@@ -57,6 +85,10 @@ export const rec0ToBind = (rec0: t.Rec0, onlyValues: boolean = false): ReactNode
         if (onlyValues) return `${soa.mname} ${soa.rname}`;
         return `${absoluteName(getName(rec0))} ${rr_set.ttl ? rr_set.ttl : ""} IN ${rec1.rr_type} ${soa.mname} ${soa.rname} ${soa.serial} ${soa.refresh} ${soa.retry} ${soa.expire} ${soa.minimum}`;
     }
+};
+
+export const help: any = {
+    auth: <div>helper text for auth</div>
 };
 
 export const rrTemplates: any = {

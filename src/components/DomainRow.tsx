@@ -6,9 +6,9 @@ import DataDisplay from "./DataDisplay";
 import { Ballot, Check, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
 
 interface RowProps {
-    handleChange: any;
+    handleChange: Function;
     saveRecord: any;
-    changeMeta: any;
+    changeMeta: Function;
     rec_index: number;
     rr_index: number;
     rr: t.ResourceRecord;

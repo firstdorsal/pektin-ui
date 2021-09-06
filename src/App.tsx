@@ -1,5 +1,7 @@
 import React, { Component } from "react";
-import "@fontsource/inter";
+import "@fontsource/inter/900.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/400.css";
 import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import Base from "./components/Base";
 import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
@@ -8,6 +10,7 @@ import Domain from "./components/Domain";
 import * as t from "./components/types";
 import * as l from "./components/lib";
 import Auth from "./components/Auth";
+import ImportDomain from "./components/ImportDomain";
 
 const theme = createTheme({
     palette: {
@@ -89,15 +92,24 @@ export default class App extends Component<AppProps, AppState> {
                         <PrivateRoute config={this.state.config} exact path="/">
                             <Base config={this.state.config}></Base>
                         </PrivateRoute>
-                        <PrivateRoute exact config={this.state.config} path="/add-domain">
+                        <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
                             <Base config={this.state.config}>
                                 <AddDomain />
+                            </Base>
+                        </PrivateRoute>
+                        <PrivateRoute exact config={this.state.config} path="/add/existing/import">
+                            <Base config={this.state.config}>
+                                <ImportDomain config={this.state.config} />
                             </Base>
                         </PrivateRoute>
                         <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
                             <Base config={this.state.config}>
                                 <Domain config={this.state.config} />
                             </Base>
+                        </PrivateRoute>
+
+                        <PrivateRoute config={this.state.config} path="*">
+                            <Base config={this.state.config}></Base>
                         </PrivateRoute>
                     </Switch>
                 </ThemeProvider>
@@ -113,8 +125,6 @@ interface PrivateRouteProps {
 interface PrivateRouteState {}
 class PrivateRoute extends Component<PrivateRouteProps, PrivateRouteState> {
     render = () => {
-        console.log(this.props.config);
-
         return (
             <Route
                 {...this.props.rest}

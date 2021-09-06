@@ -1,5 +1,6 @@
+import { Add, ImportExport, ShoppingCart } from "@material-ui/icons";
 import { Component } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import * as l from "./lib";
 import * as t from "./types";
 
@@ -21,22 +22,38 @@ export default class Base extends Component<BaseProps, BaseState> {
         return (
             <div className="container">
                 <aside>
-                    <h1>Pektin</h1>
+                    <h1>Pektin-ui</h1>
                     <br />
-                    <div>
-                        <div>
-                            <Link to="/add-domain">Add Domain</Link>
-                        </div>
-                        {this.state.domains.length
-                            ? this.state.domains.map((domain: string, i: number) => {
-                                  return (
-                                      <div key={i}>
-                                          <Link to={`/domain/${domain}`}>{domain}</Link>
-                                      </div>
-                                  );
-                              })
-                            : ""}
-                    </div>
+                    <br />
+
+                    <h2>Add Existing Domain</h2>
+                    <NavLink className="link" activeClassName="navActive" to="/add/existing/manual">
+                        <Add />
+                        <span className="linkText">Manually</span>
+                    </NavLink>
+
+                    <NavLink className="link" activeClassName="navActive" to="/add/existing/import">
+                        <ImportExport />
+                        <span className="linkText">Import</span>
+                    </NavLink>
+
+                    <br />
+                    <h2>Create New</h2>
+                    <NavLink className="link" activeClassName="navActive" to="/add/buy">
+                        <ShoppingCart />
+                        <span className="linkText">Buy</span>
+                    </NavLink>
+                    <br />
+                    <h2>Your Domains</h2>
+                    {this.state.domains.length
+                        ? this.state.domains.map((domain: string, i: number) => {
+                              return (
+                                  <NavLink className="link" key={i} to={`/domain/${domain}`}>
+                                      {domain}
+                                  </NavLink>
+                              );
+                          })
+                        : ""}
                 </aside>
                 <main>{this.props.children}</main>
             </div>

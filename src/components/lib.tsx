@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import * as t from "./types";
 import Dexie from "dexie";
+import PektinBackup from "./apis/PektinBackup";
+//import powerDns from "./apis/powerDns";
 
 const f = fetch;
 interface VaultAuthJSON {
@@ -46,13 +48,17 @@ const defaultVaultAuth: t.VaultAuth = {
     endpoint: "",
     token: ""
 };
+
+const supportedApis: any[] = [{ name: "Pektin Backup", class: PektinBackup }];
+
 const defaultPektinApiAuth: t.PektinApiAuth = {
     endpoint: "",
     token: ""
 };
 export const defaulConfig: t.Config = {
     vaultAuth: defaultVaultAuth,
-    pektinApiAuth: defaultPektinApiAuth
+    pektinApiAuth: defaultPektinApiAuth,
+    apis: supportedApis
 };
 
 export const getDomains = async ({ pektinApiAuth }: t.RequestParams) => {

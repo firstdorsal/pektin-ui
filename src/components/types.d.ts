@@ -11,6 +11,7 @@ export interface PektinApiAuth {
 export interface Config {
     vaultAuth: VaultAuth;
     pektinApiAuth: PektinApiAuth;
+    apis: any[];
 }
 
 export interface getRecords extends RequestParams {

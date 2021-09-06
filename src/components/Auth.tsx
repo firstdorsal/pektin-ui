@@ -47,7 +47,6 @@ export default class Auth extends Component<AuthProps, AuthState> {
             // send the config to vault and try to get a token
             if (!authError) {
                 const r: any = await l.getVaultToken(parsed);
-                console.log(r);
 
                 if (r.error) {
                     authHelper = r.error;

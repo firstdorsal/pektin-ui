@@ -67,8 +67,6 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     };
 
     render = () => {
-        console.log("add-domain");
-
         return (
             <Container style={{ marginTop: "20px" }}>
                 <Grid container spacing={3} style={{ maxWidth: "100%" }}>

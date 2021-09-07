@@ -1,4 +1,4 @@
-import { Container, MenuItem, Select, Step, StepLabel, Stepper } from "@material-ui/core";
+import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
 import React, { Component } from "react";
 import * as l from "./lib";
 import * as t from "./types";
@@ -37,7 +37,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                     <Stepper activeStep={this.state.activeStep}>
                         {steps.map(stepName => {
                             return (
-                                <Step>
+                                <Step key={stepName}>
                                     <StepLabel>{stepName}</StepLabel>
                                 </Step>
                             );
@@ -45,18 +45,23 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                     </Stepper>
                 </Container>
                 <Container>
-                    <h2>Select Method</h2>
-                    <Select name="apiPicker" onChange={e => this.handleChange(e)} style={{ width: "200px" }} value={this.state.selectedApi}>
-                        {this.props.config.apis.map((api, i) => {
-                            return (
-                                <MenuItem key={i} value={i}>
-                                    {api.name}
-                                </MenuItem>
-                            );
-                        })}
-                    </Select>
+                    <Paper elevation={3} style={{ padding: "20px" }}>
+                        <Container>
+                            <h2 style={{ display: "inline-block", paddingRight: "10px" }}>Method</h2>
+                            <Select name="apiPicker" onChange={e => this.handleChange(e)} style={{ width: "200px" }} value={this.state.selectedApi}>
+                                {this.props.config.apis.map((api, i) => {
+                                    return (
+                                        <MenuItem key={i} value={i}>
+                                            {api.name}
+                                        </MenuItem>
+                                    );
+                                })}
+                            </Select>
+                        </Container>
+                        <br />
+                        <Container>{React.createElement(this.props.config.apis[this.state.selectedApi].class)}</Container>
+                    </Paper>
                 </Container>
-                <Container>{React.createElement(this.props.config.apis[this.state.selectedApi].class)}</Container>
             </Container>
         );
     };

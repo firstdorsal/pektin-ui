@@ -50,7 +50,7 @@ const defaultVaultAuth: t.VaultAuth = {
 
 const supportedApis: any[] = [
     { name: "Pektin Backup", class: PektinBackup },
-    { name: "PowerDns", class: PowerDns }
+    { name: "PowerDNS", class: PowerDns }
 ];
 
 const defaultPektinApiAuth: t.PektinApiAuth = {

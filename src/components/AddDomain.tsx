@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Button, Grid, TextField, Switch, Container, Paper } from "@material-ui/core";
 import { Ballot } from "@material-ui/icons";
 import * as t from "./types";
-import * as lib from "./lib";
+import * as l from "./lib";
 import DataDisplay from "../components/DataDisplay";
 
 const defaultSOA: t.Rec0 = {
@@ -29,7 +29,9 @@ const defaultSOA: t.Rec0 = {
     }
 };
 
-interface AddDomainProps {}
+interface AddDomainProps {
+    config: t.Config;
+}
 
 interface AddDomainState {
     readonly ttl: number;
@@ -59,9 +61,9 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
             if (event.target.name === "dnssec") rec1.dnssec = event.target.checked;
             if (event.target.name === "ttl") rec1.rr_set[0].ttl = parseInt(event.target.value);
             const soa = rec1.rr_set[0].value as t.SOA;
-            if (event.target.name === "mname") soa.SOA.mname = lib.absoluteName(event.target.value);
-            if (event.target.name === "rname") soa.SOA.rname = lib.absoluteName(event.target.value).replace("@", ".");
-            if (event.target.name === "name") rec0.name = lib.absoluteName(event.target.value) + ":SOA";
+            if (event.target.name === "mname") soa.SOA.mname = l.absoluteName(event.target.value);
+            if (event.target.name === "rname") soa.SOA.rname = l.absoluteName(event.target.value).replace("@", ".");
+            if (event.target.name === "name") rec0.name = l.absoluteName(event.target.value) + ":SOA";
             return { rec0, [event.target.name]: event.target.value };
         });
     };
@@ -126,7 +128,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                             </Container>
                         </Paper>
                     </Grid>
-                    <DataDisplay data={this.state.rec0}></DataDisplay>
+                    <DataDisplay config={this.props.config} data={this.state.rec0}></DataDisplay>
                 </Grid>
             </Container>
         );

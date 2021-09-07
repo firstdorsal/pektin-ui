@@ -14,6 +14,7 @@ interface RowProps {
     rr: t.ResourceRecord;
     rec0: t.Rec0;
     meta: t.DomainMeta;
+    config: t.Config;
 }
 interface RowState {
     dnssec: boolean;
@@ -165,7 +166,7 @@ export default class Row extends Component<RowProps, RowState> {
                                     </Grid>
                                 </Grid>
 
-                                <DataDisplay data={rec0}></DataDisplay>
+                                <DataDisplay config={this.props.config} data={rec0}></DataDisplay>
                             </Grid>
                         </Collapse>
                     </TableCell>

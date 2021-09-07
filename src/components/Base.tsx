@@ -1,4 +1,4 @@
-import { Add, ImportExport, ShoppingCart } from "@material-ui/icons";
+import { Add, ImportExport, Settings, ShoppingCart } from "@material-ui/icons";
 import { Component } from "react";
 import { NavLink } from "react-router-dom";
 import * as l from "./lib";
@@ -54,6 +54,10 @@ export default class Base extends Component<BaseProps, BaseState> {
                               );
                           })
                         : ""}
+                    <NavLink className="link config" activeClassName="navActive" to="/config">
+                        <Settings />
+                        <span className="linkText">Configuration</span>
+                    </NavLink>
                 </aside>
                 <main>{this.props.children}</main>
             </div>

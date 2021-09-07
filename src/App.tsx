@@ -11,6 +11,8 @@ import * as t from "./components/types";
 import * as l from "./components/lib";
 import Auth from "./components/Auth";
 import ImportDomain from "./components/ImportDomain";
+import ConfigView from "./components/Config";
+import _ from "lodash";
 
 const theme = createTheme({
     palette: {
@@ -43,34 +45,56 @@ export default class App extends Component<AppProps, AppState> {
         configLoaded: false
     };
 
+    configToDb = (config: t.Config) => {
+        const newConfig: any = _.cloneDeep(config);
+        delete newConfig.apis;
+        delete newConfig.vaultAuth;
+        delete newConfig.pektinApiAuth;
+        return newConfig;
+    };
+
     initDb = async () => {
         const db = this.state.db;
-        await db.config.add({ key: "config", value: l.defaulConfig }).catch(() => {});
+        const value = this.configToDb(this.state.config);
+        await db.config.add({ key: "config", value }).catch(() => {});
     };
 
     loadConfig = async () => {
         const db = this.state.db;
-        const config = (await db.config.get("config"))?.value;
-        if (config) this.setState({ config });
+        const newConfig = (await db.config.get("config"))?.value;
+
+        if (newConfig) {
+            this.setState(({ config }) => {
+                return { config: { ...config, ...newConfig } };
+            });
+        }
+    };
+    updateConfig = (e: any) => {
+        const db = this.state.db;
+        this.setState(({ config }) => {
+            config = { ...config, [e.target.name]: e.target.value };
+            const value = this.configToDb(config);
+            db.config.put({ key: "config", value });
+            return { config };
+        });
     };
 
     loadAuth = () => {
         const ssr = sessionStorage.getItem("vaultAuth");
         if (ssr) {
-            const vaultAuth = JSON.parse(ssr);
-            this.setState(({ config }) => {
+            return this.setState(({ config }) => {
+                const vaultAuth = JSON.parse(ssr);
                 config.vaultAuth = vaultAuth;
                 return { config, configLoaded: true };
             });
-        } else {
-            this.setState({ configLoaded: true });
         }
+        this.setState({ configLoaded: true });
     };
 
     componentDidMount = async () => {
         await this.initDb();
+        await this.loadConfig();
         this.loadAuth();
-        //await this.loadConfig();
     };
 
     saveAuth = (vaultAuth: t.VaultAuth) => {
@@ -94,7 +118,7 @@ export default class App extends Component<AppProps, AppState> {
                         </PrivateRoute>
                         <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
                             <Base config={this.state.config}>
-                                <AddDomain />
+                                <AddDomain config={this.state.config} />
                             </Base>
                         </PrivateRoute>
                         <PrivateRoute exact config={this.state.config} path="/add/existing/import">
@@ -105,6 +129,11 @@ export default class App extends Component<AppProps, AppState> {
                         <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
                             <Base config={this.state.config}>
                                 <Domain config={this.state.config} />
+                            </Base>
+                        </PrivateRoute>
+                        <PrivateRoute exact config={this.state.config} path="/config/">
+                            <Base config={this.state.config}>
+                                <ConfigView updateConfig={this.updateConfig} config={this.state.config} />
                             </Base>
                         </PrivateRoute>
 

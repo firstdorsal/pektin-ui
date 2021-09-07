@@ -120,6 +120,7 @@ class Domain extends Component<DomainProps, DomainState> {
                                     return rec0.value.rr_set.map((rr: t.ResourceRecord, j: number) => {
                                         return (
                                             <Row
+                                                config={this.props.config}
                                                 handleChange={this.handleChange}
                                                 saveRecord={this.saveRecord}
                                                 changeMeta={this.changeMeta}

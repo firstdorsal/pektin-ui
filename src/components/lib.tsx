@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import * as t from "./types";
 import Dexie from "dexie";
 import PektinBackup from "./apis/PektinBackup";
-//import powerDns from "./apis/powerDns";
+import PowerDns from "./apis/PowerDns";
 
 const f = fetch;
 interface VaultAuthJSON {
@@ -14,7 +14,6 @@ interface VaultAuthJSON {
 export const getVaultToken = async (auth: VaultAuthJSON): Promise<Object> => {
     const loginCredRes: any = await f(`${auth.vaultEndpoint}/v1/auth/userpass/login/${auth.username}`, {
         method: "POST",
-        mode: "cors",
         body: JSON.stringify({
             password: auth.password
         })
@@ -30,8 +29,8 @@ export const getVaultToken = async (auth: VaultAuthJSON): Promise<Object> => {
 };
 
 interface DbConfig {
-    key: string;
-    value: t.Config;
+    key: "config";
+    value: any;
 }
 export class PektinUiDb extends Dexie {
     config: Dexie.Table<DbConfig>;
@@ -49,7 +48,10 @@ const defaultVaultAuth: t.VaultAuth = {
     token: ""
 };
 
-const supportedApis: any[] = [{ name: "Pektin Backup", class: PektinBackup }];
+const supportedApis: any[] = [
+    { name: "Pektin Backup", class: PektinBackup },
+    { name: "PowerDns", class: PowerDns }
+];
 
 const defaultPektinApiAuth: t.PektinApiAuth = {
     endpoint: "",
@@ -58,11 +60,13 @@ const defaultPektinApiAuth: t.PektinApiAuth = {
 export const defaulConfig: t.Config = {
     vaultAuth: defaultVaultAuth,
     pektinApiAuth: defaultPektinApiAuth,
-    apis: supportedApis
+    apis: supportedApis,
+    defaultActiveTab: 0,
+    codeStyle: "dracula"
 };
 
 export const getDomains = async ({ pektinApiAuth }: t.RequestParams) => {
-    const res = await fetch(`${pektinApiAuth.endpoint}/get`, { method: "POST", body: JSON.stringify({}) });
+    const res = await fetch(`${pektinApiAuth?.endpoint}/get`, { method: "POST", body: JSON.stringify({}) });
     const parsedRes = await res.json().catch(e => {
         return [];
     });
@@ -308,3 +312,100 @@ export const rrTemplates: any = {
         color: "yellow"
     }
 };
+
+export const codeStyles = [
+    "a11yDark",
+    "a11yLight",
+    "agate",
+    "anOldHope",
+    "androidstudio",
+    "arduinoLight",
+    "arta",
+    "ascetic",
+    "atelierCaveDark",
+    "atelierCaveLight",
+    "atelierDuneDark",
+    "atelierDuneLight",
+    "atelierEstuaryDark",
+    "atelierEstuaryLight",
+    "atelierForestDark",
+    "atelierForestLight",
+    "atelierHeathDark",
+    "atelierHeathLight",
+    "atelierLakesideDark",
+    "atelierLakesideLight",
+    "atelierPlateauDark",
+    "atelierPlateauLight",
+    "atelierSavannaDark",
+    "atelierSavannaLight",
+    "atelierSeasideDark",
+    "atelierSeasideLight",
+    "atelierSulphurpoolDark",
+    "atelierSulphurpoolLight",
+    "atomOneDarkReasonable",
+    "atomOneDark",
+    "atomOneLight",
+    "brownPaper",
+    "codepenEmbed",
+    "colorBrewer",
+    "darcula",
+    "dark",
+    "defaultStyle",
+    "docco",
+    "dracula",
+    "far",
+    "foundation",
+    "githubGist",
+    "github",
+    "gml",
+    "googlecode",
+    "gradientDark",
+    "grayscale",
+    "gruvboxDark",
+    "gruvboxLight",
+    "hopscotch",
+    "hybrid",
+    "idea",
+    "irBlack",
+    "isblEditorDark",
+    "isblEditorLight",
+    "kimbieDark",
+    "kimbieLight",
+    "lightfair",
+    "lioshi",
+    "magula",
+    "monoBlue",
+    "monokaiSublime",
+    "monokai",
+    "nightOwl",
+    "nnfxDark",
+    "nnfx",
+    "nord",
+    "obsidian",
+    "ocean",
+    "paraisoDark",
+    "paraisoLight",
+    "pojoaque",
+    "purebasic",
+    "qtcreatorDark",
+    "qtcreatorLight",
+    "railscasts",
+    "rainbow",
+    "routeros",
+    "schoolBook",
+    "shadesOfPurple",
+    "solarizedDark",
+    "solarizedLight",
+    "srcery",
+    "sunburst",
+    "tomorrowNightBlue",
+    "tomorrowNightBright",
+    "tomorrowNightEighties",
+    "tomorrowNight",
+    "tomorrow",
+    "vs",
+    "vs2015",
+    "xcode",
+    "xt256",
+    "zenburn"
+];

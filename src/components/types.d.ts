@@ -12,6 +12,8 @@ export interface Config {
     vaultAuth: VaultAuth;
     pektinApiAuth: PektinApiAuth;
     apis: any[];
+    defaultActiveTab: number;
+    codeStyle: codeStyle;
 }
 
 export interface getRecords extends RequestParams {
@@ -32,6 +34,18 @@ export interface Response {
     error: boolean;
     message: string;
     data: Object;
+}
+
+export interface PektinApiSetReqBody extends PektinApiReqBody {
+    records: Rec0[];
+}
+
+export interface PektinApiGetReqBody extends PektinApiReqBody {
+    query: string;
+}
+
+export interface PektinApiReqBody {
+    token: string;
 }
 
 export interface Rec0 {
@@ -134,3 +148,98 @@ export interface TLSAValue {
     matching_type: number;
     data: string;
 }
+export type codeStyle =
+    | "a11yDark"
+    | "a11yLight"
+    | "agate"
+    | "anOldHope"
+    | "androidstudio"
+    | "arduinoLight"
+    | "arta"
+    | "ascetic"
+    | "atelierCaveDark"
+    | "atelierCaveLight"
+    | "atelierDuneDark"
+    | "atelierDuneLight"
+    | "atelierEstuaryDark"
+    | "atelierEstuaryLight"
+    | "atelierForestDark"
+    | "atelierForestLight"
+    | "atelierHeathDark"
+    | "atelierHeathLight"
+    | "atelierLakesideDark"
+    | "atelierLakesideLight"
+    | "atelierPlateauDark"
+    | "atelierPlateauLight"
+    | "atelierSavannaDark"
+    | "atelierSavannaLight"
+    | "atelierSeasideDark"
+    | "atelierSeasideLight"
+    | "atelierSulphurpoolDark"
+    | "atelierSulphurpoolLight"
+    | "atomOneDarkReasonable"
+    | "atomOneDark"
+    | "atomOneLight"
+    | "brownPaper"
+    | "codepenEmbed"
+    | "colorBrewer"
+    | "darcula"
+    | "dark"
+    | "defaultStyle"
+    | "docco"
+    | "dracula"
+    | "far"
+    | "foundation"
+    | "githubGist"
+    | "github"
+    | "gml"
+    | "googlecode"
+    | "gradientDark"
+    | "grayscale"
+    | "gruvboxDark"
+    | "gruvboxLight"
+    | "hopscotch"
+    | "hybrid"
+    | "idea"
+    | "irBlack"
+    | "isblEditorDark"
+    | "isblEditorLight"
+    | "kimbieDark"
+    | "kimbieLight"
+    | "lightfair"
+    | "lioshi"
+    | "magula"
+    | "monoBlue"
+    | "monokaiSublime"
+    | "monokai"
+    | "nightOwl"
+    | "nnfxDark"
+    | "nnfx"
+    | "nord"
+    | "obsidian"
+    | "ocean"
+    | "paraisoDark"
+    | "paraisoLight"
+    | "pojoaque"
+    | "purebasic"
+    | "qtcreatorDark"
+    | "qtcreatorLight"
+    | "railscasts"
+    | "rainbow"
+    | "routeros"
+    | "schoolBook"
+    | "shadesOfPurple"
+    | "solarizedDark"
+    | "solarizedLight"
+    | "srcery"
+    | "sunburst"
+    | "tomorrowNightBlue"
+    | "tomorrowNightBright"
+    | "tomorrowNightEighties"
+    | "tomorrowNight"
+    | "tomorrow"
+    | "vs"
+    | "vs2015"
+    | "xcode"
+    | "xt256"
+    | "zenburn";

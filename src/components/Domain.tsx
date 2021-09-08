@@ -3,7 +3,8 @@ import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, Tab
 import * as t from "./types";
 import { AddCircle, Delete, Flare, Map, VerticalAlignCenter } from "@material-ui/icons";
 import * as l from "./lib";
-import { cloneDeep, isEqual } from "lodash";
+import isEqual from "lodash/isEqual";
+import cloneDeep from "lodash/cloneDeep";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import Row from "./DomainRow";
 

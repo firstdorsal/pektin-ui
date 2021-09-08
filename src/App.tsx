@@ -12,7 +12,7 @@ import * as l from "./components/lib";
 import Auth from "./components/Auth";
 import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
-import _ from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 
 const theme = createTheme({
     palette: {
@@ -46,7 +46,7 @@ export default class App extends Component<AppProps, AppState> {
     };
 
     configToDb = (config: t.Config) => {
-        const newConfig: any = _.cloneDeep(config);
+        const newConfig: any = cloneDeep(config);
         delete newConfig.apis;
         delete newConfig.vaultAuth;
         delete newConfig.pektinApiAuth;

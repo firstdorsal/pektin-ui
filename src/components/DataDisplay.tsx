@@ -1,15 +1,21 @@
-import { Box, Container, Grid, Paper, Tab, Tabs } from "@material-ui/core";
-import { AccountTree, Code } from "@material-ui/icons";
 import { Component } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import * as codeStyles from "react-syntax-highlighter/dist/esm/styles/hljs";
 import * as t from "./types";
 import * as l from "./lib";
+
+import { Box, Container, Grid, Paper, Tab, Tabs } from "@material-ui/core";
+import { AccountTree, Code } from "@material-ui/icons";
 import { SiJavascript, SiTypescript } from "react-icons/si";
 import { MdShortText } from "react-icons/md";
 
-import parserTypescript from "prettier/parser-typescript";
-import prettier from "prettier/standalone";
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
+import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
+import * as codeStyles from "react-syntax-highlighter/dist/esm/styles/hljs";
+
+SyntaxHighlighter.registerLanguage("javascript", js);
+SyntaxHighlighter.registerLanguage("json", json);
+//import parserTypescript from "prettier/parser-typescript";
+//import { format } from "prettier/standalone";
 
 interface DataDisplayProps {
     data: t.Rec0;
@@ -31,10 +37,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                 {JSON.stringify(this.props.data, null, "    ")}
             </SyntaxHighlighter>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyles[this.props.config.codeStyle]} language="javascript">
-                {prettier.format(jsTemp(this.props.config.pektinApiAuth?.endpoint, [this.props.data]), { parser: "typescript", plugins: [parserTypescript], tabWidth: 4 })}
-            </SyntaxHighlighter>,
-            <SyntaxHighlighter showLineNumbers={true} style={codeStyles[this.props.config.codeStyle]} language="typescript">
-                {prettier.format(tsTemp(this.props.config.pektinApiAuth?.endpoint, [this.props.data]), { parser: "typescript", plugins: [parserTypescript], tabWidth: 4 })}
+                {jsTemp(this.props.config.pektinApiAuth?.endpoint, [this.props.data])}
             </SyntaxHighlighter>,
             <SyntaxHighlighter style={codeStyles[this.props.config.codeStyle]} language="text">
                 {l.rec0ToBind(this.props.data)}
@@ -75,7 +78,7 @@ const jsTemp = (endpoint: string, data: t.Rec0[]) => {
        method: "POST",
        body: JSON.stringify({
            token,
-           records: ${JSON.stringify(data)}
+           records: ${JSON.stringify(data, null, "    ")}
        })
    }).catch(e => {
        console.log(e);
@@ -92,7 +95,7 @@ const tsTemp = (endpoint: string, data: t.Rec0[]) => {
         method: "POST",
         body: JSON.stringify({
             token,
-            records: ${JSON.stringify(data)}
+            records: ${JSON.stringify(data, null, "    ")}
         })
     }).catch(e => {
         console.log(e);

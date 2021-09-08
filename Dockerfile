@@ -1,8 +1,8 @@
 # 0. build stage
-FROM node:alpine
+FROM node:alpine as build-stage
 WORKDIR /app
 COPY package*.json /app/
-RUN npm install
+RUN yarn
 COPY ./ /app/
 RUN yarn build
 

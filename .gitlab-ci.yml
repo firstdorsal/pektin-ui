@@ -33,5 +33,5 @@ docker-build:
     before_script:
         - docker login -u "pektin" -p "$CI_REGISTRY_PASSWORD"
     script:
-        - docker build --pull -t "pektin/server" .
-        - docker push "pektin/server"
+        - docker build --pull -t "pektin/ui" .
+        - docker push "pektin/ui"

@@ -87,13 +87,13 @@ export const absoluteName = (name: string) => {
     return name;
 };
 
-export const getName = (rec0: t.Rec0) => {
+export const getName = (rec0: t.RedisEntry) => {
     return rec0.name.substring(0, rec0.name.indexOf(":"));
 };
 
-export const rec0ToBind = (rec0: t.Rec0, onlyValues: boolean = false): ReactNode => {
+export const rec0ToBind = (rec0: t.RedisEntry, onlyValues: boolean = false): ReactNode => {
     if (!rec0 || !rec0.value) return;
-    const rec1 = rec0.value as t.Rec1;
+    const rec1 = rec0.value as t.RedisValue;
     if (rec1.rr_type === "SOA") {
         const soa = rec1.rr_set[0].value.SOA as t.SOAValue;
         const rr_set = rec1.rr_set[0];

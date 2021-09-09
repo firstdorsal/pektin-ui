@@ -12,7 +12,7 @@ interface RowProps {
     rec_index: number;
     rr_index: number;
     rr: t.ResourceRecord;
-    rec0: t.Rec0;
+    rec0: t.RedisEntry;
     meta: t.DomainMeta;
     config: t.Config;
 }
@@ -21,7 +21,7 @@ interface RowState {
 }
 
 export default class Row extends Component<RowProps, RowState> {
-    advancedView = (rec0: t.Rec0, rr: t.ResourceRecord) => {
+    advancedView = (rec0: t.RedisEntry, rr: t.ResourceRecord) => {
         const p = this.props;
 
         if (rec0.value.rr_type === "SOA") {
@@ -58,7 +58,7 @@ export default class Row extends Component<RowProps, RowState> {
             );
         }
     };
-    simpleView = (rec0: t.Rec0, rr: t.ResourceRecord) => {
+    simpleView = (rec0: t.RedisEntry, rr: t.ResourceRecord) => {
         const p = this.props;
 
         const v: any = rr.value[rec0.value.rr_type];

@@ -5,7 +5,7 @@ import * as t from "./types";
 import * as l from "./lib";
 import DataDisplay from "../components/DataDisplay";
 
-const defaultSOA: t.Rec0 = {
+const defaultSOA: t.RedisEntry = {
     name: "",
     value: {
         dnssec: true,
@@ -39,7 +39,7 @@ interface AddDomainState {
     readonly rname: string;
     readonly name: string;
     readonly dnssec: boolean;
-    readonly rec0: t.Rec0;
+    readonly rec0: t.RedisEntry;
 }
 
 export default class AddDomain extends Component<AddDomainProps, AddDomainState> {

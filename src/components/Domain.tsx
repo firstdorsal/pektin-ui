@@ -9,9 +9,9 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import Row from "./DomainRow";
 
 interface DomainState {
-    readonly data: t.Rec0[];
+    readonly data: t.RedisEntry[];
     readonly meta: Array<Array<t.DomainMeta>>;
-    readonly ogData: t.Rec0[];
+    readonly ogData: t.RedisEntry[];
 }
 
 interface DomainRouterProps {
@@ -69,8 +69,8 @@ class Domain extends Component<DomainProps, DomainState> {
         });
     };
 
-    initData = (d: t.Rec0[]) => {
-        const meta = d.map((rec0: t.Rec0, i: number) => {
+    initData = (d: t.RedisEntry[]) => {
+        const meta = d.map((rec0: t.RedisEntry, i: number) => {
             return rec0.value.rr_set.map((rr: t.ResourceRecord, j: number) => {
                 return { selected: false, expanded: false, changed: false };
             });
@@ -80,7 +80,7 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     componentDidMount = async () => {
-        const d: t.Rec0[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
+        const d: t.RedisEntry[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
         this.initData(d);
     };
     /*
@@ -116,7 +116,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         </TableHead>
                         <TableBody>
                             {this.state.data.length ? (
-                                this.state.data.map((rec0: t.Rec0, i: number) => {
+                                this.state.data.map((rec0: t.RedisEntry, i: number) => {
                                     if (!rec0.value.rr_set?.length) return false;
                                     return rec0.value.rr_set.map((rr: t.ResourceRecord, j: number) => {
                                         return (

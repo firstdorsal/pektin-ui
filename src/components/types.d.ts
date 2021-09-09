@@ -37,7 +37,7 @@ export interface Response {
 }
 
 export interface PektinApiSetReqBody extends PektinApiReqBody {
-    records: Rec0[];
+    records: RedisEntry[];
 }
 
 export interface PektinApiGetReqBody extends PektinApiReqBody {
@@ -48,12 +48,12 @@ export interface PektinApiReqBody {
     token: string;
 }
 
-export interface Rec0 {
+export interface RedisEntry {
     name: string;
-    value: Rec1;
+    value: RedisValue;
 }
 
-export interface Rec1 {
+export interface RedisValue {
     dnssec: boolean;
     rr_type: RRTypes;
     rr_set: RRset;

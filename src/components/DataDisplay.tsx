@@ -18,7 +18,7 @@ SyntaxHighlighter.registerLanguage("json", json);
 //import { format } from "prettier/standalone";
 
 interface DataDisplayProps {
-    data: t.Rec0;
+    data: t.RedisEntry;
     config: t.Config;
 }
 
@@ -70,7 +70,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
     };
 }
 
-const jsTemp = (endpoint: string, data: t.Rec0[]) => {
+const jsTemp = (endpoint: string, data: t.RedisEntry[]) => {
     return `
     const token = process.env.PEKTIN_API_TOKEN;
     const endpoint="${endpoint}";
@@ -87,7 +87,7 @@ const jsTemp = (endpoint: string, data: t.Rec0[]) => {
      `;
 };
 
-const tsTemp = (endpoint: string, data: t.Rec0[]) => {
+const tsTemp = (endpoint: string, data: t.RedisEntry[]) => {
     return `
     const token = process.env.PEKTIN_API_TOKEN;
      const endpoint="${endpoint}";

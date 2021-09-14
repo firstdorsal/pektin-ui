@@ -12,8 +12,8 @@ import * as l from "./components/lib";
 import Auth from "./components/Auth";
 import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
-import cloneDeep from "lodash/cloneDeep";
 
+const f = fetch;
 const theme = createTheme({
     palette: {
         primary: {
@@ -45,36 +45,26 @@ export default class App extends Component<AppProps, AppState> {
         configLoaded: false
     };
 
-    configToDb = (config: t.Config) => {
-        const newConfig: any = cloneDeep(config);
-        delete newConfig.apis;
-        delete newConfig.vaultAuth;
-        delete newConfig.pektinApiAuth;
-        return newConfig;
-    };
-
     initDb = async () => {
-        const db = this.state.db;
-        const value = this.configToDb(this.state.config);
-        await db.config.add({ key: "config", value }).catch(() => {});
+        await this.state.db.config.add({ key: "localConfig", value: this.state.config.local }).catch(() => {});
     };
 
-    loadConfig = async () => {
+    loadLocalConfig = async () => {
         const db = this.state.db;
-        const newConfig = (await db.config.get("config"))?.value;
+        const localConfig: t.LocalConfig = (await db.config.get("localConfig"))?.value;
 
-        if (newConfig) {
+        if (localConfig) {
             this.setState(({ config }) => {
-                return { config: { ...config, ...newConfig } };
+                config = { ...config, local: { ...config.local, ...localConfig } };
+                return { config };
             });
         }
     };
-    updateConfig = (e: any) => {
+    updateLocalConfig = (e: any) => {
         const db = this.state.db;
         this.setState(({ config }) => {
-            config = { ...config, [e.target.name]: e.target.value };
-            const value = this.configToDb(config);
-            db.config.put({ key: "config", value });
+            config = { ...config, local: { ...config.local, [e.target.name]: e.target.value } };
+            db.config.put({ key: "localConfig", value: config.local });
             return { config };
         });
     };
@@ -85,16 +75,31 @@ export default class App extends Component<AppProps, AppState> {
             return this.setState(({ config }) => {
                 const vaultAuth = JSON.parse(ssr);
                 config.vaultAuth = vaultAuth;
-                return { config, configLoaded: true };
+                return { config };
             });
         }
-        this.setState({ configLoaded: true });
+    };
+
+    loadPektinConfig = async () => {
+        const { endpoint, token } = this.state.config.vaultAuth;
+        if (endpoint.length) {
+            const res = await f(endpoint + "/v1/pektin-kv/data/pektin-config", {
+                headers: {
+                    "X-Vault-Token": token
+                }
+            });
+            const pektin = await res.json().catch(e => console.log(e));
+            this.setState(({ config }) => ({ config: { ...config, pektin } }));
+        }
     };
 
     componentDidMount = async () => {
         await this.initDb();
-        await this.loadConfig();
+        await this.loadLocalConfig();
         this.loadAuth();
+        await this.loadPektinConfig();
+
+        this.setState({ configLoaded: true });
     };
 
     saveAuth = (vaultAuth: t.VaultAuth) => {
@@ -133,7 +138,7 @@ export default class App extends Component<AppProps, AppState> {
                         </PrivateRoute>
                         <PrivateRoute exact config={this.state.config} path="/config/">
                             <Base config={this.state.config}>
-                                <ConfigView updateConfig={this.updateConfig} config={this.state.config} />
+                                <ConfigView updateConfig={this.updateLocalConfig} config={this.state.config} />
                             </Base>
                         </PrivateRoute>
 

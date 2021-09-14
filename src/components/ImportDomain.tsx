@@ -49,7 +49,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                         <Container>
                             <h2 style={{ display: "inline-block", paddingRight: "10px" }}>Method</h2>
                             <Select name="apiPicker" onChange={e => this.handleChange(e)} style={{ width: "200px" }} value={this.state.selectedApi}>
-                                {this.props.config.apis.map((api, i) => {
+                                {this.props.config.foreignApis.map((api, i) => {
                                     return (
                                         <MenuItem key={i} value={i}>
                                             {api.name}
@@ -59,7 +59,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                             </Select>
                         </Container>
                         <br />
-                        <Container>{React.createElement(this.props.config.apis[this.state.selectedApi].class)}</Container>
+                        <Container>{React.createElement(this.props.config.foreignApis[this.state.selectedApi].class)}</Container>
                     </Paper>
                 </Container>
             </Container>

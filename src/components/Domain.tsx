@@ -80,8 +80,8 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     componentDidMount = async () => {
-        const d: t.RedisEntry[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
-        this.initData(d);
+        //const d: t.RedisEntry[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
+        //this.initData(d);
     };
     /*
     componentDidUpdate = e => {

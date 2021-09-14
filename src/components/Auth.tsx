@@ -1,12 +1,12 @@
 import { Container, Paper, TextField } from "@material-ui/core";
-import { Component } from "react";
+import React, { Component, ReactElement } from "react";
 import * as t from "./types";
 import * as l from "./lib";
-import { Security } from "@material-ui/icons";
+import { Refresh, Security } from "@material-ui/icons";
 import HelpPopper from "./HelpPopper";
 import { RouteComponentProps } from "react-router-dom";
 
-const defaultAuthHelper = "JSON blob containing the URL, username, and password for vault";
+const defaultAuthHelper = <span>JSON blob containing the URL, username, and password for vault</span>;
 
 interface AuthProps extends RouteComponentProps {
     config: t.Config;
@@ -16,18 +16,23 @@ interface AuthState {
     open: boolean;
     authField: string;
     authError: boolean;
-    authHelper: string;
+    authHelper: ReactElement;
+    lastValue: string;
 }
 export default class Auth extends Component<AuthProps, AuthState> {
     state: AuthState = {
         open: false,
         authField: "",
         authError: false,
-        authHelper: defaultAuthHelper
+        authHelper: defaultAuthHelper,
+        lastValue: ""
     };
-    authChange = async (e: any) => {
-        let value = e?.target?.value;
+
+    authChange = async (e: any, button: boolean = false) => {
+        let value = button ? e : e?.target?.value;
+
         if (value === undefined) return;
+        this.setState({ lastValue: value });
         let authError = false;
         let authHelper = defaultAuthHelper;
         try {
@@ -35,11 +40,11 @@ export default class Auth extends Component<AuthProps, AuthState> {
             ["vaultEndpoint", "username", "password"].some(field => {
                 if (parsed[field] === undefined) {
                     authError = true;
-                    authHelper = `missing ${field}`;
+                    authHelper = <span>missing {field}</span>;
                     return true;
                 } else if (!parsed[field]) {
                     authError = true;
-                    authHelper = `${field} can't be empty`;
+                    authHelper = <span>{field} can't be empty</span>;
                     return true;
                 }
                 return false;
@@ -51,15 +56,30 @@ export default class Auth extends Component<AuthProps, AuthState> {
                 if (r.error) {
                     authHelper = r.error;
                     authError = true;
+                } else if (r.errors) {
+                    if (r.errors[0] === "Vault is sealed") {
+                        authHelper = (
+                            <React.Fragment>
+                                {r.errors[0]}.{" "}
+                                <a href={`${parsed.vaultEndpoint}/ui/vault/unseal`} style={{ textDecoration: "underline" }}>
+                                    You can unseal it here
+                                </a>
+                            </React.Fragment>
+                        );
+                        authError = true;
+                    } else {
+                        authHelper = <span>{r.errors[0]}</span>;
+                        authError = true;
+                    }
                 } else {
-                    value = { vaultEndpoint: parsed.vaultEndpoint };
+                    value = { endpoint: parsed.vaultEndpoint };
                     value.token = r.auth?.client_token;
                     authError = false;
                     delete parsed.password;
                 }
             }
         } catch (err) {
-            authHelper = "Invalid JSON";
+            authHelper = <span>Invalid JSON</span>;
             authError = true;
         }
 
@@ -82,11 +102,12 @@ export default class Auth extends Component<AuthProps, AuthState> {
                         style={{ width: "90%", float: "left" }}
                         required
                         value={this.state.authField}
-                        name="vault-access-config"
-                        label="Vault Access Config"
+                        name="pektin-ui-connection-config"
+                        label="Pektin Ui Connection Config"
                         helperText={this.state.authHelper}
                         onChange={this.authChange}
                     ></TextField>
+                    <Refresh onClick={() => this.authChange(this.state.lastValue, true)} />
 
                     <HelpPopper style={{ marginTop: "10px" }}>{l.help.auth}</HelpPopper>
                     <br />

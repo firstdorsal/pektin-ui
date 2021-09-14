@@ -14,7 +14,7 @@ interface BaseState {
 export default class Base extends Component<BaseProps, BaseState> {
     state = { domains: ["vonforell.de"] };
     componentDidMount = async () => {
-        const domains = await l.getDomains({ pektinApiAuth: this.props.config?.pektinApiAuth });
+        //const domains = await l.getDomains({ pektinApiAuth: this.props.config?.pektinApiAuth });
         //this.setState({ domains });
     };
 

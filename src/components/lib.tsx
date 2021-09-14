@@ -1,8 +1,11 @@
 import { ReactNode } from "react";
 import * as t from "./types";
 import Dexie from "dexie";
+
+// import apis
 import PektinBackup from "./apis/PektinBackup";
 import PowerDns from "./apis/PowerDns";
+import Wanderlust from "./apis/Wanderlust";
 
 const f = fetch;
 interface VaultAuthJSON {
@@ -10,6 +13,42 @@ interface VaultAuthJSON {
     username: string;
     password: string;
 }
+
+const defaultEndpoint = "http://127.0.0.1:3001";
+
+export const getApiDomain = (config: t.Config): string => {
+    if (!config?.pektin?.apiSubDomain || !config?.pektin?.domain) return "";
+    return config?.pektin?.apiSubDomain + config?.pektin?.domain;
+};
+
+export const jsTemp = (endpoint: string, data: t.RedisEntry[]) => {
+    if (!endpoint) endpoint = defaultEndpoint;
+    return `const token = process.env.PEKTIN_API_TOKEN;
+const endpoint="${endpoint}";
+const res = await fetch(endpoint + "/set", {
+    method: "POST",
+    body: JSON.stringify({
+        token,
+        records: 
+                ${JSON.stringify(data, null, "    ")}
+    })
+}).catch(e => {
+    console.log(e);
+});
+console.log(res);`;
+};
+
+export const curl = (endpoint: string, data: t.RedisEntry[], multiline: boolean) => {
+    if (!endpoint) endpoint = defaultEndpoint;
+    const body = { token: "API_TOKEN", records: data };
+
+    if (multiline)
+        return `curl -X POST ${endpoint}/set -d '<< EOF
+${JSON.stringify(body, null, "    ")} 
+EOF'`;
+
+    return `curl -X POST ${endpoint}/set -d '${JSON.stringify(body)}'`;
+};
 
 export const getVaultToken = async (auth: VaultAuthJSON): Promise<Object> => {
     const loginCredRes: any = await f(`${auth.vaultEndpoint}/v1/auth/userpass/login/${auth.username}`, {
@@ -29,7 +68,7 @@ export const getVaultToken = async (auth: VaultAuthJSON): Promise<Object> => {
 };
 
 interface DbConfig {
-    key: "config";
+    key: "localConfig";
     value: any;
 }
 export class PektinUiDb extends Dexie {
@@ -38,9 +77,9 @@ export class PektinUiDb extends Dexie {
     constructor() {
         super("pektin-ui");
         this.version(1).stores({
-            config: "key, value"
+            localConfig: "key, value"
         });
-        this.config = this.table("config");
+        this.config = this.table("localConfig");
     }
 }
 const defaultVaultAuth: t.VaultAuth = {
@@ -50,19 +89,20 @@ const defaultVaultAuth: t.VaultAuth = {
 
 const supportedApis: any[] = [
     { name: "Pektin Backup", class: PektinBackup },
-    { name: "PowerDNS", class: PowerDns }
+    { name: "PowerDNS", class: PowerDns },
+    { name: "Wanderlust", class: Wanderlust }
 ];
 
-const defaultPektinApiAuth: t.PektinApiAuth = {
-    endpoint: "",
-    token: ""
-};
-export const defaulConfig: t.Config = {
-    vaultAuth: defaultVaultAuth,
-    pektinApiAuth: defaultPektinApiAuth,
-    apis: supportedApis,
+const defaultLocalConfig: t.LocalConfig = {
     defaultActiveTab: 0,
     codeStyle: "dracula"
+};
+
+export const defaulConfig: t.Config = {
+    vaultAuth: defaultVaultAuth,
+    foreignApis: supportedApis,
+    local: defaultLocalConfig,
+    pektin: undefined
 };
 
 export const getDomains = async ({ pektinApiAuth }: t.RequestParams) => {

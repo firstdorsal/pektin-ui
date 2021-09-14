@@ -10,12 +10,13 @@ interface ConfigProps {
 interface ConfigState {}
 export default class Config extends Component<ConfigProps, ConfigState> {
     render = () => {
+        const codeStyle = this.props?.config?.local?.codeStyle;
         return (
             <Container>
                 <br />
                 <h1>Config</h1>
                 <h2>Code Style</h2>
-                <Select onChange={this.props.updateConfig} name="codeStyle" value={this.props.config.codeStyle}>
+                <Select onChange={this.props.updateConfig} name="codeStyle" value={codeStyle}>
                     {l.codeStyles.map(codeStyle => (
                         <MenuItem value={codeStyle} key={codeStyle}>
                             {codeStyle}

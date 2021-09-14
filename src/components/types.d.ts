@@ -10,10 +10,31 @@ export interface PektinApiAuth {
 
 export interface Config {
     vaultAuth: VaultAuth;
-    pektinApiAuth: PektinApiAuth;
-    apis: any[];
+    foreignApis: any[];
+    local: LocalConfig;
+    pektin: PektinConfig | undefined;
+}
+export interface PektinConfig {
+    domain: string;
+    uiSubDomain: string;
+    apiSubDomain: string;
+    vaultSubDomain: string;
+    uiEnabled: boolean;
+    autoRotate: boolean;
+    autoCertificates: boolean;
+    autoConfigureMainDomain: boolean;
+    development: boolean;
+}
+
+export interface LocalConfig {
     defaultActiveTab: number;
     codeStyle: codeStyle;
+}
+
+export interface PektinUiConnectionConfig {
+    username: string;
+    password: string;
+    vaultEndpoint: string;
 }
 
 export interface getRecords extends RequestParams {

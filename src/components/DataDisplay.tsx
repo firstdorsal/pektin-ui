@@ -1,10 +1,10 @@
-import { Component } from "react";
+import React, { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";
 
-import { Box, Container, Grid, Paper, Tab, Tabs } from "@material-ui/core";
+import { Box, Container, Grid, Paper, Switch, Tab, Tabs } from "@material-ui/core";
 import { AccountTree, Code } from "@material-ui/icons";
-import { SiJavascript, SiTypescript } from "react-icons/si";
+import { SiCurl, SiJavascript } from "react-icons/si";
 import { MdShortText } from "react-icons/md";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -28,18 +28,20 @@ interface DataDisplayState {
 
 export default class DataDisplay extends Component<DataDisplayProps, DataDisplayState> {
     state: DataDisplayState = {
-        activeTab: this.props.config.defaultActiveTab
+        activeTab: this.props.config.local.defaultActiveTab
     };
 
     render = () => {
+        const codeStyle = codeStyles[this.props.config.local.codeStyle];
         const tabs = [
-            <SyntaxHighlighter showLineNumbers={true} style={codeStyles[this.props.config.codeStyle]} language="json">
+            <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="json">
                 {JSON.stringify(this.props.data, null, "    ")}
             </SyntaxHighlighter>,
-            <SyntaxHighlighter showLineNumbers={true} style={codeStyles[this.props.config.codeStyle]} language="javascript">
-                {jsTemp(this.props.config.pektinApiAuth?.endpoint, [this.props.data])}
+            <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
+                {l.jsTemp(l.getApiDomain(this.props.config), [this.props.data])}
             </SyntaxHighlighter>,
-            <SyntaxHighlighter style={codeStyles[this.props.config.codeStyle]} language="text">
+            <CurlTab config={this.props.config} data={this.props.data}></CurlTab>,
+            <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="text">
                 {l.rec0ToBind(this.props.data)}
             </SyntaxHighlighter>
         ];
@@ -58,7 +60,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                             <Tabs className="tabs" variant="fullWidth" value={this.state.activeTab} onChange={(e, n) => this.setState({ activeTab: n })}>
                                 <Tab label="JSON" icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />} value={0} />
                                 <Tab label="JAVASCRIPT" icon={<SiJavascript style={{ width: "25px" }} />} value={1} />
-                                <Tab label="TYPESCRIPT" icon={<SiTypescript style={{ width: "25px" }} />} value={2} />
+                                <Tab label="CURL" icon={<SiCurl style={{ width: "25px" }} />} value={2} />
                                 <Tab label="BIND" icon={<MdShortText style={{ width: "25px" }} />} value={3} />
                             </Tabs>
                         </Box>
@@ -70,36 +72,30 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
     };
 }
 
-const jsTemp = (endpoint: string, data: t.RedisEntry[]) => {
-    return `
-    const token = process.env.PEKTIN_API_TOKEN;
-    const endpoint="${endpoint}";
-    const res = await fetch(endpoint + "/set", {
-       method: "POST",
-       body: JSON.stringify({
-           token,
-           records: ${JSON.stringify(data, null, "    ")}
-       })
-   }).catch(e => {
-       console.log(e);
-   });
-   console.log(res);
-     `;
-};
+interface CurlTabProps {
+    data: t.RedisEntry;
+    config: t.Config;
+}
 
-const tsTemp = (endpoint: string, data: t.RedisEntry[]) => {
-    return `
-    const token = process.env.PEKTIN_API_TOKEN;
-     const endpoint="${endpoint}";
-     const res = await fetch(endpoint + "/set", {
-        method: "POST",
-        body: JSON.stringify({
-            token,
-            records: ${JSON.stringify(data, null, "    ")}
-        })
-    }).catch(e => {
-        console.log(e);
-    });
-    console.log(res);
-     `;
-};
+interface CurlTabState {
+    multiline: boolean;
+}
+class CurlTab extends Component<CurlTabProps, CurlTabState> {
+    state: CurlTabState = {
+        multiline: false
+    };
+    render = () => {
+        const codeStyle = codeStyles[this.props.config.local.codeStyle];
+        return (
+            <React.Fragment>
+                <Container style={{ textAlign: "center" }}>
+                    <Switch onChange={() => this.setState(({ multiline }) => ({ multiline: !multiline }))} />
+                    Multiline
+                </Container>
+                <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="sh">
+                    {l.curl(l.getApiDomain(this.props.config), [this.props.data], this.state.multiline)}
+                </SyntaxHighlighter>
+            </React.Fragment>
+        );
+    };
+}

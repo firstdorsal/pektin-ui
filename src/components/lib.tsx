@@ -16,6 +16,79 @@ interface VaultAuthJSON {
 
 const defaultEndpoint = "http://127.0.0.1:3001";
 
+export const simpleDnsRecordToRedisEntry = (simple: t.SimpleDnsRecord): t.RedisEntry => {
+    let rrValue = textToRRValue(simple.type, simple.data);
+
+    return { name: `${simple.name}:${simple.type}`, value: { rr_set: [{ ttl: simple.ttl, value: rrValue }], rr_type: simple.type } };
+};
+
+export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRecordValue => {
+    const t = text.split(" ");
+    switch (recordType) {
+        case "SOA":
+            return {
+                SOA: {
+                    mname: t[0],
+                    rname: t[1],
+                    serial: parseInt(t[2]),
+                    refresh: parseInt(t[3]),
+                    retry: parseInt(t[4]),
+                    expire: parseInt(t[5]),
+                    minimum: parseInt(t[6])
+                }
+            };
+        case "MX":
+            return {
+                MX: {
+                    preference: parseInt(t[0]),
+                    exchange: parseInt(t[1])
+                }
+            };
+
+        case "DNSKEY":
+            return {
+                DNSKEY: {
+                    flags: parseInt(t[0]),
+                    protocol: parseInt(t[1]),
+                    algorithm: parseInt(t[2]),
+                    key_data: t[3]
+                }
+            };
+
+        case "SRV":
+            return {
+                SRV: {
+                    priority: parseInt(t[0]),
+                    weight: parseInt(t[1]),
+                    port: parseInt(t[2]),
+                    target: t[3]
+                }
+            };
+
+        case "CAA":
+            return {
+                CAA: {
+                    flag: parseInt(t[0]),
+                    tag: t[1],
+                    value: t[2]
+                }
+            };
+
+        case "TLSA":
+            return {
+                TLSA: {
+                    usage: parseInt(t[0]),
+                    selector: parseInt(t[1]),
+                    matching_type: parseInt(t[2]),
+                    data: t[3]
+                }
+            };
+
+        default:
+            return { [recordType]: text };
+    }
+};
+
 export const getApiDomain = (config: t.Config): string => {
     if (!config?.pektin?.apiSubDomain || !config?.pektin?.domain) return "";
     return config?.pektin?.apiSubDomain + config?.pektin?.domain;

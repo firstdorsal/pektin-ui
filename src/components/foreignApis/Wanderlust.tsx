@@ -1,5 +1,4 @@
-import { Container, MenuItem, TextField } from "@mui/material";
-import LoadingButton from "@mui/lab/LoadingButton";
+import { Button, Container, MenuItem, TextField } from "@material-ui/core";
 
 import { ArrowRight } from "@material-ui/icons";
 import { Component } from "react";
@@ -95,9 +94,8 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                         );
                     })}
                 </TextField>
-                <LoadingButton
+                <Button
                     disabled={this.state.domainName.length ? false : true}
-                    loading={this.state.console.length ? true : false}
                     onClick={this.import}
                     style={{ position: "absolute", bottom: "10px", right: "10px" }}
                     variant="contained"
@@ -105,7 +103,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                     endIcon={<ArrowRight />}
                 >
                     Import
-                </LoadingButton>
+                </Button>
                 <div>{this.state.console}</div>
             </Container>
         );

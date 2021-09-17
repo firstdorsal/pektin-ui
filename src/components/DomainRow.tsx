@@ -1,7 +1,7 @@
 import * as l from "./lib";
 import * as t from "./types";
 import React, { Component } from "react";
-import { Collapse, IconButton, TableCell, TableRow, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container, Switch } from "@mui/material";
+import { Collapse, IconButton, TableCell, TableRow, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container, Switch } from "@material-ui/core";
 import DataDisplay from "./DataDisplay";
 import { Ballot, Check, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
 

@@ -1,4 +1,4 @@
-import { Container, MenuItem, Select } from "@mui/material";
+import { Container, MenuItem, Select } from "@material-ui/core";
 import { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";

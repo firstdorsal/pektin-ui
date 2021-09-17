@@ -10,8 +10,7 @@
         "@fontsource/inter": "^4.5.0",
         "@material-ui/core": "^4.12.3",
         "@material-ui/icons": "^4.11.2",
-        "@mui/lab": "^5.0.0-alpha.47",
-        "@mui/material": "^5.0.0",
+        "@material-ui/lab": "^4.0.0-alpha.60",
         "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
         "@svgr/webpack": "5.5.0",
         "@testing-library/jest-dom": "^5.11.4",
@@ -97,7 +96,7 @@
     },
     "scripts": {
         "start": "react-scripts start",
-        "build": "INLINE_RUNTIME_CHUNK=false; GENERATE_SOURCEMAP=true; react-scripts build",
+        "build": "INLINE_RUNTIME_CHUNK=false GENERATE_SOURCEMAP=true react-scripts build",
         "test": "react-scripts test",
         "analyze": "source-map-explorer 'build/static/js/*.js'"
     },

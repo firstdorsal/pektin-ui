@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import "@fontsource/inter/900.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/400.css";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import Base from "./components/Base";
 import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
 import AddDomain from "./components/AddDomain";

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";
-
+import * as pektinApi from "./apis/pektin";
 import { Box, Container, Grid, Paper, Switch, Tab, Tabs } from "@material-ui/core";
 import { AccountTree, Code } from "@material-ui/icons";
 import { SiCurl, SiJavascript } from "react-icons/si";
@@ -38,7 +38,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                 {JSON.stringify(this.props.data, null, "    ")}
             </SyntaxHighlighter>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
-                {l.jsTemp(l.getApiDomain(this.props.config), [this.props.data])}
+                {l.jsTemp(pektinApi.getDomainFromConfig(this.props.config), [this.props.data])}
             </SyntaxHighlighter>,
             <CurlTab config={this.props.config} data={this.props.data}></CurlTab>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="text">
@@ -93,7 +93,7 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
                     Multiline
                 </Container>
                 <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="sh">
-                    {l.curl(l.getApiDomain(this.props.config), [this.props.data], this.state.multiline)}
+                    {l.curl(pektinApi.getDomainFromConfig(this.props.config), [this.props.data], this.state.multiline)}
                 </SyntaxHighlighter>
             </React.Fragment>
         );

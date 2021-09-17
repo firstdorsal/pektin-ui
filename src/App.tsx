@@ -9,11 +9,11 @@ import AddDomain from "./components/AddDomain";
 import Domain from "./components/Domain";
 import * as t from "./components/types";
 import * as l from "./components/lib";
+import * as vaultApi from "./components/apis/vault";
 import Auth from "./components/Auth";
 import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
 
-const f = fetch;
 const theme = createTheme({
     palette: {
         primary: {
@@ -83,12 +83,7 @@ export default class App extends Component<AppProps, AppState> {
     loadPektinConfig = async () => {
         const { endpoint, token } = this.state.config.vaultAuth;
         if (endpoint.length) {
-            const res = await f(endpoint + "/v1/pektin-kv/data/pektin-config", {
-                headers: {
-                    "X-Vault-Token": token
-                }
-            });
-            const pektin = await res.json().catch(e => console.log(e));
+            const pektin = await vaultApi.getKey({ endpoint, token, key: "pektin-config" });
             this.setState(({ config }) => ({ config: { ...config, pektin } }));
         }
     };
@@ -98,6 +93,7 @@ export default class App extends Component<AppProps, AppState> {
         await this.loadLocalConfig();
         this.loadAuth();
         await this.loadPektinConfig();
+        console.log(this.state.config);
 
         this.setState({ configLoaded: true });
     };

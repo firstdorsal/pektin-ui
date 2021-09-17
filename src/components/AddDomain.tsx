@@ -3,12 +3,12 @@ import { Button, Grid, TextField, Switch, Container, Paper } from "@material-ui/
 import { Ballot } from "@material-ui/icons";
 import * as t from "./types";
 import * as l from "./lib";
+import * as pektinApi from "./apis/pektin";
 import DataDisplay from "../components/DataDisplay";
 
 const defaultSOA: t.RedisEntry = {
     name: "",
     value: {
-        dnssec: true,
         rr_type: "SOA",
         rr_set: [
             {
@@ -58,7 +58,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
         this.setState((prevState): any => {
             const { rec0 } = prevState;
             const rec1 = rec0.value;
-            if (event.target.name === "dnssec") rec1.dnssec = event.target.checked;
+            //if (event.target.name === "dnssec") rec1.dnssec = event.target.checked;
             if (event.target.name === "ttl") rec1.rr_set[0].ttl = parseInt(event.target.value);
             const soa = rec1.rr_set[0].value as t.SOA;
             if (event.target.name === "mname") soa.SOA.mname = l.absoluteName(event.target.value);
@@ -82,10 +82,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                 <div>
                                     <TextField required name="name" label="NAME" onChange={this.handleChange} value={this.state.name} helperText="Name of the domain you want to add" />
                                 </div>
-                                <div>
-                                    <Switch defaultChecked color="primary" value={this.state.dnssec} name="dnssec" onChange={this.handleChange} />
-                                    DNSSEC
-                                </div>
+
                                 <div>
                                     <TextField
                                         onChange={this.handleChange}
@@ -115,13 +112,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                 </div>
                                 <br />
                                 <div>
-                                    <Button
-                                        color="primary"
-                                        variant="contained"
-                                        onClick={() => {
-                                            fetch("/api/add-domain", { method: "POST", body: JSON.stringify([this.state.rec0]) });
-                                        }}
-                                    >
+                                    <Button color="primary" variant="contained" onClick={() => pektinApi.addDomain(this.props.config, [this.state.rec0])}>
                                         Add Domain
                                     </Button>
                                 </div>
@@ -134,3 +125,9 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
         );
     };
 }
+/*
+<div>
+    <Switch defaultChecked color="primary" value={this.state.dnssec} name="dnssec" onChange={this.handleChange} />
+    DNSSEC
+</div>
+*/

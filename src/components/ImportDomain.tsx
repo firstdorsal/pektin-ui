@@ -1,6 +1,6 @@
 import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
 import React, { Component } from "react";
-import * as l from "./lib";
+//import * as l from "./lib";
 import * as t from "./types";
 
 interface ImportDomainProps {
@@ -11,7 +11,7 @@ interface ImportDomainState {
     readonly selectedApi: number;
 }
 
-const steps = ["Where from?", "Which ones?", "Approve import?"];
+const steps = ["How?", "Which ones?", "Approve import?"];
 
 export default class ImportDomain extends Component<ImportDomainProps, ImportDomainState> {
     state: ImportDomainState = {

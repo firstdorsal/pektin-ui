@@ -1,7 +1,7 @@
 import { Add, ImportExport, Settings, ShoppingCart } from "@material-ui/icons";
 import { Component } from "react";
 import { NavLink } from "react-router-dom";
-import * as l from "./lib";
+import * as pektinApi from "./apis/pektin";
 import * as t from "./types";
 
 interface BaseProps {
@@ -12,10 +12,10 @@ interface BaseState {
 }
 
 export default class Base extends Component<BaseProps, BaseState> {
-    state = { domains: ["vonforell.de"] };
+    state = { domains: [] };
     componentDidMount = async () => {
-        //const domains = await l.getDomains({ pektinApiAuth: this.props.config?.pektinApiAuth });
-        //this.setState({ domains });
+        const domains = await pektinApi.getDomains(this.props.config);
+        this.setState({ domains });
     };
 
     render = () => {

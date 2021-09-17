@@ -3,18 +3,11 @@ import * as t from "./types";
 import Dexie from "dexie";
 
 // import apis
-import PektinBackup from "./apis/PektinBackup";
-import PowerDns from "./apis/PowerDns";
-import Wanderlust from "./apis/Wanderlust";
+import PektinBackup from "./foreignApis/PektinBackup";
+import PowerDns from "./foreignApis/PowerDns";
+import Wanderlust from "./foreignApis/Wanderlust";
 
-const f = fetch;
-interface VaultAuthJSON {
-    vaultEndpoint: string;
-    username: string;
-    password: string;
-}
-
-const defaultEndpoint = "http://127.0.0.1:3001";
+const defaultApiEndpoint = "http://127.0.0.1:3001";
 
 export const simpleDnsRecordToRedisEntry = (simple: t.SimpleDnsRecord): t.RedisEntry => {
     let rrValue = textToRRValue(simple.type, simple.data);
@@ -89,13 +82,8 @@ export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRe
     }
 };
 
-export const getApiDomain = (config: t.Config): string => {
-    if (!config?.pektin?.apiSubDomain || !config?.pektin?.domain) return "";
-    return config?.pektin?.apiSubDomain + config?.pektin?.domain;
-};
-
 export const jsTemp = (endpoint: string, data: t.RedisEntry[]) => {
-    if (!endpoint) endpoint = defaultEndpoint;
+    if (!endpoint) endpoint = defaultApiEndpoint;
     return `const token = process.env.PEKTIN_API_TOKEN;
 const endpoint="${endpoint}";
 const res = await fetch(endpoint + "/set", {
@@ -112,7 +100,7 @@ console.log(res);`;
 };
 
 export const curl = (endpoint: string, data: t.RedisEntry[], multiline: boolean) => {
-    if (!endpoint) endpoint = defaultEndpoint;
+    if (!endpoint) endpoint = defaultApiEndpoint;
     const body = { token: "API_TOKEN", records: data };
 
     if (multiline)
@@ -121,23 +109,6 @@ ${JSON.stringify(body, null, "    ")}
 EOF'`;
 
     return `curl -X POST ${endpoint}/set -d '${JSON.stringify(body)}'`;
-};
-
-export const getVaultToken = async (auth: VaultAuthJSON): Promise<Object> => {
-    const loginCredRes: any = await f(`${auth.vaultEndpoint}/v1/auth/userpass/login/${auth.username}`, {
-        method: "POST",
-        body: JSON.stringify({
-            password: auth.password
-        })
-    }).catch(e => {
-        e = e.toString();
-        e = e.substring(e.indexOf(":") + 2);
-        return { error: e };
-    });
-
-    if (loginCredRes.error) return loginCredRes;
-
-    return await loginCredRes.json();
 };
 
 interface DbConfig {
@@ -176,22 +147,6 @@ export const defaulConfig: t.Config = {
     foreignApis: supportedApis,
     local: defaultLocalConfig,
     pektin: undefined
-};
-
-export const getDomains = async ({ pektinApiAuth }: t.RequestParams) => {
-    const res = await fetch(`${pektinApiAuth?.endpoint}/get`, { method: "POST", body: JSON.stringify({}) });
-    const parsedRes = await res.json().catch(e => {
-        return [];
-    });
-    return parsedRes;
-};
-
-export const getRecords = async ({ pektinApiAuth, domainName }: t.getRecords) => {
-    const res = await fetch(`${pektinApiAuth.endpoint}/get`, { method: "POST", body: JSON.stringify({}) });
-    const parsedRes = await res.json().catch(e => {
-        return [];
-    });
-    return parsedRes;
 };
 
 export const absoluteName = (name: string) => {

@@ -3,11 +3,6 @@ export interface VaultAuth {
     token: string;
 }
 
-export interface PektinApiAuth {
-    endpoint: string;
-    token: string;
-}
-
 export interface Config {
     vaultAuth: VaultAuth;
     foreignApis: any[];
@@ -23,7 +18,7 @@ export interface PektinConfig {
     autoRotate: boolean;
     autoCertificates: boolean;
     autoConfigureMainDomain: boolean;
-    development: boolean;
+    dev: boolean;
 }
 
 export interface LocalConfig {
@@ -35,14 +30,6 @@ export interface PektinUiConnectionConfig {
     username: string;
     password: string;
     vaultEndpoint: string;
-}
-
-export interface getRecords extends RequestParams {
-    domainName: string;
-}
-
-export interface RequestParams {
-    pektinApiAuth: PektinApiAuth;
 }
 
 export interface DomainMeta {
@@ -82,7 +69,7 @@ export interface RedisEntry {
 }
 
 export interface RedisValue {
-    dnssec?: boolean;
+    //dnssec?: boolean;
     rr_type: RRTypes;
     rr_set: RRset;
 }

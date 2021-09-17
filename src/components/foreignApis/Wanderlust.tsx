@@ -1,4 +1,4 @@
-import { Button, Container, FormHelperText, InputLabel, MenuItem, Select, TextField } from "@material-ui/core";
+import { Button, Container, MenuItem, TextField } from "@material-ui/core";
 import { ArrowRight } from "@material-ui/icons";
 import { Component } from "react";
 import * as l from "../lib";
@@ -73,7 +73,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                     })}
                 </TextField>
                 <Button style={{ position: "absolute", bottom: "10px", right: "10px" }} variant="contained" color="primary" endIcon={<ArrowRight />}>
-                    Next
+                    Import
                 </Button>
             </Container>
         );

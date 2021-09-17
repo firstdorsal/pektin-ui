@@ -61,7 +61,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 data[rec_index].value.rr_type = e.target.value;
                 data[rec_index].value.rr_set[0].value = l.rrTemplates[e.target.value].template;
             } else if (fieldType === "switch") {
-                if (e.target.name === "dnssec") data[rec_index].value.dnssec = e.target.checked;
+                //if (e.target.name === "dnssec") data[rec_index].value.dnssec = e.target.checked;
             }
             meta[rec_index][rr_index].changed = !isEqual(data, this.state.ogData);
 

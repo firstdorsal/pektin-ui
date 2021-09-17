@@ -6,14 +6,17 @@ import { Box, Container, Grid, Paper, Switch, Tab, Tabs } from "@material-ui/cor
 import { AccountTree, Code } from "@material-ui/icons";
 import { SiCurl, SiJavascript } from "react-icons/si";
 import { MdShortText } from "react-icons/md";
+import { dump } from "js-yaml";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
 import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
+import yaml from "react-syntax-highlighter/dist/esm/languages/hljs/yaml";
 import * as codeStyles from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 SyntaxHighlighter.registerLanguage("javascript", js);
 SyntaxHighlighter.registerLanguage("json", json);
+SyntaxHighlighter.registerLanguage("yaml", yaml);
 //import parserTypescript from "prettier/parser-typescript";
 //import { format } from "prettier/standalone";
 
@@ -37,6 +40,9 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="json">
                 {JSON.stringify(this.props.data, null, "    ")}
             </SyntaxHighlighter>,
+            <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="yaml">
+                {dump(this.props.data)}
+            </SyntaxHighlighter>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
                 {l.jsTemp(pektinApi.getDomainFromConfig(this.props.config), [this.props.data])}
             </SyntaxHighlighter>,
@@ -59,9 +65,10 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                         <Box>
                             <Tabs className="tabs" variant="fullWidth" value={this.state.activeTab} onChange={(e, n) => this.setState({ activeTab: n })}>
                                 <Tab label="JSON" icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />} value={0} />
-                                <Tab label="JAVASCRIPT" icon={<SiJavascript style={{ width: "25px" }} />} value={1} />
-                                <Tab label="CURL" icon={<SiCurl style={{ width: "25px" }} />} value={2} />
-                                <Tab label="BIND" icon={<MdShortText style={{ width: "25px" }} />} value={3} />
+                                <Tab label="YAML" icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />} value={1} />
+                                <Tab label="JAVASCRIPT" icon={<SiJavascript style={{ width: "25px" }} />} value={2} />
+                                <Tab label="CURL" icon={<SiCurl style={{ width: "25px" }} />} value={3} />
+                                <Tab label="BIND" icon={<MdShortText style={{ width: "25px" }} />} value={4} />
                             </Tabs>
                         </Box>
                         <Box>{tabs[this.state.activeTab]}</Box>

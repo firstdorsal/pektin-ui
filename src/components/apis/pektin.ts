@@ -39,7 +39,7 @@ export const getDomainFromConfig = (config: t.Config): string => {
 
 export const getTokenFromConfig = async (config: t.Config): Promise<string> => {
     const res = await vaultApi.getKey({ ...config.vaultAuth, key: "gss_token" });
-    return res.token;
+    return res?.token;
 };
 
 export const getDevFromConfig = (config: t.Config): boolean => (config?.pektin?.dev ? true : false);

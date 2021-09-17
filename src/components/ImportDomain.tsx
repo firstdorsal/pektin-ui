@@ -25,6 +25,11 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
             return { selectedApi };
         });
     };
+
+    import = (records: t.RedisEntry[]) => {
+        console.log(records);
+    };
+
     render = () => {
         return (
             <Container>
@@ -59,7 +64,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                             </Select>
                         </Container>
                         <br />
-                        <Container>{React.createElement(this.props.config.foreignApis[this.state.selectedApi].class)}</Container>
+                        <Container>{React.createElement(this.props.config.foreignApis[this.state.selectedApi].class, { import: this.import })}</Container>
                     </Paper>
                 </Container>
             </Container>

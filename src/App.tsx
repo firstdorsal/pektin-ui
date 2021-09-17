@@ -98,12 +98,10 @@ export default class App extends Component<AppProps, AppState> {
         this.setState({ configLoaded: true });
     };
 
-    saveAuth = (vaultAuth: t.VaultAuth) => {
+    saveAuth = async (vaultAuth: t.VaultAuth) => {
         sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
-        this.setState(({ config }) => {
-            config.vaultAuth = vaultAuth;
-            return { config };
-        });
+        this.loadAuth();
+        await this.loadPektinConfig();
     };
 
     render = () => {

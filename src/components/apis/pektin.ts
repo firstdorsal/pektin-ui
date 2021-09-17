@@ -54,8 +54,8 @@ export const getAuthFromConfig = async (config: t.Config): Promise<PektinApiAuth
 
 const request = async (config: t.Config, type: RequestType, body: RequestBody): Promise<PektinResponse> => {
     const { token, endpoint, dev } = await getAuthFromConfig(config);
-    const res = await f(`${dev ? "http://" : "https://"}${endpoint}/${type}`, { method: "POST", body: JSON.stringify({ ...body, token }) });
-    return await res.json();
+    const res = await f(`${dev ? "http://" : "https://"}${endpoint}/${type}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, token }) });
+    return await res.json().catch(() => ({ error: true, message: res.statusText, data: {} }));
 };
 
 export const getDomains = async (config: t.Config): Promise<string[]> => {
@@ -65,7 +65,7 @@ export const getDomains = async (config: t.Config): Promise<string[]> => {
 };
 
 export const getRecords = async (config: t.Config, domainName: string) => {
-    return await request(config, "get", { query: l.absoluteName(domainName) });
+    return await request(config, "search", { regex: `.*${l.absoluteName(domainName)}::*` });
 };
 
 export const addDomain = async (config: t.Config, records: t.RedisEntry[]) => {

@@ -79,13 +79,30 @@ interface CurlTabProps {
 
 interface CurlTabState {
     multiline: boolean;
+    auth: any;
 }
 class CurlTab extends Component<CurlTabProps, CurlTabState> {
     state: CurlTabState = {
-        multiline: false
+        multiline: false,
+        auth: null
     };
+    componentDidMount = async () => {
+        this.setState({ auth: await pektinApi.getAuthFromConfig(this.props.config) });
+    };
+    curl = (auth: any, data: t.RedisEntry[], multiline: boolean) => {
+        const body = { token: auth.dev ? auth.token : "API_TOKEN", records: data };
+
+        if (multiline)
+            return `curl -v ${auth.endpoint}/set -H "Content-Type: application/json" -d '<< EOF
+    ${JSON.stringify(body, null, "    ")} 
+    EOF'`;
+
+        return `curl -v ${auth.endpoint}/set -H "Content-Type: application/json" -d '${JSON.stringify(body)}'`;
+    };
+
     render = () => {
         const codeStyle = codeStyles[this.props.config.local.codeStyle];
+        if (!this.state.auth) return <div></div>;
         return (
             <React.Fragment>
                 <Container style={{ textAlign: "center" }}>
@@ -93,7 +110,7 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
                     Multiline
                 </Container>
                 <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="sh">
-                    {l.curl(pektinApi.getDomainFromConfig(this.props.config), [this.props.data], this.state.multiline)}
+                    {this.curl(this.state.auth, [this.props.data], this.state.multiline)}
                 </SyntaxHighlighter>
             </React.Fragment>
         );

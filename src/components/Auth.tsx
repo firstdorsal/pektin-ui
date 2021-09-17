@@ -85,7 +85,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
         }
 
         if (!authError) {
-            this.props.saveAuth(value);
+            await this.props.saveAuth(value);
             return this.props.history.push("/");
         }
         this.setState({ authField: value, authError, authHelper });

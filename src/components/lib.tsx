@@ -1,8 +1,7 @@
 import { ReactNode } from "react";
 import * as t from "./types";
 import Dexie from "dexie";
-
-// import apis
+// import foreignApis
 import PektinBackup from "./foreignApis/PektinBackup";
 import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
@@ -88,6 +87,7 @@ export const jsTemp = (endpoint: string, data: t.RedisEntry[]) => {
 const endpoint="${endpoint}";
 const res = await fetch(endpoint + "/set", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
         token,
         records: 
@@ -97,18 +97,6 @@ const res = await fetch(endpoint + "/set", {
     console.log(e);
 });
 console.log(res);`;
-};
-
-export const curl = (endpoint: string, data: t.RedisEntry[], multiline: boolean) => {
-    if (!endpoint) endpoint = defaultApiEndpoint;
-    const body = { token: "API_TOKEN", records: data };
-
-    if (multiline)
-        return `curl -X POST ${endpoint}/set -d '<< EOF
-${JSON.stringify(body, null, "    ")} 
-EOF'`;
-
-    return `curl -X POST ${endpoint}/set -d '${JSON.stringify(body)}'`;
 };
 
 interface DbConfig {
@@ -131,12 +119,6 @@ const defaultVaultAuth: t.VaultAuth = {
     token: ""
 };
 
-const supportedApis: any[] = [
-    { name: "Pektin Backup", class: PektinBackup },
-    { name: "PowerDNS", class: PowerDns },
-    { name: "Wanderlust", class: Wanderlust }
-];
-
 const defaultLocalConfig: t.LocalConfig = {
     defaultActiveTab: 0,
     codeStyle: "dracula"
@@ -144,7 +126,11 @@ const defaultLocalConfig: t.LocalConfig = {
 
 export const defaulConfig: t.Config = {
     vaultAuth: defaultVaultAuth,
-    foreignApis: supportedApis,
+    foreignApis: [
+        { name: "Pektin Backup", class: PektinBackup },
+        { name: "PowerDNS", class: PowerDns },
+        { name: "Wanderlust", class: Wanderlust }
+    ],
     local: defaultLocalConfig,
     pektin: undefined
 };

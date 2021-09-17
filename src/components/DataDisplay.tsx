@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";
 import * as pektinApi from "./apis/pektin";
-import { Box, Container, Grid, Paper, Switch, Tab, Tabs } from "@material-ui/core";
+import { Box, Container, Grid, Paper, Switch, Tab, Tabs } from "@mui/material";
 import { AccountTree, Code } from "@material-ui/icons";
 import { SiCurl, SiJavascript } from "react-icons/si";
 import { MdShortText } from "react-icons/md";

@@ -1,4 +1,4 @@
-import { Container, MenuItem, Select } from "@material-ui/core";
+import { Container, MenuItem, Select } from "@mui/material";
 import { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";
@@ -16,7 +16,7 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                 <br />
                 <h1>Config</h1>
                 <h2>Code Style</h2>
-                <Select onChange={this.props.updateConfig} name="codeStyle" value={codeStyle}>
+                <Select variant="standard" style={{ width: "230px" }} onChange={this.props.updateConfig} name="codeStyle" value={codeStyle}>
                     {l.codeStyles.map(codeStyle => (
                         <MenuItem value={codeStyle} key={codeStyle}>
                             {codeStyle}

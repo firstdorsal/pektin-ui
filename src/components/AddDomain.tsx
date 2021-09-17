@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Grid, TextField, Container, Paper } from "@material-ui/core";
+import { Button, Grid, TextField, Container, Paper } from "@mui/material";
 import { Ballot } from "@material-ui/icons";
 import * as t from "./types";
 import * as l from "./lib";
@@ -7,7 +7,7 @@ import * as pektinApi from "./apis/pektin";
 import DataDisplay from "../components/DataDisplay";
 
 const defaultSOA: t.RedisEntry = {
-    name: "",
+    name: ".:SOA",
     value: {
         rr_type: "SOA",
         rr_set: [
@@ -74,17 +74,26 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                 <Grid container spacing={3} style={{ maxWidth: "100%" }}>
                     <Grid item xs={4}>
                         <Paper>
-                            <Container style={{ paddingBottom: "20px" }}>
+                            <Container className="form" style={{ paddingBottom: "20px" }}>
                                 <div className="cardHead">
                                     <Ballot />
                                     <span className="caps label">form</span>
                                 </div>
                                 <div>
-                                    <TextField required name="name" label="NAME" onChange={this.handleChange} value={this.state.name} helperText="Name of the domain you want to add" />
+                                    <TextField
+                                        variant="standard"
+                                        required
+                                        name="name"
+                                        label="NAME"
+                                        onChange={this.handleChange}
+                                        value={this.state.name}
+                                        helperText="Name of the domain you want to add"
+                                    />
                                 </div>
 
                                 <div>
                                     <TextField
+                                        variant="standard"
                                         onChange={this.handleChange}
                                         name="mname"
                                         required
@@ -94,9 +103,10 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         helperText="Address of the primary name server"
                                     />
                                 </div>
-                                <br />
+
                                 <div>
                                     <TextField
+                                        variant="standard"
                                         onChange={this.handleChange}
                                         name="rname"
                                         required
@@ -106,11 +116,18 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         helperText="Contact of the domain admin"
                                     />
                                 </div>
-                                <br />
                                 <div>
-                                    <TextField type="number" onChange={this.handleChange} name="ttl" value={this.state.ttl} required label="ttl" helperText="Time to cache the dns response" />
+                                    <TextField
+                                        variant="standard"
+                                        type="number"
+                                        onChange={this.handleChange}
+                                        name="ttl"
+                                        value={this.state.ttl}
+                                        required
+                                        label="ttl"
+                                        helperText="Time to cache the dns response"
+                                    />
                                 </div>
-                                <br />
                                 <div>
                                     <Button color="primary" variant="contained" onClick={() => pektinApi.addDomain(this.props.config, [this.state.rec0])}>
                                         Add Domain

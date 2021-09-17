@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Checkbox } from "@material-ui/core";
+import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Checkbox } from "@mui/material";
 import * as t from "./types";
 import { AddCircle, Delete, Flare, Map, VerticalAlignCenter } from "@material-ui/icons";
 import * as l from "./lib";

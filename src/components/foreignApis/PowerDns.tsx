@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 /* @ts-ignore*/
 //import { PowerdnsClient } from "@firstdorsal/powerdns-api";
-import { Button, Container, TextField } from "@material-ui/core";
+import { Button, Container, TextField } from "@mui/material";
 import { ArrowRight } from "@material-ui/icons";
 //import { IoKeypadSharp } from "react-icons/io5";
 interface PowerDnsProps {}

@@ -60,6 +60,10 @@ h1 {
     padding-top: 10px;
 }
 
+.form > div {
+    margin: 15px 0px;
+}
+
 code *,
 code,
 pre {

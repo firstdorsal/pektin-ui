@@ -1,4 +1,4 @@
-import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
+import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@mui/material";
 import React, { Component } from "react";
 //import * as l from "./lib";
 import * as t from "./types";
@@ -19,7 +19,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
         selectedApi: 0
     };
 
-    handleChange = (e: React.ChangeEvent<any>) => {
+    handleChange = (e: any) => {
         this.setState(({ selectedApi }) => {
             if (e.target.name === "apiPicker") selectedApi = e.target.value;
             return { selectedApi };

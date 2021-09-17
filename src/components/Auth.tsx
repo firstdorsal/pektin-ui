@@ -1,4 +1,4 @@
-import { Container, Paper, TextField } from "@material-ui/core";
+import { Container, Paper, TextField } from "@mui/material";
 import React, { Component, ReactElement } from "react";
 import * as t from "./types";
 import * as l from "./lib";

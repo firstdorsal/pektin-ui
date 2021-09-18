@@ -73,7 +73,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
             <Container style={{ marginTop: "20px" }}>
                 <Grid container spacing={3} style={{ maxWidth: "100%" }}>
                     <Grid item xs={4}>
-                        <Paper>
+                        <Paper elevation={3}>
                             <Container className="form" style={{ paddingBottom: "20px" }}>
                                 <div className="cardHead">
                                     <Ballot />
@@ -136,7 +136,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                             </Container>
                         </Paper>
                     </Grid>
-                    <DataDisplay config={this.props.config} data={this.state.rec0}></DataDisplay>
+                    <DataDisplay style={{ marginTop: "15px" }} config={this.props.config} data={this.state.rec0}></DataDisplay>
                 </Grid>
             </Container>
         );

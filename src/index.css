@@ -3,12 +3,16 @@
     --a1: #1b1c20;
     --a1-light: #282a31;
     --a1-lighter: #444a5f;
-    --a2: #4feecb;
+    --a2: darkorange;
+    --a2-light: orange;
+    --a2-lighter: yellow;
     --f1: white;
     --f2: black;
+    --error: #f44336;
     --light: whitesmoke;
     --aside-padding: 15px;
     --aside-width: 270px;
+
     padding: 0;
     margin: 0;
     font-family: "Inter", sans-serif;
@@ -51,9 +55,15 @@ h1 {
 }
 .MuiTabs-root {
     padding-top: 10px;
+    display: block;
+    margin-bottom: -4px;
 }
-.MuiTabs-wrapper {
-    height: 20px;
+
+.MuiTabs-flexContainer > * {
+    min-width: 0px;
+    display: inline-block;
+    width: calc(100% / 5);
+    padding-bottom: 0px;
 }
 
 .groupName {
@@ -74,7 +84,8 @@ pre {
     user-select: text;
 }
 
-code {
+code,
+code * {
     white-space: pre-wrap !important;
     word-wrap: break-word;
 }
@@ -110,6 +121,14 @@ table td {
     font-family: monospace !important;
     user-select: text;
 }
+
+thead,
+tbody,
+table,
+tr {
+    display: block !important;
+}
+
 /*
 tr:hover {
     transition: ease-in-out 200ms;

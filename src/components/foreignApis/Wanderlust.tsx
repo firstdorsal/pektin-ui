@@ -1,4 +1,4 @@
-import { Button, Container, MenuItem, TextField } from "@material-ui/core";
+import { Button, Box, MenuItem, TextField } from "@material-ui/core";
 
 import { ArrowRight } from "@material-ui/icons";
 import { Component } from "react";
@@ -14,13 +14,15 @@ interface WanderlustState {
     domainName: string;
     providerName: string;
     console: string;
+    limit: number;
 }
 
 export default class Wanderlust extends Component<WanderlustProps, WanderlustState> {
     state: WanderlustState = {
         domainName: "",
         providerName: "Google",
-        console: ""
+        console: "",
+        limit: 500
     };
     walk = async (name: string, provider: string, limit: number = 100) => {
         const parseData = (n: string[]) => {
@@ -57,13 +59,13 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
         this.setState(state => ({ ...state, [e.target.name]: e.target.value }));
     };
     import = async () => {
-        const records = await this.walk(this.state.domainName, this.state.providerName, 2000);
-        this.props.import(records);
+        const records = await this.walk(this.state.domainName, this.state.providerName, this.state.limit);
+        this.props.import(records.map(l.simpleDnsRecordToRedisEntry).filter(l.isSupportedRecord));
     };
 
     render() {
         return (
-            <Container style={{ position: "relative" }}>
+            <Box style={{ position: "relative" }}>
                 <TextField
                     InputLabelProps={{
                         shrink: true
@@ -81,7 +83,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                     label="DNS Provider"
                     helperText="Where to send the queries to"
                     select
-                    style={{ width: "170px" }}
+                    style={{ width: "190px", paddingRight: "20px" }}
                     onChange={e => this.setState({ providerName: e.target.value })}
                     value={this.state.providerName}
                     variant="standard"
@@ -94,6 +96,18 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                         );
                     })}
                 </TextField>
+                <TextField
+                    InputLabelProps={{
+                        shrink: true
+                    }}
+                    helperText="Maximum of steps to walk"
+                    placeholder="example.com"
+                    value={this.state.limit}
+                    onChange={this.handleChange}
+                    name="limit"
+                    label="Limit"
+                    variant="standard"
+                />
                 <Button
                     disabled={this.state.domainName.length ? false : true}
                     onClick={this.import}
@@ -105,7 +119,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                     Import
                 </Button>
                 <div>{this.state.console}</div>
-            </Container>
+            </Box>
         );
     }
 }

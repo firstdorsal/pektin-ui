@@ -20,6 +20,9 @@ interface DomainRouterProps {
 
 interface DomainProps extends RouteComponentProps<DomainRouterProps> {
     config: t.Config;
+    variant?: "headless";
+    records?: t.RedisEntry[];
+    style?: any;
 }
 
 class Domain extends Component<DomainProps, DomainState> {
@@ -80,6 +83,9 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     componentDidMount = async () => {
+        if (this.props.records) {
+            this.initData(this.props.records);
+        }
         //const d: t.RedisEntry[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
         //this.initData(d);
     };
@@ -91,15 +97,19 @@ class Domain extends Component<DomainProps, DomainState> {
 
     render = () => {
         return (
-            <React.Fragment>
-                <div style={{ height: "55px", width: "100%", background: "lightblue", padding: "3px" }}>
-                    <IconButton>{<AddCircle />}</IconButton>
-                    <IconButton>{<Delete />}</IconButton>
-                    <IconButton>{<VerticalAlignCenter />}</IconButton>
-                    <IconButton>{<Flare />}</IconButton>
-                    <IconButton>{<Map />}</IconButton>
-                </div>
-                <TableContainer style={{ overflowY: "scroll", height: "calc(100% - 55px)" }}>
+            <div style={{ ...this.props.style }}>
+                {this.props.variant !== "headless" ? (
+                    <div style={{ height: "55px", width: "100%", background: "var(--a2)", padding: "3px" }}>
+                        <IconButton>{<AddCircle />}</IconButton>
+                        <IconButton>{<Delete />}</IconButton>
+                        <IconButton>{<VerticalAlignCenter />}</IconButton>
+                        <IconButton>{<Flare />}</IconButton>
+                        <IconButton>{<Map />}</IconButton>
+                    </div>
+                ) : (
+                    ""
+                )}
+                <TableContainer style={{ height: "calc(100% - 55px)" }}>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -114,7 +124,7 @@ class Domain extends Component<DomainProps, DomainState> {
                                 <TableCell></TableCell>
                             </TableRow>
                         </TableHead>
-                        <TableBody>
+                        <TableBody style={{ height: "100%" }}>
                             {this.state.data.length ? (
                                 this.state.data.map((rec0: t.RedisEntry, i: number) => {
                                     if (!rec0.value.rr_set?.length) return false;
@@ -141,7 +151,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         </TableBody>
                     </Table>
                 </TableContainer>
-            </React.Fragment>
+            </div>
         );
     };
 }

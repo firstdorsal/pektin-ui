@@ -23,6 +23,7 @@ SyntaxHighlighter.registerLanguage("yaml", yaml);
 interface DataDisplayProps {
     data: t.RedisEntry;
     config: t.Config;
+    style?: any;
 }
 
 interface DataDisplayState {
@@ -53,9 +54,9 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         ];
 
         return (
-            <Grid container item xs={8}>
+            <Grid style={this.props.style ? { ...this.props.style } : {}} container item xs={8}>
                 <Grid style={{ marginBottom: "20px" }} item xs={12}>
-                    <Paper>
+                    <Paper elevation={3}>
                         <Container>
                             <div className="cardHead">
                                 <Code />
@@ -63,7 +64,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                             </div>
                         </Container>
                         <Box>
-                            <Tabs className="tabs" variant="fullWidth" value={this.state.activeTab} onChange={(e, n) => this.setState({ activeTab: n })}>
+                            <Tabs variant="fullWidth" value={this.state.activeTab} onChange={(e, n) => this.setState({ activeTab: n })}>
                                 <Tab label="JSON" icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />} value={0} />
                                 <Tab label="YAML" icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />} value={1} />
                                 <Tab label="JAVASCRIPT" icon={<SiJavascript style={{ width: "25px" }} />} value={2} />
@@ -71,7 +72,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                                 <Tab label="BIND" icon={<MdShortText style={{ width: "25px" }} />} value={4} />
                             </Tabs>
                         </Box>
-                        <Box>{tabs[this.state.activeTab]}</Box>
+                        <Box className="tabs">{tabs[this.state.activeTab]}</Box>
                     </Paper>
                 </Grid>
             </Grid>

@@ -1,5 +1,6 @@
 import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
 import React, { Component } from "react";
+import Domain from "./Domain";
 //import * as l from "./lib";
 import * as t from "./types";
 
@@ -9,14 +10,16 @@ interface ImportDomainProps {
 interface ImportDomainState {
     readonly activeStep: number;
     readonly selectedApi: number;
+    readonly records: t.RedisEntry[];
 }
 
-const steps = ["How?", "Which ones?", "Approve import?"];
+const stepNames = ["How?", "Which ones?", "Approve import?"];
 
 export default class ImportDomain extends Component<ImportDomainProps, ImportDomainState> {
     state: ImportDomainState = {
         activeStep: 0,
-        selectedApi: 0
+        selectedApi: 0,
+        records: []
     };
 
     handleChange = (e: any) => {
@@ -27,30 +30,15 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
     };
 
     import = (records: t.RedisEntry[]) => {
-        console.log(records);
+        this.setState({ records, activeStep: 1 });
     };
 
     render = () => {
-        return (
-            <Container>
+        const fapi = this.props.config.foreignApis[this.state.selectedApi];
+        const step1 = () => {
+            return (
                 <Container>
-                    <Container>
-                        <br />
-                        <br />
-                        <h1>{steps[this.state.activeStep]}</h1>
-                    </Container>
-                    <Stepper activeStep={this.state.activeStep}>
-                        {steps.map(stepName => {
-                            return (
-                                <Step key={stepName}>
-                                    <StepLabel>{stepName}</StepLabel>
-                                </Step>
-                            );
-                        })}
-                    </Stepper>
-                </Container>
-                <Container>
-                    <Paper elevation={3} style={{ padding: "20px" }}>
+                    <Paper elevation={3} style={{ padding: "30px 20px" }}>
                         <Container>
                             <h2 style={{ display: "inline-block", paddingRight: "10px" }}>Method</h2>
                             <Select name="apiPicker" onChange={e => this.handleChange(e)} style={{ width: "200px" }} value={this.state.selectedApi}>
@@ -64,10 +52,36 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                             </Select>
                         </Container>
                         <br />
-                        <Container>{React.createElement(this.props.config.foreignApis[this.state.selectedApi].class, { import: this.import })}</Container>
+                        <Container>
+                            <div style={{ width: "500px" }}>{fapi.description}</div>
+                            <br />
+                            {React.createElement(fapi.class, { import: this.import })}
+                        </Container>
                     </Paper>
                 </Container>
-            </Container>
+            );
+        };
+        const step2 = () => {
+            return <Domain style={{ height: "calc(100% - 70px)" }} records={this.state.records} config={this.props.config}></Domain>;
+        };
+
+        const steps = [step1, step2];
+
+        return (
+            <React.Fragment>
+                <div style={{ height: "70px" }}>
+                    <Stepper activeStep={this.state.activeStep}>
+                        {stepNames.map(stepName => {
+                            return (
+                                <Step key={stepName}>
+                                    <StepLabel>{stepName}</StepLabel>
+                                </Step>
+                            );
+                        })}
+                    </Stepper>
+                </div>
+                {steps[this.state.activeStep]()}
+            </React.Fragment>
         );
     };
 }

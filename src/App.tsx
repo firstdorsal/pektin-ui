@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import "@fontsource/inter/900.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/400.css";
-import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import Base from "./components/Base";
 import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
 import AddDomain from "./components/AddDomain";
@@ -13,23 +12,6 @@ import * as vaultApi from "./components/apis/vault";
 import Auth from "./components/Auth";
 import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
-
-const theme = createTheme({
-    palette: {
-        primary: {
-            light: "#dc143c",
-            main: "#dc143c",
-            dark: "#a20016",
-            contrastText: "#fff"
-        },
-        secondary: {
-            light: "#78ffea",
-            main: "#37dbb8",
-            dark: "#00a888",
-            contrastText: "#000"
-        }
-    }
-});
 
 interface AppState {
     readonly config: t.Config;
@@ -106,39 +88,37 @@ export default class App extends Component<AppProps, AppState> {
         if (!this.state.configLoaded) return <div></div>;
         return (
             <Router>
-                <ThemeProvider theme={theme}>
-                    <Switch>
-                        <Route exact path="/auth" render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />} />
+                <Switch>
+                    <Route exact path="/auth" render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />} />
 
-                        <PrivateRoute config={this.state.config} exact path="/">
-                            <Base config={this.state.config}></Base>
-                        </PrivateRoute>
-                        <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
-                            <Base config={this.state.config}>
-                                <AddDomain config={this.state.config} />
-                            </Base>
-                        </PrivateRoute>
-                        <PrivateRoute exact config={this.state.config} path="/add/existing/import">
-                            <Base config={this.state.config}>
-                                <ImportDomain config={this.state.config} />
-                            </Base>
-                        </PrivateRoute>
-                        <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
-                            <Base config={this.state.config}>
-                                <Domain config={this.state.config} />
-                            </Base>
-                        </PrivateRoute>
-                        <PrivateRoute exact config={this.state.config} path="/config/">
-                            <Base config={this.state.config}>
-                                <ConfigView updateConfig={this.updateLocalConfig} config={this.state.config} />
-                            </Base>
-                        </PrivateRoute>
+                    <PrivateRoute config={this.state.config} exact path="/">
+                        <Base config={this.state.config}></Base>
+                    </PrivateRoute>
+                    <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
+                        <Base config={this.state.config}>
+                            <AddDomain config={this.state.config} />
+                        </Base>
+                    </PrivateRoute>
+                    <PrivateRoute exact config={this.state.config} path="/add/existing/import">
+                        <Base config={this.state.config}>
+                            <ImportDomain config={this.state.config} />
+                        </Base>
+                    </PrivateRoute>
+                    <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
+                        <Base config={this.state.config}>
+                            <Domain config={this.state.config} />
+                        </Base>
+                    </PrivateRoute>
+                    <PrivateRoute exact config={this.state.config} path="/config/">
+                        <Base config={this.state.config}>
+                            <ConfigView updateConfig={this.updateLocalConfig} config={this.state.config} />
+                        </Base>
+                    </PrivateRoute>
 
-                        <PrivateRoute config={this.state.config} path="*">
-                            <Base config={this.state.config}></Base>
-                        </PrivateRoute>
-                    </Switch>
-                </ThemeProvider>
+                    <PrivateRoute config={this.state.config} path="*">
+                        <Base config={this.state.config}></Base>
+                    </PrivateRoute>
+                </Switch>
             </Router>
         );
     };

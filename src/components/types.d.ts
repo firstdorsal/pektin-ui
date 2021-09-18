@@ -119,7 +119,7 @@ export interface MX {
 }
 export interface MXValue {
     preference: number;
-    exchange: number;
+    exchange: string;
 }
 export interface TXT {
     [TXT: string]: string;

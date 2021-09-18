@@ -8,6 +8,11 @@ import Wanderlust from "./foreignApis/Wanderlust";
 
 const defaultApiEndpoint = "http://127.0.0.1:3001";
 
+export const isSupportedRecord = (record: t.RedisEntry) => {
+    if (supportedRecords.indexOf(record.value.rr_type) > -1) return true;
+    return false;
+};
+
 export const simpleDnsRecordToRedisEntry = (simple: t.SimpleDnsRecord): t.RedisEntry => {
     let rrValue = textToRRValue(simple.type, simple.data);
 
@@ -33,10 +38,9 @@ export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRe
             return {
                 MX: {
                     preference: parseInt(t[0]),
-                    exchange: parseInt(t[1])
+                    exchange: t[1]
                 }
             };
-
         case "DNSKEY":
             return {
                 DNSKEY: {
@@ -127,9 +131,13 @@ const defaultLocalConfig: t.LocalConfig = {
 export const defaulConfig: t.Config = {
     vaultAuth: defaultVaultAuth,
     foreignApis: [
-        { name: "Pektin Backup", class: PektinBackup },
-        { name: "PowerDNS", class: PowerDns },
-        { name: "Wanderlust", class: Wanderlust }
+        {
+            name: "Wanderlust",
+            class: Wanderlust,
+            description: "Wanderlust imports a single domain per import with NSEC zone walking. To resolve the records dns queries are sent through Google or Cloudflare."
+        },
+        { name: "Pektin Backup", class: PektinBackup, description: "" },
+        { name: "PowerDNS", class: PowerDns, description: "" }
     ],
     local: defaultLocalConfig,
     pektin: undefined
@@ -159,6 +167,8 @@ export const rec0ToBind = (rec0: t.RedisEntry, onlyValues: boolean = false): Rea
 export const help: any = {
     auth: <div>helper text for auth</div>
 };
+
+export const supportedRecords = ["A", "AAAA", "NS", "CNAME", "PTR", "SOA", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"];
 
 export const rrTemplates: any = {
     A: {
@@ -277,9 +287,10 @@ export const rrTemplates: any = {
             {
                 name: "preference",
                 placeholder: "10",
-                inputType: "number"
+                inputType: "number",
+                width: 6
             },
-            { name: "exchange", placeholder: "mx.example.com", inputType: "text" }
+            { name: "exchange", placeholder: "mx.example.com", inputType: "text", width: 6 }
         ],
         color: "blue"
     },
@@ -296,14 +307,6 @@ export const rrTemplates: any = {
             }
         ],
         color: "gray"
-    },
-    DNSKEY: {
-        template: {
-            flags: 257,
-            protocol: 3,
-            algorithm: 13,
-            key_data: ""
-        }
     },
     SRV: {
         template: {

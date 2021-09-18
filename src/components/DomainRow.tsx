@@ -1,7 +1,7 @@
 import * as l from "./lib";
 import * as t from "./types";
 import React, { Component } from "react";
-import { Collapse, IconButton, TableCell, TableRow, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container, Switch } from "@material-ui/core";
+import { Collapse, IconButton, TableCell, TableRow, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container } from "@material-ui/core";
 import DataDisplay from "./DataDisplay";
 import { Ballot, Check, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
 
@@ -17,7 +17,7 @@ interface RowProps {
     config: t.Config;
 }
 interface RowState {
-    dnssec: boolean;
+    //dnssec: boolean;
 }
 
 export default class Row extends Component<RowProps, RowState> {
@@ -29,18 +29,13 @@ export default class Row extends Component<RowProps, RowState> {
             return (
                 <React.Fragment>
                     <div>
-                        <Switch defaultChecked color="primary" value={this.state.dnssec} name="dnssec" onChange={e => this.props.handleChange(e, p.rec_index, p.rr_index, "switch")} />
-                        DNSSEC
-                    </div>
-                    <br />
-                    <div>
                         <TextField
                             onChange={e => this.props.handleChange(e, p.rec_index, p.rr_index, "rrField")}
                             helperText={l.rrTemplates["SOA"].fields[0].helperText}
                             placeholder="ns1.example.com"
                             name="mname"
                             label="MNAME"
-                            value={v.mname}
+                            value={v.mname + ""}
                         />
                     </div>
                     <br />
@@ -51,7 +46,7 @@ export default class Row extends Component<RowProps, RowState> {
                             placeholder="hostmaster.example.com"
                             name="rname"
                             label="RNAME"
-                            value={v.rname}
+                            value={v.rname + ""}
                         />
                     </div>
                 </React.Fragment>
@@ -64,6 +59,7 @@ export default class Row extends Component<RowProps, RowState> {
         const v: any = rr.value[rec0.value.rr_type];
         const fields = l.rrTemplates[rec0.value.rr_type]?.fields;
         if (!fields) return;
+
         return (
             <Grid spacing={2} container className="simpleValues">
                 {fields.map((field: any) => {
@@ -80,7 +76,7 @@ export default class Row extends Component<RowProps, RowState> {
                                 }}
                                 label={field.name}
                                 name={field.name}
-                                value={v[field.name]}
+                                value={fields.length > 1 ? v[field.name] + "" : v + ""}
                             />
                         </Grid>
                     );
@@ -97,7 +93,7 @@ export default class Row extends Component<RowProps, RowState> {
 
         return (
             <React.Fragment>
-                <TableRow className={`recRow `} style={{ borderColor: l.rrTemplates[rec0.value.rr_type]?.color || "black" }}>
+                <TableRow className="recRow" style={{ borderColor: l.rrTemplates[rec0.value.rr_type]?.color || "black", height: "70px !important", maxHeight: "70px !important" }}>
                     <TableCell padding="checkbox">
                         <Checkbox checked={this.props.meta?.selected} onChange={e => this.props.changeMeta(e, p.rec_index, p.rr_index, "selected")} />
                     </TableCell>
@@ -136,10 +132,16 @@ export default class Row extends Component<RowProps, RowState> {
                 </TableRow>
                 <TableRow>
                     <TableCell
-                        style={{ padding: 0, borderLeft: `10px solid ${l.rrTemplates[rec0.value.rr_type]?.color || "black"}`, borderBottom: this.props.meta?.expanded ? "" : "unset", width: "100%" }}
+                        style={{
+                            padding: 0,
+                            borderLeft: `10px solid ${l.rrTemplates[rec0.value.rr_type]?.color || "black"}`,
+                            borderBottom: this.props.meta?.expanded ? "" : "unset",
+                            width: "100%",
+                            display: "block"
+                        }}
                         colSpan={8}
                     >
-                        <Collapse in={this.props.meta?.expanded} style={{ padding: "16px" }} timeout={{ appear: 100, enter: 100, exit: 100 }} unmountOnExit>
+                        <Collapse in={this.props.meta?.expanded} style={{ padding: "16px" }} timeout={{ appear: 0, enter: 0, exit: 0 }} unmountOnExit>
                             <Grid container spacing={3} style={{ maxWidth: "100%", margin: "20px 0px" }}>
                                 <Grid item xs={4}>
                                     <Grid item xs={12} style={{ marginBottom: "20px" }}>

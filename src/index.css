@@ -136,8 +136,37 @@ tr:hover {
 }
 */
 
+.rowWrapper {
+    border-bottom: 1px solid lightgrey;
+}
+.rowWrapper .MuiInput-underline:before {
+    border: none;
+}
+
+.rowWrapper .MuiSelect-root {
+    padding-left: 25px;
+}
+.rowWrapper input[value="SOA"] {
+    padding-left: 25px;
+}
+
+.rowWrapper .MuiSvgIcon-root.MuiSelect-icon {
+    display: absolute;
+    left: 0px;
+}
+
 .recRow {
-    border-left: 10px solid transparent;
+    border-left: 5px solid transparent;
+    height: 70px;
+    overflow: hidden;
+}
+.recRow > span {
+    position: absolute;
+}
+
+.advancedRow {
+    height: 600px;
+    overflow-y: hidden;
 }
 
 .MuiSelect-select.MuiSelect-select {

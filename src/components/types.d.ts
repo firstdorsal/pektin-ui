@@ -87,6 +87,8 @@ export type RRTypes = "A" | "AAAA" | "NS" | "CNAME" | "PTR" | "SOA" | "MX" | "TX
 // the resource record value
 export type ResourceRecordValue = A | AAAA | NS | CNAME | PTR | SOA | MX | TXT | DNSKEY | SRV | CAA | OPENPGPKEY | TLSA;
 
+export type ComplexRecordValue = "SOAValue" | "MXValue" | "SRVValue" | "CAAValue" | "TLSAValue";
+
 export interface A {
     [A: string]: string;
 }

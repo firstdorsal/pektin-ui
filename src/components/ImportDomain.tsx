@@ -30,6 +30,8 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
     };
 
     import = (records: t.RedisEntry[]) => {
+        console.log(records);
+
         this.setState({ records, activeStep: 1 });
     };
 

@@ -1,7 +1,7 @@
 import * as l from "./lib";
 import * as t from "./types";
 import React, { Component } from "react";
-import { Collapse, IconButton, TableCell, TableRow, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container } from "@material-ui/core";
+import { Collapse, IconButton, TableCell, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container } from "@material-ui/core";
 import DataDisplay from "./DataDisplay";
 import { Ballot, Check, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
 
@@ -9,12 +9,11 @@ interface RowProps {
     handleChange: Function;
     saveRecord: any;
     changeMeta: Function;
-    rec_index: number;
-    rr_index: number;
-    rr: t.ResourceRecord;
+    index: number;
     rec0: t.RedisEntry;
     meta: t.DomainMeta;
     config: t.Config;
+    style: any;
 }
 interface RowState {
     //dnssec: boolean;
@@ -30,7 +29,7 @@ export default class Row extends Component<RowProps, RowState> {
                 <React.Fragment>
                     <div>
                         <TextField
-                            onChange={e => this.props.handleChange(e, p.rec_index, p.rr_index, "rrField")}
+                            onChange={e => this.props.handleChange(e, p.index, "rrField")}
                             helperText={l.rrTemplates["SOA"].fields[0].helperText}
                             placeholder="ns1.example.com"
                             name="mname"
@@ -41,7 +40,7 @@ export default class Row extends Component<RowProps, RowState> {
                     <br />
                     <div>
                         <TextField
-                            onChange={e => this.props.handleChange(e, p.rec_index, p.rr_index, "rrField")}
+                            onChange={e => this.props.handleChange(e, p.index, "rrField")}
                             helperText={l.rrTemplates["SOA"].fields[1].helperText}
                             placeholder="hostmaster.example.com"
                             name="rname"
@@ -53,15 +52,15 @@ export default class Row extends Component<RowProps, RowState> {
             );
         }
     };
-    simpleView = (rec0: t.RedisEntry, rr: t.ResourceRecord) => {
+    simpleView = (rec0: t.RedisEntry) => {
         const p = this.props;
-
+        const rr = rec0.value.rr_set[0];
         const v: any = rr.value[rec0.value.rr_type];
         const fields = l.rrTemplates[rec0.value.rr_type]?.fields;
         if (!fields) return;
 
         return (
-            <Grid spacing={2} container className="simpleValues">
+            <Grid spacing={2} container>
                 {fields.map((field: any) => {
                     return (
                         <Grid key={field.name} xs={field.width} item>
@@ -69,8 +68,8 @@ export default class Row extends Component<RowProps, RowState> {
                                 size="small"
                                 type={field.inputType}
                                 style={{ width: "100%" }}
-                                onChange={e => this.props.handleChange(e, p.rec_index, p.rr_index, "rrField")}
-                                placeholder={field.placeholder}
+                                onChange={e => this.props.handleChange(e, p.index, "rrField")}
+                                placeholder={field.placeholder.toString()}
                                 InputLabelProps={{
                                     shrink: true
                                 }}
@@ -87,25 +86,26 @@ export default class Row extends Component<RowProps, RowState> {
 
     render = () => {
         const p = this.props;
-        const { rr, rec0 } = p;
+        const { rec0 } = p;
         const editable = rec0.value.rr_type === "SOA" ? false : true;
-        const name = l.getName(rec0);
+        const name = l.getNameFromRedisEntry(rec0);
+        const rr = rec0.value.rr_set[0];
 
         return (
-            <React.Fragment>
-                <TableRow className="recRow" style={{ borderColor: l.rrTemplates[rec0.value.rr_type]?.color || "black", height: "70px !important", maxHeight: "70px !important" }}>
-                    <TableCell padding="checkbox">
-                        <Checkbox checked={this.props.meta?.selected} onChange={e => this.props.changeMeta(e, p.rec_index, p.rr_index, "selected")} />
-                    </TableCell>
+            <div className="rowWrapper" style={this.props.style}>
+                <div className="recRow" style={{ borderColor: l.rrTemplates[rec0.value.rr_type]?.color || "black", position: "relative" }}>
+                    <span style={{ left: "10px", top: "10px" }}>
+                        <Checkbox checked={this.props.meta?.selected} onChange={e => this.props.changeMeta(e, p.index, "selected")} />
+                    </span>
 
-                    <TableCell style={{ width: "300px" }}>
-                        <Input disabled={!editable} style={{ width: "100%" }} value={name} />
-                    </TableCell>
-                    <TableCell style={{ width: "160px" }}>
+                    <span style={{ width: "250px", left: "60px", top: "18px" }}>
+                        <Input onInput={e => this.props.handleChange(e, p.index, "name")} type="text" disabled={!editable} style={{ width: "100%" }} value={name} />
+                    </span>
+                    <span style={{ width: "100px", left: "340px", top: "18px" }}>
                         {rec0.value.rr_type === "SOA" ? (
                             <Input disabled={!editable} value={rec0.value.rr_type} />
                         ) : (
-                            <Select style={{ width: "100%" }} name="type" disabled={!editable} value={rec0.value.rr_type} onChange={e => this.props.handleChange(e, p.rec_index, p.rr_index, "type")}>
+                            <Select style={{ width: "100%" }} name="type" disabled={!editable} value={rec0.value.rr_type} onChange={e => this.props.handleChange(e, p.index, "type")}>
                                 {["A", "AAAA", "NS", "CNAME", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(e => (
                                     <MenuItem key={e} value={e}>
                                         {e}
@@ -113,34 +113,31 @@ export default class Row extends Component<RowProps, RowState> {
                                 ))}
                             </Select>
                         )}
-                    </TableCell>
-                    <TableCell style={{ width: "100px" }}>
-                        <Input onInput={e => this.props.handleChange(e, p.rec_index, p.rr_index, "ttl")} type="number" value={rr.ttl} />
-                    </TableCell>
-                    <TableCell style={{ width: "500px" }}>{this.simpleView(rec0, rr)}</TableCell>
+                    </span>
+                    <span style={{ width: "100px", left: "460px", top: "18px" }}>
+                        <Input onInput={e => this.props.handleChange(e, p.index, "ttl")} type="number" value={rr.ttl} />
+                    </span>
+                    <span style={{ right: "100px", left: "580px", top: "5px" }}>{this.simpleView(rec0)}</span>
 
-                    <TableCell padding="checkbox" align="right" style={{ width: "30px", paddingRight: "15px" }}>
-                        <IconButton aria-label="expand row" size="small" onClick={e => this.props.changeMeta(e, p.rec_index, p.rr_index, "expanded")}>
+                    <span style={{ width: "50px", position: "absolute", right: "40px", top: "17px" }}>
+                        <IconButton aria-label="expand row" size="small" onClick={e => this.props.changeMeta(e, p.index, "expanded")}>
                             {this.props.meta?.expanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                         </IconButton>
-                    </TableCell>
-                    <TableCell padding="checkbox" align="right" style={{ paddingRight: "15px" }}>
+                    </span>
+                    <span style={{ width: "50px", position: "absolute", right: "0px", top: "13px" }}>
                         <Fab onClick={this.props.saveRecord} disabled={!this.props.meta?.changed} color="secondary" size="small">
                             <Check />
                         </Fab>
-                    </TableCell>
-                </TableRow>
-                <TableRow>
-                    <TableCell
-                        style={{
-                            padding: 0,
-                            borderLeft: `10px solid ${l.rrTemplates[rec0.value.rr_type]?.color || "black"}`,
-                            borderBottom: this.props.meta?.expanded ? "" : "unset",
-                            width: "100%",
-                            display: "block"
-                        }}
-                        colSpan={8}
-                    >
+                    </span>
+                </div>
+                <div
+                    className="advancedRow"
+                    style={{
+                        borderLeft: `5px solid ${l.rrTemplates[rec0.value.rr_type]?.color || "black"}`,
+                        borderBottom: this.props.meta?.expanded ? "" : "unset"
+                    }}
+                >
+                    <div>
                         <Collapse in={this.props.meta?.expanded} style={{ padding: "16px" }} timeout={{ appear: 0, enter: 0, exit: 0 }} unmountOnExit>
                             <Grid container spacing={3} style={{ maxWidth: "100%", margin: "20px 0px" }}>
                                 <Grid item xs={4}>
@@ -149,7 +146,7 @@ export default class Row extends Component<RowProps, RowState> {
                                             <Container style={{ paddingBottom: "20px" }}>
                                                 <div className="cardHead">
                                                     <Ballot />
-                                                    <span className="caps label">form</span>
+                                                    <span className="caps label">data</span>
                                                 </div>
                                                 {this.advancedView(rec0, rr)}
                                             </Container>
@@ -171,9 +168,9 @@ export default class Row extends Component<RowProps, RowState> {
                                 <DataDisplay config={this.props.config} data={rec0}></DataDisplay>
                             </Grid>
                         </Collapse>
-                    </TableCell>
-                </TableRow>
-            </React.Fragment>
+                    </div>
+                </div>
+            </div>
         );
     };
 }

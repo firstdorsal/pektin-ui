@@ -149,7 +149,7 @@ export const absoluteName = (name: string) => {
     return name;
 };
 
-export const getName = (rec0: t.RedisEntry) => {
+export const getNameFromRedisEntry = (rec0: t.RedisEntry) => {
     return rec0.name.substring(0, rec0.name.indexOf(":"));
 };
 
@@ -160,7 +160,9 @@ export const rec0ToBind = (rec0: t.RedisEntry, onlyValues: boolean = false): Rea
         const soa = rec1.rr_set[0].value.SOA as t.SOAValue;
         const rr_set = rec1.rr_set[0];
         if (onlyValues) return `${soa.mname} ${soa.rname}`;
-        return `${absoluteName(getName(rec0))} ${rr_set.ttl ? rr_set.ttl : ""} IN ${rec1.rr_type} ${soa.mname} ${soa.rname} ${soa.serial} ${soa.refresh} ${soa.retry} ${soa.expire} ${soa.minimum}`;
+        return `${absoluteName(getNameFromRedisEntry(rec0))} ${rr_set.ttl ? rr_set.ttl : ""} IN ${rec1.rr_type} ${soa.mname} ${soa.rname} ${soa.serial} ${soa.refresh} ${soa.retry} ${soa.expire} ${
+            soa.minimum
+        }`;
     }
 };
 
@@ -288,9 +290,9 @@ export const rrTemplates: any = {
                 name: "preference",
                 placeholder: "10",
                 inputType: "number",
-                width: 6
+                width: 2
             },
-            { name: "exchange", placeholder: "mx.example.com", inputType: "text", width: 6 }
+            { name: "exchange", placeholder: "mx.example.com", inputType: "text", width: 10 }
         ],
         color: "blue"
     },
@@ -318,10 +320,10 @@ export const rrTemplates: any = {
             }
         },
         fields: [
-            { name: "priority", placeholder: 1, inputType: "number", width: 2 },
-            { name: "weight", placeholder: 1, inputType: "number", width: 2 },
-            { name: "port", placeholder: 443, inputType: "number", width: 2 },
-            { name: "data", placeholder: "", inputType: "text", width: 6 }
+            { name: "priority", placeholder: 1, inputType: "text", width: 2 },
+            { name: "weight", placeholder: 1, inputType: "text", width: 2 },
+            { name: "port", placeholder: 443, inputType: "text", width: 2 },
+            { name: "target", placeholder: "", inputType: "text", width: 6 }
         ],
         color: "purple"
     },

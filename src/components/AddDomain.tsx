@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Grid, TextField, Container, Paper, TextFieldProps } from "@material-ui/core";
+import { Button, Grid, TextField, Container, Paper } from "@material-ui/core";
 import { Ballot } from "@material-ui/icons";
 import * as t from "./types";
 import * as l from "./lib";

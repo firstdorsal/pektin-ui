@@ -84,14 +84,7 @@ export default class App extends Component<AppProps, AppState> {
         this.loadAuth();
         await this.loadPektinConfig();
         this.setState({ configLoaded: true });
-        document.addEventListener("click", this.handleClick);
-        document.addEventListener("contextmenu", this.handleContextMenu);
     };
-
-    componentWillUnmount() {
-        document.removeEventListener("click", this.handleClick);
-        document.removeEventListener("contextmenu", this.handleContextMenu);
-    }
 
     saveAuth = async (vaultAuth: t.VaultAuth) => {
         sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
@@ -111,21 +104,7 @@ export default class App extends Component<AppProps, AppState> {
 
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
-        const contextMenu = () => {
-            return (
-                <div className="contextMenu" style={{ position: "fixed", left: this.state.contextMenu.clientX, top: this.state.contextMenu.clientY, background: "var(--b1)", zIndex: 10 }}>
-                    <div className="contextMenu">Add Variable</div>
-                    {this.state.config.local.variables.map((e, i) => {
-                        return (
-                            <div className="contextMenu" key={i} style={{ background: "var(--b1)", cursor: "pointer" }} onClick={() => {}}>
-                                {e.key}
-                            </div>
-                        );
-                    })}
-                </div>
-            );
-        };
-        //{this.state.contextMenu ? contextMenu() : ""}
+
         return (
             <Router>
                 <Switch>

@@ -17,6 +17,7 @@ interface AppState {
     readonly config: t.Config;
     readonly db: l.PektinUiDb;
     readonly configLoaded: boolean;
+    readonly contextMenu: any;
 }
 interface AppProps {}
 
@@ -24,7 +25,8 @@ export default class App extends Component<AppProps, AppState> {
     state: AppState = {
         config: l.defaulConfig,
         db: new l.PektinUiDb(),
-        configLoaded: false
+        configLoaded: false,
+        contextMenu: false
     };
 
     initDb = async () => {
@@ -42,10 +44,16 @@ export default class App extends Component<AppProps, AppState> {
             });
         }
     };
-    updateLocalConfig = (e: any) => {
+
+    updateLocalConfig = (e: any, type: string, i: number) => {
         const db = this.state.db;
         this.setState(({ config }) => {
-            config = { ...config, local: { ...config.local, [e.target.name]: e.target.value } };
+            if (type === "codeStyle") config.local = { ...config.local, [e.target.name]: e.target.value };
+            if (type === "newVariable") config.local.variables = [e, ...config.local.variables];
+            /*@ts-ignore*/
+            if (type === "updateVariable") config.local.variables[i][e.target.name] = e.target.value;
+            if (type === "removeVariable") config.local.variables.splice(e, 1);
+
             db.config.put({ key: "localConfig", value: config.local });
             return { config };
         });
@@ -76,16 +84,48 @@ export default class App extends Component<AppProps, AppState> {
         this.loadAuth();
         await this.loadPektinConfig();
         this.setState({ configLoaded: true });
+        document.addEventListener("click", this.handleClick);
+        document.addEventListener("contextmenu", this.handleContextMenu);
     };
+
+    componentWillUnmount() {
+        document.removeEventListener("click", this.handleClick);
+        document.removeEventListener("contextmenu", this.handleContextMenu);
+    }
 
     saveAuth = async (vaultAuth: t.VaultAuth) => {
         sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
         this.loadAuth();
         await this.loadPektinConfig();
     };
+    handleClick = (e: MouseEvent) => {
+        /*@ts-ignore*/
+        if (e.target?.className !== "contextMenu") this.setState({ contextMenu: false });
+    };
+    handleContextMenu = (e: MouseEvent) => {
+        if (e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+
+        this.setState({ contextMenu: e });
+    };
 
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
+        const contextMenu = () => {
+            return (
+                <div className="contextMenu" style={{ position: "fixed", left: this.state.contextMenu.clientX, top: this.state.contextMenu.clientY, background: "var(--b1)", zIndex: 10 }}>
+                    <div className="contextMenu">Add Variable</div>
+                    {this.state.config.local.variables.map((e, i) => {
+                        return (
+                            <div className="contextMenu" key={i} style={{ background: "var(--b1)", cursor: "pointer" }} onClick={() => {}}>
+                                {e.key}
+                            </div>
+                        );
+                    })}
+                </div>
+            );
+        };
+        //{this.state.contextMenu ? contextMenu() : ""}
         return (
             <Router>
                 <Switch>
@@ -111,7 +151,7 @@ export default class App extends Component<AppProps, AppState> {
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/config/">
                         <Base config={this.state.config}>
-                            <ConfigView updateConfig={this.updateLocalConfig} config={this.state.config} />
+                            <ConfigView updateLocalConfig={this.updateLocalConfig} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
 

@@ -139,7 +139,7 @@ tr:hover {
 .rowWrapper {
     border-bottom: 1px solid lightgrey;
 }
-.rowWrapper .MuiInput-underline:before {
+.recRow .MuiInput-underline:before {
     border: none;
 }
 

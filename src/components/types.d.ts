@@ -21,9 +21,14 @@ export interface PektinConfig {
     dev: boolean;
 }
 
+export interface Variable {
+    key: string;
+    value: string;
+}
 export interface LocalConfig {
     defaultActiveTab: number;
     codeStyle: codeStyle;
+    variables: Variable[];
 }
 
 export interface PektinUiConnectionConfig {

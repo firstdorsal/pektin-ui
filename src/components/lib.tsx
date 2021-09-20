@@ -125,7 +125,8 @@ const defaultVaultAuth: t.VaultAuth = {
 
 const defaultLocalConfig: t.LocalConfig = {
     defaultActiveTab: 0,
-    codeStyle: "dracula"
+    codeStyle: "dracula",
+    variables: []
 };
 
 export const defaulConfig: t.Config = {
@@ -188,7 +189,7 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: "brown"
+        color: [82, 51, 18]
     },
     AAAA: {
         template: {
@@ -202,7 +203,7 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: "lime"
+        color: [43, 255, 0]
     },
     NS: {
         template: {
@@ -216,7 +217,7 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: "darkgreen"
+        color: [29, 117, 0]
     },
     CNAME: {
         template: {
@@ -230,7 +231,7 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: "red"
+        color: [255, 0, 0]
     },
     PTR: {
         template: {
@@ -273,7 +274,7 @@ export const rrTemplates: any = {
                 width: 6
             }
         ],
-        color: "orange",
+        color: [255, 145, 0],
         info: (
             <div>
                 <h2>SOA Record</h2>
@@ -297,7 +298,7 @@ export const rrTemplates: any = {
             },
             { name: "exchange", placeholder: "mx.example.com", inputType: "text", width: 9 }
         ],
-        color: "blue"
+        color: [29, 94, 224]
     },
     TXT: {
         template: {
@@ -311,7 +312,7 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: "gray"
+        color: [140, 140, 140]
     },
     SRV: {
         template: {
@@ -328,7 +329,7 @@ export const rrTemplates: any = {
             { name: "port", placeholder: 443, inputType: "text", width: 2 },
             { name: "target", placeholder: "", inputType: "text", width: 6 }
         ],
-        color: "purple"
+        color: [149, 61, 196]
     },
     CAA: {
         template: {
@@ -347,14 +348,14 @@ export const rrTemplates: any = {
             },
             { name: "value", placeholder: "letsencrypt.org", inputType: "text", width: 6 }
         ],
-        color: "pink"
+        color: [212, 11, 165]
     },
     OPENPGPKEY: {
         template: {
             OPENPGPKEY: ""
         },
         fields: [{ name: "key", placeholder: "", inputType: "text", width: 12 }],
-        color: "darkred"
+        color: [145, 0, 7]
     },
     TLSA: {
         template: {
@@ -371,7 +372,7 @@ export const rrTemplates: any = {
             { name: "matching_type", placeholder: 1, inputType: "number", width: 2 },
             { name: "data", placeholder: "", inputType: "text", width: 6 }
         ],
-        color: "yellow"
+        color: [255, 217, 0]
     }
 };
 

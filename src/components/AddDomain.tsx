@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Grid, TextField, Container, Paper } from "@material-ui/core";
+import { Button, Grid, TextField, Container, Paper, TextFieldProps } from "@material-ui/core";
 import { Ballot } from "@material-ui/icons";
 import * as t from "./types";
 import * as l from "./lib";
@@ -77,7 +77,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                             <Container className="form" style={{ paddingBottom: "20px" }}>
                                 <div className="cardHead">
                                     <Ballot />
-                                    <span className="caps label">form</span>
+                                    <span className="caps label">data</span>
                                 </div>
                                 <div>
                                     <TextField
@@ -147,4 +147,18 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     <Switch defaultChecked color="primary" value={this.state.dnssec} name="dnssec" onChange={this.handleChange} />
     DNSSEC
 </div>
+*/
+/*
+interface TextFieldWithVarState {}
+
+export class TextFieldWithVar extends Component<any, TextFieldWithVarState> {
+    handleRightClick = (e: any) => {
+        e.preventDefault();
+        console.log(e);
+    };
+    render = () => {
+        const variableMenu = () => {};
+        return <TextField {...this.props} onContextMenu={this.handleRightClick} />;
+    };
+}
 */

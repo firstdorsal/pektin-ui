@@ -18,6 +18,7 @@ interface DomainState {
     readonly ogData: t.RedisEntry[];
     readonly selectAll: boolean;
     readonly columnItems: ColumnItem[];
+    readonly defaultOrder: number[];
 }
 
 interface DomainRouterProps {
@@ -51,7 +52,8 @@ class Domain extends Component<DomainProps, DomainState> {
         meta: [],
         ogData: [],
         selectAll: false,
-        columnItems
+        columnItems,
+        defaultOrder: []
     };
     list: any;
     saveRecord = () => {};
@@ -102,7 +104,8 @@ class Domain extends Component<DomainProps, DomainState> {
             return { selected: false, expanded: false, changed: false };
         });
 
-        this.setState({ data: d, ogData: cloneDeep(d), meta });
+        const defaultOrder = d.map((e, i) => i);
+        this.setState({ data: d, ogData: cloneDeep(d), meta, defaultOrder });
     };
 
     componentDidMount = async () => {
@@ -128,37 +131,41 @@ class Domain extends Component<DomainProps, DomainState> {
         });
     };
     sort = (name: string) => {
-        this.setState(({ data, meta, columnItems }) => {
-            let combine: [t.RedisEntry, t.DomainMeta][] = data.map((e, i) => {
-                return [data[i], meta[i]];
+        this.setState(({ data, meta, columnItems, defaultOrder }) => {
+            let combine: [t.RedisEntry, t.DomainMeta, number][] = data.map((e, i) => {
+                return [data[i], meta[i], defaultOrder[i]];
             });
-            combine = sortBy(combine, [
-                key => {
-                    if (name === "name") return key[0].name;
-                    if (name === "ttl") return key[0].value.rr_set[0].ttl;
-                    if (name === "type") return key[0].value.rr_type;
-                }
-            ]);
 
+            let currentSortDirection = 0;
             columnItems = columnItems.map(e => {
                 if (name === e.name) {
                     if (e.direction === 2) {
                         e.direction = 0;
                     } else if (e.direction === 1) {
-                        combine = combine.reverse();
                         e.direction += 1;
                     } else {
                         e.direction += 1;
                     }
+                    currentSortDirection = e.direction;
                 } else {
                     e.direction = 0;
                 }
                 return e;
             });
+            combine = sortBy(combine, [
+                key => {
+                    if (currentSortDirection === 0) return key[2];
+                    if (name === "name") return key[0].name;
+                    if (name === "ttl") return key[0].value.rr_set[0].ttl;
+                    if (name === "type") return key[0].value.rr_type;
+                }
+            ]);
+            if (currentSortDirection === 2) combine.reverse();
 
             combine.forEach((e, i) => {
                 data[i] = combine[i][0];
                 meta[i] = combine[i][1];
+                defaultOrder[i] = combine[i][2];
             });
 
             return { data, meta, columnItems };
@@ -184,14 +191,15 @@ class Domain extends Component<DomainProps, DomainState> {
             );
         };
         const sortDirectionIcon = (columnItem: ColumnItem) => {
+            const style = { height: "1px", transform: "translate(4px,-5px) scale(20)" };
             if (columnItem.direction === 0) return;
             if (columnItem.direction === 1) {
-                if (columnItem.type === "string") return <FaSortAlphaDown />;
-                return <FaSortNumericDown />;
+                if (columnItem.type === "string") return <FaSortAlphaDown style={style} />;
+                return <FaSortNumericDown style={style} />;
             }
             if (columnItem.direction === 2) {
-                if (columnItem.type === "string") return <FaSortAlphaDownAlt />;
-                return <FaSortNumericDownAlt />;
+                if (columnItem.type === "string") return <FaSortAlphaDownAlt style={style} />;
+                return <FaSortNumericDownAlt style={style} />;
             }
         };
 
@@ -204,9 +212,10 @@ class Domain extends Component<DomainProps, DomainState> {
                     {columnItems.map((item, i) => {
                         return (
                             <span
-                                style={{ left: item.left, top: "26px", position: "absolute", fontWeight: 500, fontSize: "14px", cursor: "pointer" }}
+                                style={{ left: item.left, top: "26px", position: "absolute", fontWeight: 500, fontSize: "14px", cursor: item.name !== "value" ? "pointer" : "default" }}
                                 className="caps"
-                                onClick={() => this.sort(item.name)}
+                                key={item.name}
+                                onClick={() => (item.name !== "value" ? this.sort(item.name) : "")}
                             >
                                 <span>{item.name}</span>
                                 <span> {sortDirectionIcon(this.state.columnItems[i])}</span>
@@ -229,7 +238,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 ) : (
                     ""
                 )}
-                <div style={{ height: "calc(100% - 55px)", width: "100%" }}>
+                <div style={{ height: "calc(100% - 55px - 70px)", width: "100%" }}>
                     {tableHead()}
                     <AutoSizer>
                         {({ height, width }) => (

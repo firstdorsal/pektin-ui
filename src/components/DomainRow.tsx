@@ -33,7 +33,7 @@ export default class Row extends PureComponent<RowProps, RowState> {
                             helperText={l.rrTemplates["SOA"].fields[0].helperText}
                             placeholder="ns1.example.com"
                             name="mname"
-                            label="MNAME"
+                            label="mname"
                             value={v.mname + ""}
                         />
                     </div>
@@ -44,7 +44,7 @@ export default class Row extends PureComponent<RowProps, RowState> {
                             helperText={l.rrTemplates["SOA"].fields[1].helperText}
                             placeholder="hostmaster.example.com"
                             name="rname"
-                            label="RNAME"
+                            label="rname"
                             value={v.rname + ""}
                         />
                     </div>
@@ -89,10 +89,10 @@ export default class Row extends PureComponent<RowProps, RowState> {
         const { rec0 } = p;
         const editable = rec0.value.rr_type === "SOA" ? false : true;
         const rr = rec0.value.rr_set[0];
-
+        const color = JSON.stringify(l.rrTemplates[rec0.value.rr_type]?.color).replace("[", "").replace("]", "") || "0 0 0";
         return (
-            <div className="rowWrapper" style={this.props.style}>
-                <div className="recRow" style={{ borderColor: l.rrTemplates[rec0.value.rr_type]?.color || "black", position: "relative" }}>
+            <div className="rowWrapper" style={{ ...this.props.style, background: `rgba(${color},0.1)` }}>
+                <div className="recRow" style={{ borderColor: `rgb(${color})`, position: "relative" }}>
                     <span style={{ left: "10px", top: "10px" }}>
                         <Checkbox checked={this.props.meta?.selected} onChange={e => this.props.changeMeta(e, p.index, "selected")} />
                     </span>
@@ -132,7 +132,7 @@ export default class Row extends PureComponent<RowProps, RowState> {
                 <div
                     className="advancedRow"
                     style={{
-                        borderLeft: `5px solid ${l.rrTemplates[rec0.value.rr_type]?.color || "black"}`,
+                        borderLeft: `5px solid rgb(${color})`,
                         borderBottom: this.props.meta?.expanded ? "" : "unset"
                     }}
                 >

@@ -54,7 +54,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         ];
 
         return (
-            <Grid style={this.props.style ? { ...this.props.style } : {}} container item xs={8}>
+            <Grid className="DataDisplay" style={this.props.style ? { ...this.props.style } : {}} container item xs={8}>
                 <Grid style={{ marginBottom: "20px" }} item xs={12}>
                     <Paper elevation={3}>
                         <Container>

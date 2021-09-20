@@ -169,8 +169,11 @@ tr:hover {
     overflow-y: hidden;
 }
 
-.MuiSelect-select.MuiSelect-select {
+.MuiSelect-select {
     padding-right: unset !important;
+}
+.MuiSelect-select:focus {
+    background: none;
 }
 
 .container {

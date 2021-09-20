@@ -152,6 +152,9 @@ export const absoluteName = (name: string) => {
 export const getNameFromRedisEntry = (rec0: t.RedisEntry) => {
     return rec0.name.substring(0, rec0.name.indexOf(":"));
 };
+export const getTypeFromRedisEntry = (rec0: t.RedisEntry) => {
+    return rec0.name.substring(rec0.name.indexOf(":") + 1);
+};
 
 export const rec0ToBind = (rec0: t.RedisEntry, onlyValues: boolean = false): ReactNode => {
     if (!rec0 || !rec0.value) return;
@@ -290,9 +293,9 @@ export const rrTemplates: any = {
                 name: "preference",
                 placeholder: "10",
                 inputType: "number",
-                width: 2
+                width: 3
             },
-            { name: "exchange", placeholder: "mx.example.com", inputType: "text", width: 10 }
+            { name: "exchange", placeholder: "mx.example.com", inputType: "text", width: 9 }
         ],
         color: "blue"
     },

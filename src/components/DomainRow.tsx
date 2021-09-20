@@ -1,7 +1,7 @@
 import * as l from "./lib";
 import * as t from "./types";
-import React, { Component } from "react";
-import { Collapse, IconButton, TableCell, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container } from "@material-ui/core";
+import { PureComponent, Fragment } from "react";
+import { Collapse, IconButton, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container } from "@material-ui/core";
 import DataDisplay from "./DataDisplay";
 import { Ballot, Check, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
 
@@ -19,14 +19,14 @@ interface RowState {
     //dnssec: boolean;
 }
 
-export default class Row extends Component<RowProps, RowState> {
+export default class Row extends PureComponent<RowProps, RowState> {
     advancedView = (rec0: t.RedisEntry, rr: t.ResourceRecord) => {
         const p = this.props;
 
         if (rec0.value.rr_type === "SOA") {
             const v = rr.value["SOA"] as t.SOAValue;
             return (
-                <React.Fragment>
+                <Fragment>
                     <div>
                         <TextField
                             onChange={e => this.props.handleChange(e, p.index, "rrField")}
@@ -48,7 +48,7 @@ export default class Row extends Component<RowProps, RowState> {
                             value={v.rname + ""}
                         />
                     </div>
-                </React.Fragment>
+                </Fragment>
             );
         }
     };
@@ -88,7 +88,6 @@ export default class Row extends Component<RowProps, RowState> {
         const p = this.props;
         const { rec0 } = p;
         const editable = rec0.value.rr_type === "SOA" ? false : true;
-        const name = l.getNameFromRedisEntry(rec0);
         const rr = rec0.value.rr_set[0];
 
         return (
@@ -98,8 +97,8 @@ export default class Row extends Component<RowProps, RowState> {
                         <Checkbox checked={this.props.meta?.selected} onChange={e => this.props.changeMeta(e, p.index, "selected")} />
                     </span>
 
-                    <span style={{ width: "250px", left: "60px", top: "18px" }}>
-                        <Input onInput={e => this.props.handleChange(e, p.index, "name")} type="text" disabled={!editable} style={{ width: "100%" }} value={name} />
+                    <span style={{ width: "250px", left: "70px", top: "18px" }}>
+                        <Input onInput={e => this.props.handleChange(e, p.index, "name")} type="text" disabled={!editable} style={{ width: "100%" }} value={l.getNameFromRedisEntry(rec0)} />
                     </span>
                     <span style={{ width: "100px", left: "340px", top: "18px" }}>
                         {rec0.value.rr_type === "SOA" ? (

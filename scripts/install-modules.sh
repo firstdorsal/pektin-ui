@@ -1,3 +1,4 @@
+#!/bin/bash
 yarn
 
 sed -i "s|container.cssRules.length|container?.cssRules?.length|g" node_modules/jss/dist/jss.esm.js

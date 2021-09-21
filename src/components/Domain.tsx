@@ -253,13 +253,13 @@ class Domain extends Component<DomainProps, DomainState> {
                 ) : (
                     ""
                 )}
-                <div style={{ height: "calc(100% - 55px - 70px)", width: "100%" }}>
+                <div style={{ height: "calc(100% - 55px - 70px)", width: "100%", background: this.props.config.local.synesthesia ? "lightgrey" : "" }}>
                     {tableHead()}
                     <AutoSizer>
                         {({ height, width }) => (
                             <Fragment>
                                 <List
-                                    overscanRowCount={0}
+                                    overscanRowCount={5}
                                     style={{ overflowY: "scroll" }}
                                     ref={ref => (this.list = ref)}
                                     height={height}

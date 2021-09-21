@@ -126,7 +126,8 @@ const defaultVaultAuth: t.VaultAuth = {
 const defaultLocalConfig: t.LocalConfig = {
     defaultActiveTab: 0,
     codeStyle: "dracula",
-    variables: []
+    variables: [],
+    synesthesia: false
 };
 
 export const defaulConfig: t.Config = {
@@ -158,7 +159,7 @@ export const getTypeFromRedisEntry = (rec0: t.RedisEntry) => {
 };
 
 export const rec0ToBind = (rec0: t.RedisEntry, onlyValues: boolean = false): ReactNode => {
-    if (!rec0 || !rec0.value) return;
+    if (!rec0 || !rec0.value) return "";
     const rec1 = rec0.value as t.RedisValue;
     if (rec1.rr_type === "SOA") {
         const soa = rec1.rr_set[0].value.SOA as t.SOAValue;
@@ -168,6 +169,7 @@ export const rec0ToBind = (rec0: t.RedisEntry, onlyValues: boolean = false): Rea
             soa.minimum
         }`;
     }
+    return "Not Implemented for this record";
 };
 
 export const help: any = {
@@ -198,7 +200,7 @@ export const rrTemplates: any = {
         fields: [
             {
                 name: "addr",
-                placeholder: "::1",
+                placeholder: "1:see:bad:c0de",
                 inputType: "text",
                 width: 12
             }
@@ -212,7 +214,7 @@ export const rrTemplates: any = {
         fields: [
             {
                 name: "name",
-                placeholder: "ns1.example.com",
+                placeholder: "ns1.example.com.",
                 inputType: "text",
                 width: 12
             }
@@ -226,7 +228,7 @@ export const rrTemplates: any = {
         fields: [
             {
                 name: "name",
-                placeholder: "example.com",
+                placeholder: "example.com.",
                 inputType: "text",
                 width: 12
             }
@@ -261,14 +263,14 @@ export const rrTemplates: any = {
         fields: [
             {
                 name: "mname",
-                placeholder: "ns1.example.com",
+                placeholder: "ns1.example.com.",
                 helperText: "The domains primary name server",
                 inputType: "text",
                 width: 6
             },
             {
                 name: "rname",
-                placeholder: "hostmaster.example.com",
+                placeholder: "hostmaster.example.com.",
                 helperText: "hostmaster email, the @ is replaced with a .",
                 inputType: "text",
                 width: 6
@@ -296,7 +298,7 @@ export const rrTemplates: any = {
                 inputType: "number",
                 width: 3
             },
-            { name: "exchange", placeholder: "mx.example.com", inputType: "text", width: 9 }
+            { name: "exchange", placeholder: "mx.example.com.", inputType: "text", width: 9 }
         ],
         color: [29, 94, 224]
     },
@@ -327,7 +329,7 @@ export const rrTemplates: any = {
             { name: "priority", placeholder: 1, inputType: "text", width: 2 },
             { name: "weight", placeholder: 1, inputType: "text", width: 2 },
             { name: "port", placeholder: 443, inputType: "text", width: 2 },
-            { name: "target", placeholder: "", inputType: "text", width: 6 }
+            { name: "target", placeholder: "ex.example.com.", inputType: "text", width: 6 }
         ],
         color: [149, 61, 196]
     },
@@ -370,7 +372,7 @@ export const rrTemplates: any = {
             { name: "usage", placeholder: 3, inputType: "number", width: 2 },
             { name: "selector", placeholder: 1, inputType: "number", width: 2 },
             { name: "matching_type", placeholder: 1, inputType: "number", width: 2 },
-            { name: "data", placeholder: "", inputType: "text", width: 6 }
+            { name: "data", placeholder: "50c1ab1e11feb0a75", inputType: "text", width: 6 }
         ],
         color: [255, 217, 0]
     }

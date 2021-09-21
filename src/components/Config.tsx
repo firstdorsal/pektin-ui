@@ -6,7 +6,6 @@ import { AddCircle, RemoveCircle } from "@material-ui/icons";
 
 interface ConfigProps {
     readonly config: t.Config;
-    readonly updateLocalConfig: any;
     readonly g: t.Glob;
 }
 interface ConfigState {
@@ -23,18 +22,11 @@ export default class Config extends Component<ConfigProps, ConfigState> {
     };
 
     render = () => {
-        const codeStyle = this.props?.config?.local?.codeStyle;
         return (
             <Container>
                 <br />
                 <h2>Code Style</h2>
-                <Select variant="standard" style={{ width: "230px" }} onChange={e => this.props.updateLocalConfig(e, "codeStyle")} name="codeStyle" value={codeStyle}>
-                    {l.codeStyles.map(codeStyle => (
-                        <MenuItem value={codeStyle} key={codeStyle}>
-                            {codeStyle}
-                        </MenuItem>
-                    ))}
-                </Select>
+                <CodeStylePicker config={this.props.config} g={this.props.g} />
                 <br />
                 <br />
                 <h2>Variables</h2>
@@ -45,7 +37,7 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                     <TextField value={this.state.newValue} name="newValue" onChange={this.handleInputChange} placeholder="value" />
                     <IconButton
                         onClick={() => {
-                            this.props.updateLocalConfig({ key: this.state.newKey, value: this.state.newValue }, "newVariable");
+                            this.props.g.updateLocalConfig({ key: this.state.newKey, value: this.state.newValue }, "newVariable");
                             this.setState({ newKey: "", newValue: "" });
                         }}
                     >
@@ -56,15 +48,34 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                 {this.props.config.local.variables.map((v, i) => {
                     return (
                         <div key={i}>
-                            <TextField onChange={e => this.props.updateLocalConfig(e, "updateVariable", i)} name="key" placeholder="key" value={v.key} />
-                            <TextField onChange={e => this.props.updateLocalConfig(e, "updateVariable", i)} name="value" placeholder="value" value={v.value} />
-                            <IconButton onClick={e => this.props.updateLocalConfig(i, "removeVariable")}>
+                            <TextField onChange={e => this.props.g.updateLocalConfig(e, "updateVariable", i)} name="key" placeholder="key" value={v.key} />
+                            <TextField onChange={e => this.props.g.updateLocalConfig(e, "updateVariable", i)} name="value" placeholder="value" value={v.value} />
+                            <IconButton onClick={e => this.props.g.updateLocalConfig(i, "removeVariable")}>
                                 <RemoveCircle />
                             </IconButton>
                         </div>
                     );
                 })}
             </Container>
+        );
+    };
+}
+interface CodeStylePickerProps extends ConfigProps {
+    className?: string;
+}
+interface CodeStylePickerState {}
+export class CodeStylePicker extends Component<CodeStylePickerProps, CodeStylePickerState> {
+    render = () => {
+        const codeStyle = this.props?.config?.local?.codeStyle;
+
+        return (
+            <Select className={this.props.className} variant="standard" style={{ width: "230px" }} onChange={e => this.props.g.updateLocalConfig(e, "codeStyle")} name="codeStyle" value={codeStyle}>
+                {l.codeStyles.map(codeStyle => (
+                    <MenuItem className={this.props.className} value={codeStyle} key={codeStyle}>
+                        {codeStyle}
+                    </MenuItem>
+                ))}
+            </Select>
         );
     };
 }

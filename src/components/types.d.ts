@@ -2,6 +2,7 @@ export interface Glob {
     contextMenu: any;
     changeContextMenu: any;
     cmAction: string;
+    updateLocalConfig: any;
 }
 export interface VaultAuth {
     endpoint: string;
@@ -34,6 +35,7 @@ export interface LocalConfig {
     defaultActiveTab: number;
     codeStyle: codeStyle;
     variables: Variable[];
+    synesthesia: boolean;
 }
 
 export interface PektinUiConnectionConfig {

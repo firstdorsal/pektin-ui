@@ -26,7 +26,7 @@ export default class App extends Component<AppProps, AppState> {
         config: l.defaulConfig,
         db: new l.PektinUiDb(),
         configLoaded: false,
-        g: { contextMenu: false, changeContextMenu: false, cmAction: "" }
+        g: { contextMenu: false, changeContextMenu: false, cmAction: "", updateLocalConfig: false }
     };
 
     initDb = async () => {
@@ -79,16 +79,17 @@ export default class App extends Component<AppProps, AppState> {
     };
 
     componentDidMount = async () => {
+        // handle config
         await this.initDb();
         await this.loadLocalConfig();
         this.loadAuth();
         await this.loadPektinConfig();
-        this.setState(({ g }) => ({ configLoaded: true, g: { ...g, changeContextMenu: this.changeContextMenu } }));
-        document.addEventListener("click", this.handleClick);
+
+        // handle custom right click menu
+        this.setState(({ g }) => ({ configLoaded: true, g: { ...g, changeContextMenu: this.changeContextMenu, updateLocalConfig: this.updateLocalConfig } }));
         document.addEventListener("contextmenu", this.handleContextMenu);
     };
     componentWillUnmount() {
-        document.removeEventListener("click", this.handleClick);
         document.removeEventListener("contextmenu", this.handleContextMenu);
     }
 
@@ -97,15 +98,18 @@ export default class App extends Component<AppProps, AppState> {
         this.loadAuth();
         await this.loadPektinConfig();
     };
-    handleClick = (e: MouseEvent) => {
-        /*@ts-ignore*/
-        if (e.target?.className !== "contextMenu") this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
+
+    handleContextMenuOffClick = (e: any) => {
+        e.preventDefault();
+        this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
     };
+
     handleContextMenu = (e: any) => {
         if (e.ctrlKey || e.shiftKey || e.altKey) return this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
         const target = e.target;
         let action = "";
         if (target.tagName === "INPUT") action = "paste";
+        if (target.tagName === "PRE") action = "code";
         if (!action.length) return this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
         e.preventDefault();
         this.setState(({ g }) => ({ g: { ...g, contextMenu: e, cmAction: action } }));
@@ -117,6 +121,7 @@ export default class App extends Component<AppProps, AppState> {
 
         return (
             <Router>
+                {this.state.g.contextMenu ? <div onClick={this.handleContextMenuOffClick} onContextMenu={this.handleContextMenuOffClick} className="cmOverlay" /> : ""}
                 <Switch>
                     <Route exact path="/auth" render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />} />
 
@@ -140,7 +145,7 @@ export default class App extends Component<AppProps, AppState> {
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/config/">
                         <Base config={this.state.config}>
-                            <ConfigView g={this.state.g} updateLocalConfig={this.updateLocalConfig} config={this.state.config} />
+                            <ConfigView g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
 

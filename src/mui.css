@@ -2368,7 +2368,7 @@ button.MuiButtonBase-root {
 }
 */
 button[aria-selected="false"].MuiButtonBase-root {
-    border-bottom: 2px solid transparent;
+    padding-bottom: 2px;
 }
 button[aria-selected="true"].MuiButtonBase-root {
     border-bottom: 2px solid var(--a2);

@@ -52,7 +52,10 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
             if (newNameData[0] === ogName && i > 0) break;
         }
         const allRecords: t.SimpleDnsRecord[] = await Promise.all(allRecordsRequests);
-        return allRecords;
+        return allRecords.map((record: any) => {
+            if (record.type === "TYPE61") record.type = "OPENPGPKEY";
+            return record;
+        });
         //console.log(allRecords.map(l.simpleDnsRecordToRedisEntry));
     };
     handleChange = (e: any) => {
@@ -60,6 +63,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
     };
     import = async () => {
         const records = await this.walk(this.state.domainName, this.state.providerName, this.state.limit);
+        console.log(records);
         this.props.import(records.map(l.simpleDnsRecordToRedisEntry).filter(l.isSupportedRecord));
     };
 

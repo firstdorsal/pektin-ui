@@ -26,7 +26,7 @@ body {
     width: 100vw;
     overflow: hidden;
     user-select: none;
-
+    background: black;
     /*color: var(--f1);*/
 }
 
@@ -81,14 +81,16 @@ pre {
     font-family: monospace;
     font-size: 14px;
 }
-pre {
-    user-select: text;
-}
-
 code,
 code * {
     white-space: pre-wrap !important;
     word-wrap: break-word;
+    pointer-events: none;
+}
+
+pre {
+    user-select: text;
+    cursor: text;
 }
 
 .__json-string__ {
@@ -139,6 +141,11 @@ tr:hover {
 .rowWrapper {
     content-visibility: auto;
 }
+
+.rowWrapper {
+    border-bottom-color: lightgrey !important;
+}
+
 .recRow .MuiInput-underline:before {
     border: none;
 }
@@ -229,4 +236,13 @@ aside h2 {
     width: var(--aside-width);
     padding-top: 5px;
     bottom: 10px;
+}
+
+.cmOverlay {
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    top: 0px;
+    z-index: 2;
 }

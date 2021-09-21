@@ -91,7 +91,10 @@ export default class Row extends PureComponent<RowProps, RowState> {
         const rr = rec0.value.rr_set[0];
         const color = JSON.stringify(l.rrTemplates[rec0.value.rr_type]?.color).replace("[", "").replace("]", "") || "0 0 0";
         return (
-            <div className="rowWrapper" style={{ ...this.props.style, background: `rgba(${color},0.1)` }}>
+            <div
+                className="rowWrapper"
+                style={{ ...this.props.style, background: this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "", borderBottom: this.props.config.local.synesthesia ? "" : "1px solid" }}
+            >
                 <div className="recRow" style={{ borderColor: `rgb(${color})`, position: "relative" }}>
                     <span style={{ left: "10px", top: "10px" }}>
                         <Checkbox checked={this.props.meta?.selected} name="selected" onChange={e => this.props.changeMeta(e, p.index, "selected")} />

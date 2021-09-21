@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { Button, Grid, TextField, Container, Paper } from "@material-ui/core";
 import { Ballot } from "@material-ui/icons";
 import * as t from "./types";
@@ -52,20 +52,27 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
         rec0: defaultSOA
     };
 
-    handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (!event?.target?.name || !event?.target?.value === undefined) return;
+    handleChange = (e: any, mode: string = "default") => {
+        const n = mode === "default" ? e?.target?.name : e.name;
+        const v = mode === "default" ? e?.target?.value : e.value;
+        if (!n || !v === undefined) return;
 
         this.setState((prevState): any => {
             const { rec0 } = prevState;
             const rec1 = rec0.value;
             //if (event.target.name === "dnssec") rec1.dnssec = event.target.checked;
-            if (event.target.name === "ttl") rec1.rr_set[0].ttl = parseInt(event.target.value);
+            if (n === "ttl") rec1.rr_set[0].ttl = parseInt(v);
             const soa = rec1.rr_set[0].value as t.SOA;
-            if (event.target.name === "mname") soa.SOA.mname = l.absoluteName(event.target.value);
-            if (event.target.name === "rname") soa.SOA.rname = l.absoluteName(event.target.value).replace("@", ".");
-            if (event.target.name === "name") rec0.name = l.absoluteName(event.target.value) + ":SOA";
-            return { rec0, [event.target.name]: event.target.value };
+            if (n === "mname") soa.SOA.mname = l.absoluteName(v);
+            if (n === "rname") soa.SOA.rname = l.absoluteName(v).replace("@", ".");
+            if (n === "name") rec0.name = l.absoluteName(v) + ":SOA";
+            return { rec0, [n]: v };
         });
+    };
+    cmAction = (name: string, action: string, value: string | number) => {
+        if (action === "paste") {
+            this.handleChange({ name, value }, action);
+        }
     };
 
     render = () => {
@@ -117,7 +124,9 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                     />
                                 </div>
                                 <div>
-                                    <TextField
+                                    <TextFieldWithVar
+                                        config={this.props.config}
+                                        cmAction={this.cmAction}
                                         variant="standard"
                                         type="number"
                                         onChange={this.handleChange}
@@ -148,17 +157,48 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     DNSSEC
 </div>
 */
-/*
-interface TextFieldWithVarState {}
+
+interface TextFieldWithVarState {
+    readonly contextMenu: any;
+}
 
 export class TextFieldWithVar extends Component<any, TextFieldWithVarState> {
+    state: TextFieldWithVarState = {
+        contextMenu: false
+    };
     handleRightClick = (e: any) => {
         e.preventDefault();
-        console.log(e);
+        this.setState({ contextMenu: e });
     };
     render = () => {
-        const variableMenu = () => {};
-        return <TextField {...this.props} onContextMenu={this.handleRightClick} />;
+        const contextMenu = () => {
+            return (
+                <div className="contextMenu" style={{ position: "fixed", left: this.state.contextMenu.clientX, top: this.state.contextMenu.clientY, background: "var(--b1)", zIndex: 10 }}>
+                    <div className="contextMenu"></div>
+                    {this.props.config.local.variables.map((e: any, i: number) => {
+                        return (
+                            <div
+                                className="contextMenu"
+                                key={i}
+                                style={{ background: "var(--b1)", cursor: "pointer" }}
+                                onClick={() => {
+                                    this.props.cmAction("ttl", "paste", e.value);
+                                    this.setState({ contextMenu: false });
+                                }}
+                            >
+                                {e.key}
+                            </div>
+                        );
+                    })}
+                </div>
+            );
+        };
+
+        return (
+            <Fragment>
+                <TextField {...this.props} onContextMenu={this.handleRightClick} />
+                {this.state.contextMenu ? contextMenu() : ""}
+            </Fragment>
+        );
     };
 }
-*/

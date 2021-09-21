@@ -1,3 +1,7 @@
+export interface Glob {
+    contextMenu: any;
+    changeContextMenu: any;
+}
 export interface VaultAuth {
     endpoint: string;
     token: string;

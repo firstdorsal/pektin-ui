@@ -1,10 +1,11 @@
-import React, { Component, Fragment } from "react";
+import { Component } from "react";
 import { Button, Grid, TextField, Container, Paper } from "@material-ui/core";
 import { Ballot } from "@material-ui/icons";
 import * as t from "./types";
 import * as l from "./lib";
 import * as pektinApi from "./apis/pektin";
 import DataDisplay from "../components/DataDisplay";
+import { ContextMenu } from "./ContextMenu";
 
 const defaultSOA: t.RedisEntry = {
     name: ".:SOA",
@@ -31,6 +32,7 @@ const defaultSOA: t.RedisEntry = {
 
 interface AddDomainProps {
     config: t.Config;
+    g: t.Glob;
 }
 
 interface AddDomainState {
@@ -69,7 +71,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
             return { rec0, [n]: v };
         });
     };
-    cmAction = (name: string, action: string, value: string | number) => {
+    cmClick = (name: string, action: string, value: string | number) => {
         if (action === "paste") {
             this.handleChange({ name, value }, action);
         }
@@ -78,6 +80,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     render = () => {
         return (
             <Container style={{ marginTop: "20px" }}>
+                <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
                 <Grid container spacing={3} style={{ maxWidth: "100%" }}>
                     <Grid item xs={4}>
                         <Paper elevation={3}>
@@ -91,7 +94,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         variant="standard"
                                         required
                                         name="name"
-                                        label="NAME"
+                                        label="name"
                                         onChange={this.handleChange}
                                         value={this.state.name}
                                         helperText="Name of the domain you want to add"
@@ -104,7 +107,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         onChange={this.handleChange}
                                         name="mname"
                                         required
-                                        label="MNAME"
+                                        label="mname"
                                         placeholder="ns1.example.com"
                                         value={this.state.mname}
                                         helperText="Address of the primary name server"
@@ -117,16 +120,14 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         onChange={this.handleChange}
                                         name="rname"
                                         required
-                                        label="RNAME"
+                                        label="rname"
                                         placeholder="hostmaster.example.com"
                                         value={this.state.rname}
                                         helperText="Contact of the domain admin"
                                     />
                                 </div>
                                 <div>
-                                    <TextFieldWithVar
-                                        config={this.props.config}
-                                        cmAction={this.cmAction}
+                                    <TextField
                                         variant="standard"
                                         type="number"
                                         onChange={this.handleChange}
@@ -157,48 +158,3 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     DNSSEC
 </div>
 */
-
-interface TextFieldWithVarState {
-    readonly contextMenu: any;
-}
-
-export class TextFieldWithVar extends Component<any, TextFieldWithVarState> {
-    state: TextFieldWithVarState = {
-        contextMenu: false
-    };
-    handleRightClick = (e: any) => {
-        e.preventDefault();
-        this.setState({ contextMenu: e });
-    };
-    render = () => {
-        const contextMenu = () => {
-            return (
-                <div className="contextMenu" style={{ position: "fixed", left: this.state.contextMenu.clientX, top: this.state.contextMenu.clientY, background: "var(--b1)", zIndex: 10 }}>
-                    <div className="contextMenu"></div>
-                    {this.props.config.local.variables.map((e: any, i: number) => {
-                        return (
-                            <div
-                                className="contextMenu"
-                                key={i}
-                                style={{ background: "var(--b1)", cursor: "pointer" }}
-                                onClick={() => {
-                                    this.props.cmAction("ttl", "paste", e.value);
-                                    this.setState({ contextMenu: false });
-                                }}
-                            >
-                                {e.key}
-                            </div>
-                        );
-                    })}
-                </div>
-            );
-        };
-
-        return (
-            <Fragment>
-                <TextField {...this.props} onContextMenu={this.handleRightClick} />
-                {this.state.contextMenu ? contextMenu() : ""}
-            </Fragment>
-        );
-    };
-}

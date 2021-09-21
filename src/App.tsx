@@ -17,7 +17,7 @@ interface AppState {
     readonly config: t.Config;
     readonly db: l.PektinUiDb;
     readonly configLoaded: boolean;
-    readonly contextMenu: any;
+    readonly g: t.Glob;
 }
 interface AppProps {}
 
@@ -26,7 +26,7 @@ export default class App extends Component<AppProps, AppState> {
         config: l.defaulConfig,
         db: new l.PektinUiDb(),
         configLoaded: false,
-        contextMenu: false
+        g: { contextMenu: false, changeContextMenu: false }
     };
 
     initDb = async () => {
@@ -83,8 +83,14 @@ export default class App extends Component<AppProps, AppState> {
         await this.loadLocalConfig();
         this.loadAuth();
         await this.loadPektinConfig();
-        this.setState({ configLoaded: true });
+        this.setState({ configLoaded: true, g: { contextMenu: false, changeContextMenu: this.changeContextMenu } });
+        document.addEventListener("click", this.handleClick);
+        document.addEventListener("contextmenu", this.handleContextMenu);
     };
+    componentWillUnmount() {
+        document.removeEventListener("click", this.handleClick);
+        document.removeEventListener("contextmenu", this.handleContextMenu);
+    }
 
     saveAuth = async (vaultAuth: t.VaultAuth) => {
         sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
@@ -93,14 +99,15 @@ export default class App extends Component<AppProps, AppState> {
     };
     handleClick = (e: MouseEvent) => {
         /*@ts-ignore*/
-        if (e.target?.className !== "contextMenu") this.setState({ contextMenu: false });
+        if (e.target?.className !== "contextMenu") this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
     };
     handleContextMenu = (e: MouseEvent) => {
-        if (e.ctrlKey || e.shiftKey || e.altKey) return;
+        if (e.ctrlKey || e.shiftKey || e.altKey) return this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
         e.preventDefault();
 
-        this.setState({ contextMenu: e });
+        this.setState(({ g }) => ({ g: { ...g, contextMenu: e } }));
     };
+    changeContextMenu = (value: any) => this.setState(({ g }) => ({ g: { ...g, contextMenu: value } }));
 
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
@@ -115,7 +122,7 @@ export default class App extends Component<AppProps, AppState> {
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
                         <Base config={this.state.config}>
-                            <AddDomain config={this.state.config} />
+                            <AddDomain g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/import">

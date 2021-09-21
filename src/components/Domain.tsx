@@ -11,6 +11,7 @@ import Row from "./DomainRow";
 import { AutoSizer, List } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
 import { FaSortAlphaDownAlt, FaSortAlphaDown, FaSortNumericDownAlt, FaSortNumericDown } from "react-icons/fa";
+import { ContextMenu } from "./ContextMenu";
 
 interface DomainState {
     readonly data: t.RedisEntry[];
@@ -26,10 +27,11 @@ interface DomainRouterProps {
 }
 
 interface DomainProps extends RouteComponentProps<DomainRouterProps> {
-    config: t.Config;
-    variant?: "headless";
-    records?: t.RedisEntry[];
-    style?: any;
+    readonly config: t.Config;
+    readonly variant?: "headless";
+    readonly records?: t.RedisEntry[];
+    readonly style?: any;
+    readonly g: t.Glob;
 }
 
 interface ColumnItem {
@@ -58,12 +60,12 @@ class Domain extends Component<DomainProps, DomainState> {
     list: any;
     saveRecord = () => {};
 
-    changeMeta = (e: any, index: number, fieldType: string) => {
+    changeMeta = (e: any, index: number, fieldName: string) => {
         this.setState(({ meta }) => {
             const m = meta[index];
-            if (fieldType === "selected") {
+            if (fieldName === "selected") {
                 m.selected = !meta[index].selected;
-            } else if (fieldType === "expanded") {
+            } else if (fieldName === "expanded") {
                 m.expanded = !meta[index].expanded;
                 this.list.recomputeRowHeights();
             }
@@ -72,27 +74,33 @@ class Domain extends Component<DomainProps, DomainState> {
         });
     };
 
-    handleChange = (e: any, i: number, fieldType: string) => {
+    handleChange = (e: any, mode: string = "default") => {
+        let fullName = mode === "default" ? e?.target?.name : e.name;
+        const v = mode === "default" ? e?.target?.value : e.value;
+        if (!fullName || !v === undefined) return;
+        const [i, fieldName, fieldChildName] = fullName.split(":");
+
         this.setState(({ data, meta }) => {
             const rr_set = data[i].value.rr_set[0];
             const rr_type = data[i].value.rr_type;
-            if (fieldType === "name") {
-                data[i].name = `${e.target.value}:${l.getTypeFromRedisEntry(data[i])}`;
-            } else if (fieldType === "rrField") {
+
+            if (fieldName === "name") {
+                data[i].name = `${v}:${l.getTypeFromRedisEntry(data[i])}`;
+            } else if (fieldName === "rrField") {
                 if (typeof rr_set.value[rr_type] === "string") {
-                    rr_set.value[rr_type] = e.target.value;
+                    rr_set.value[rr_type] = v;
                 } else {
                     /*@ts-ignore*/
-                    rr_set.value[rr_type][e.target.name] = e.target.value;
+                    rr_set.value[rr_type][fieldChildName] = v;
                 }
-            } else if (fieldType === "ttl") {
-                if (e.target.value >= 0) rr_set.ttl = e.target.value;
-            } else if (fieldType === "type") {
-                data[i].name = `${l.getNameFromRedisEntry(data[i])}:${e.target.value}`;
-                data[i].value.rr_type = e.target.value;
-                data[i].value.rr_set[0].value = l.rrTemplates[e.target.value].template;
-            } else if (fieldType === "switch") {
-                //if (e.target.name === "dnssec") data[rec_index].value.dnssec = e.target.checked;
+            } else if (fieldName === "ttl") {
+                if (v >= 0) rr_set.ttl = v;
+            } else if (fieldName === "type") {
+                data[i].name = `${l.getNameFromRedisEntry(data[i])}:${v}`;
+                data[i].value.rr_type = v;
+                data[i].value.rr_set[0].value = l.rrTemplates[v].template;
+            } else if (fieldName === "switch") {
+                //if (n === "dnssec") data[rec_index].value.dnssec = e.target.checked;
             }
             meta[i].changed = !isEqual(data[i], this.state.ogData[i]);
             return { data, meta };
@@ -171,6 +179,11 @@ class Domain extends Component<DomainProps, DomainState> {
             return { data, meta, columnItems };
         });
     };
+    cmClick = (target: any, action: string, value: string | number) => {
+        if (action === "paste") {
+            this.handleChange({ name: target.name, value }, action);
+        }
+    };
 
     render = () => {
         const rowRenderer = (r: { key: any; index: number; style: any; data: t.RedisEntry; meta: t.DomainMeta }) => {
@@ -206,6 +219,8 @@ class Domain extends Component<DomainProps, DomainState> {
         const tableHead = () => {
             return (
                 <div style={{ height: "70px", position: "relative", borderBottom: "1px solid var(--b1)", width: "100%" }}>
+                    <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
+
                     <span style={{ left: "15px", top: "10px", position: "absolute" }}>
                         <Checkbox checked={this.state.selectAll} onChange={this.selectAll} />
                     </span>
@@ -244,10 +259,12 @@ class Domain extends Component<DomainProps, DomainState> {
                         {({ height, width }) => (
                             <Fragment>
                                 <List
+                                    overscanRowCount={0}
                                     style={{ overflowY: "scroll" }}
                                     ref={ref => (this.list = ref)}
                                     height={height}
                                     width={width}
+                                    estimatedRowSize={70}
                                     rowHeight={({ index }) => {
                                         return this.state.meta[index].expanded ? 670 : 70;
                                     }}

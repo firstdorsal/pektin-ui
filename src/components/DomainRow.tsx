@@ -29,10 +29,10 @@ export default class Row extends PureComponent<RowProps, RowState> {
                 <Fragment>
                     <div>
                         <TextField
-                            onChange={e => this.props.handleChange(e, p.index, "rrField")}
+                            onChange={e => this.props.handleChange(e)}
                             helperText={l.rrTemplates["SOA"].fields[0].helperText}
                             placeholder="ns1.example.com"
-                            name="mname"
+                            name={`${p.index}:rrField:mname`}
                             label="mname"
                             value={v.mname + ""}
                         />
@@ -40,10 +40,10 @@ export default class Row extends PureComponent<RowProps, RowState> {
                     <br />
                     <div>
                         <TextField
-                            onChange={e => this.props.handleChange(e, p.index, "rrField")}
+                            onChange={e => this.props.handleChange(e)}
                             helperText={l.rrTemplates["SOA"].fields[1].helperText}
                             placeholder="hostmaster.example.com"
-                            name="rname"
+                            name={`${p.index}:rrField:rname`}
                             label="rname"
                             value={v.rname + ""}
                         />
@@ -68,13 +68,13 @@ export default class Row extends PureComponent<RowProps, RowState> {
                                 size="small"
                                 type={field.inputType}
                                 style={{ width: "100%" }}
-                                onChange={e => this.props.handleChange(e, p.index, "rrField")}
+                                onChange={e => this.props.handleChange(e)}
                                 placeholder={field.placeholder.toString()}
                                 InputLabelProps={{
                                     shrink: true
                                 }}
                                 label={field.name}
-                                name={field.name}
+                                name={`${p.index}:rrField:${field.name}`}
                                 value={fields.length > 1 ? v[field.name] + "" : v + ""}
                             />
                         </Grid>
@@ -94,17 +94,17 @@ export default class Row extends PureComponent<RowProps, RowState> {
             <div className="rowWrapper" style={{ ...this.props.style, background: `rgba(${color},0.1)` }}>
                 <div className="recRow" style={{ borderColor: `rgb(${color})`, position: "relative" }}>
                     <span style={{ left: "10px", top: "10px" }}>
-                        <Checkbox checked={this.props.meta?.selected} onChange={e => this.props.changeMeta(e, p.index, "selected")} />
+                        <Checkbox checked={this.props.meta?.selected} name="selected" onChange={e => this.props.changeMeta(e, p.index, "selected")} />
                     </span>
 
                     <span style={{ width: "250px", left: "70px", top: "18px" }}>
-                        <Input onInput={e => this.props.handleChange(e, p.index, "name")} type="text" disabled={!editable} style={{ width: "100%" }} value={l.getNameFromRedisEntry(rec0)} />
+                        <Input onInput={e => this.props.handleChange(e)} name={`${p.index}:name:`} type="text" disabled={!editable} style={{ width: "100%" }} value={l.getNameFromRedisEntry(rec0)} />
                     </span>
                     <span style={{ width: "100px", left: "340px", top: "18px" }}>
                         {rec0.value.rr_type === "SOA" ? (
                             <Input disabled={!editable} value={rec0.value.rr_type} />
                         ) : (
-                            <Select style={{ width: "100%" }} name="type" disabled={!editable} value={rec0.value.rr_type} onChange={e => this.props.handleChange(e, p.index, "type")}>
+                            <Select style={{ width: "100%" }} name={`${p.index}:type:`} disabled={!editable} value={rec0.value.rr_type} onChange={e => this.props.handleChange(e)}>
                                 {["A", "AAAA", "NS", "CNAME", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(e => (
                                     <MenuItem key={e} value={e}>
                                         {e}
@@ -114,13 +114,13 @@ export default class Row extends PureComponent<RowProps, RowState> {
                         )}
                     </span>
                     <span style={{ width: "100px", left: "460px", top: "18px" }}>
-                        <Input onInput={e => this.props.handleChange(e, p.index, "ttl")} type="number" value={rr.ttl} />
+                        <Input onInput={e => this.props.handleChange(e)} name={`${p.index}:ttl:`} type="number" value={rr.ttl} />
                     </span>
                     <span style={{ right: "100px", left: "580px", top: "5px" }}>{this.simpleView(rec0)}</span>
 
                     <span style={{ width: "50px", position: "absolute", right: "40px", top: "17px" }}>
-                        <IconButton aria-label="expand row" size="small" onClick={e => this.props.changeMeta(e, p.index, "expanded")}>
-                            {this.props.meta?.expanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                        <IconButton size="small" onClick={e => this.props.changeMeta(e, p.index, "expanded")}>
+                            {this.props.meta?.expanded ? <KeyboardArrowUp name="expanded" /> : <KeyboardArrowDown name="expanded" />}
                         </IconButton>
                     </span>
                     <span style={{ width: "50px", position: "absolute", right: "0px", top: "13px" }}>

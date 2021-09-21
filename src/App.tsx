@@ -26,7 +26,7 @@ export default class App extends Component<AppProps, AppState> {
         config: l.defaulConfig,
         db: new l.PektinUiDb(),
         configLoaded: false,
-        g: { contextMenu: false, changeContextMenu: false }
+        g: { contextMenu: false, changeContextMenu: false, cmAction: "" }
     };
 
     initDb = async () => {
@@ -83,7 +83,7 @@ export default class App extends Component<AppProps, AppState> {
         await this.loadLocalConfig();
         this.loadAuth();
         await this.loadPektinConfig();
-        this.setState({ configLoaded: true, g: { contextMenu: false, changeContextMenu: this.changeContextMenu } });
+        this.setState(({ g }) => ({ configLoaded: true, g: { ...g, changeContextMenu: this.changeContextMenu } }));
         document.addEventListener("click", this.handleClick);
         document.addEventListener("contextmenu", this.handleContextMenu);
     };
@@ -101,11 +101,14 @@ export default class App extends Component<AppProps, AppState> {
         /*@ts-ignore*/
         if (e.target?.className !== "contextMenu") this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
     };
-    handleContextMenu = (e: MouseEvent) => {
+    handleContextMenu = (e: any) => {
         if (e.ctrlKey || e.shiftKey || e.altKey) return this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
+        const target = e.target;
+        let action = "";
+        if (target.tagName === "INPUT") action = "paste";
+        if (!action.length) return this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
         e.preventDefault();
-
-        this.setState(({ g }) => ({ g: { ...g, contextMenu: e } }));
+        this.setState(({ g }) => ({ g: { ...g, contextMenu: e, cmAction: action } }));
     };
     changeContextMenu = (value: any) => this.setState(({ g }) => ({ g: { ...g, contextMenu: value } }));
 
@@ -127,17 +130,17 @@ export default class App extends Component<AppProps, AppState> {
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/import">
                         <Base config={this.state.config}>
-                            <ImportDomain config={this.state.config} />
+                            <ImportDomain g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
                         <Base config={this.state.config}>
-                            <Domain config={this.state.config} />
+                            <Domain g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/config/">
                         <Base config={this.state.config}>
-                            <ConfigView updateLocalConfig={this.updateLocalConfig} config={this.state.config} />
+                            <ConfigView g={this.state.g} updateLocalConfig={this.updateLocalConfig} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
 

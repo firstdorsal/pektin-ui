@@ -7,6 +7,7 @@ import { AddCircle, RemoveCircle } from "@material-ui/icons";
 interface ConfigProps {
     readonly config: t.Config;
     readonly updateLocalConfig: any;
+    readonly g: t.Glob;
 }
 interface ConfigState {
     readonly newKey: string;
@@ -37,6 +38,8 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                 <br />
                 <br />
                 <h2>Variables</h2>
+                <p>These are stored locally in your browser and can be pasted in every input field via the context menu (right click)</p>
+                <p>The default context menu can still be accessed by holding alt, shift or ctrl</p>
                 <div>
                     <TextField value={this.state.newKey} name="newKey" onChange={this.handleInputChange} placeholder="key" />
                     <TextField value={this.state.newValue} name="newValue" onChange={this.handleInputChange} placeholder="value" />

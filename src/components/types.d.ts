@@ -1,6 +1,7 @@
 export interface Glob {
     contextMenu: any;
     changeContextMenu: any;
+    cmAction: string;
 }
 export interface VaultAuth {
     endpoint: string;

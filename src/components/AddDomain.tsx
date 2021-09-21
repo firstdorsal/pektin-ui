@@ -71,9 +71,9 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
             return { rec0, [n]: v };
         });
     };
-    cmClick = (name: string, action: string, value: string | number) => {
+    cmClick = (target: any, action: string, value: string | number) => {
         if (action === "paste") {
-            this.handleChange({ name, value }, action);
+            this.handleChange({ name: target.name, value }, action);
         }
     };
 
@@ -91,6 +91,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                 </div>
                                 <div>
                                     <TextField
+                                        className="cm"
                                         variant="standard"
                                         required
                                         name="name"
@@ -103,6 +104,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
 
                                 <div>
                                     <TextField
+                                        className="cm"
                                         variant="standard"
                                         onChange={this.handleChange}
                                         name="mname"
@@ -116,6 +118,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
 
                                 <div>
                                     <TextField
+                                        className="cm"
                                         variant="standard"
                                         onChange={this.handleChange}
                                         name="rname"
@@ -128,6 +131,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                 </div>
                                 <div>
                                     <TextField
+                                        className="cm"
                                         variant="standard"
                                         type="number"
                                         onChange={this.handleChange}

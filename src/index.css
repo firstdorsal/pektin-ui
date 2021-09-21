@@ -117,7 +117,7 @@ aside > h1 {
     font-weight: 900;
     text-transform: uppercase;
 }
-
+/*
 table td {
     font-family: monospace !important;
     user-select: text;
@@ -130,7 +130,6 @@ tr {
     display: block !important;
 }
 
-/*
 tr:hover {
     transition: ease-in-out 200ms;
     opacity: 90%;
@@ -138,7 +137,7 @@ tr:hover {
 */
 
 .rowWrapper {
-    border-bottom: 1px solid lightgrey;
+    content-visibility: auto;
 }
 .recRow .MuiInput-underline:before {
     border: none;

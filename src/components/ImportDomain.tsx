@@ -5,7 +5,8 @@ import Domain from "./Domain";
 import * as t from "./types";
 
 interface ImportDomainProps {
-    config: t.Config;
+    readonly config: t.Config;
+    readonly g: t.Glob;
 }
 interface ImportDomainState {
     readonly activeStep: number;
@@ -62,7 +63,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
             );
         };
         const step2 = () => {
-            return <Domain style={{ height: "calc(100% - 70px)" }} records={this.state.records} config={this.props.config}></Domain>;
+            return <Domain g={this.props.g} style={{ height: "calc(100% - 70px)" }} records={this.state.records} config={this.props.config}></Domain>;
         };
 
         const steps = [step1, step2];

@@ -94,7 +94,20 @@ export interface ResourceRecord {
     value: ResourceRecordValue;
 }
 
-export type RRTypes = "A" | "AAAA" | "NS" | "CNAME" | "PTR" | "SOA" | "MX" | "TXT" | "DNSKEY" | "SRV" | "CAA" | "OPENPGPKEY" | "TLSA";
+export type RRTypes =
+    | "A"
+    | "AAAA"
+    | "NS"
+    | "CNAME"
+    | "PTR"
+    | "SOA"
+    | "MX"
+    | "TXT"
+    | "DNSKEY"
+    | "SRV"
+    | "CAA"
+    | "OPENPGPKEY"
+    | "TLSA";
 
 // the resource record value
 export type ResourceRecordValue = A | AAAA | NS | CNAME | PTR | SOA | MX | TXT | DNSKEY | SRV | CAA | OPENPGPKEY | TLSA;

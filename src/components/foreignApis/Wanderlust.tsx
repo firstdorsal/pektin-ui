@@ -142,7 +142,9 @@ const providers: { [provider: string]: getDnsRecord } = {
         return answer;
     },
     Cloudflare: async (name: string, type: string): Promise<any> => {
-        const res = await f(`https://cloudflare-dns.com/dns-query?name=${name}&type=${type}`, { headers: { accept: "application/dns-json" } });
+        const res = await f(`https://cloudflare-dns.com/dns-query?name=${name}&type=${type}`, {
+            headers: { accept: "application/dns-json" }
+        });
         const json = await res.json();
         const answer = json.Answer ? json.Answer[0] : json.Authority[0];
         answer.ttl = answer.TTL;

@@ -26,7 +26,6 @@ body {
     width: 100vw;
     overflow: hidden;
     user-select: none;
-    background: black;
     /*color: var(--f1);*/
 }
 
@@ -119,31 +118,9 @@ aside > h1 {
     font-weight: 900;
     text-transform: uppercase;
 }
-/*
-table td {
-    font-family: monospace !important;
-    user-select: text;
-}
-
-thead,
-tbody,
-table,
-tr {
-    display: block !important;
-}
-
-tr:hover {
-    transition: ease-in-out 200ms;
-    opacity: 90%;
-}
-*/
 
 .rowWrapper {
     content-visibility: auto;
-}
-
-.rowWrapper {
-    border-bottom-color: lightgrey !important;
 }
 
 .recRow .MuiInput-underline:before {
@@ -163,7 +140,6 @@ tr:hover {
 }
 
 .recRow {
-    border-left: 5px solid transparent;
     height: 70px;
     overflow: hidden;
 }

@@ -1,9 +1,22 @@
 import * as l from "./lib";
 import * as t from "./types";
-import { PureComponent, Fragment } from "react";
-import { Collapse, IconButton, Checkbox, TextField, Input, Fab, Select, MenuItem, Grid, Paper, Container } from "@material-ui/core";
+import { Component, Fragment } from "react";
+import {
+    Collapse,
+    IconButton,
+    Checkbox,
+    TextField,
+    Input,
+    Fab,
+    Select,
+    MenuItem,
+    Grid,
+    Paper,
+    Container
+} from "@material-ui/core";
 import DataDisplay from "./DataDisplay";
 import { Ballot, Check, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
+import isEqual from "lodash/isEqual";
 
 interface RowProps {
     handleChange: Function;
@@ -19,7 +32,7 @@ interface RowState {
     //dnssec: boolean;
 }
 
-export default class Row extends PureComponent<RowProps, RowState> {
+export default class Row extends Component<RowProps, RowState> {
     advancedView = (rec0: t.RedisEntry, rr: t.ResourceRecord) => {
         const p = this.props;
 
@@ -83,6 +96,10 @@ export default class Row extends PureComponent<RowProps, RowState> {
             </Grid>
         );
     };
+    shouldComponentUpdate = (nextProps: RowProps, nextState: RowState) => {
+        if (isEqual(this.props, nextProps)) return false;
+        return true;
+    };
 
     render = () => {
         const p = this.props;
@@ -90,24 +107,47 @@ export default class Row extends PureComponent<RowProps, RowState> {
         const editable = rec0.value.rr_type === "SOA" ? false : true;
         const rr = rec0.value.rr_set[0];
         const color = JSON.stringify(l.rrTemplates[rec0.value.rr_type]?.color).replace("[", "").replace("]", "") || "0 0 0";
+
         return (
             <div
                 className="rowWrapper"
-                style={{ ...this.props.style, background: this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "", borderBottom: this.props.config.local.synesthesia ? "" : "1px solid" }}
+                style={{
+                    ...this.props.style,
+                    background: this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "",
+                    borderBottom: this.props.config.local.synesthesia ? "" : "1px solid lightgrey",
+                    borderLeft: `5px solid rgb(${color})`
+                }}
             >
-                <div className="recRow" style={{ borderColor: `rgb(${color})`, position: "relative" }}>
+                <div className="recRow" style={{ position: "relative" }}>
                     <span style={{ left: "10px", top: "10px" }}>
-                        <Checkbox checked={this.props.meta?.selected} name="selected" onChange={e => this.props.changeMeta(e, p.index, "selected")} />
+                        <Checkbox
+                            checked={this.props.meta?.selected}
+                            name="selected"
+                            onChange={e => this.props.changeMeta(e, p.index, "selected")}
+                        />
                     </span>
 
                     <span style={{ width: "250px", left: "70px", top: "18px" }}>
-                        <Input onInput={e => this.props.handleChange(e)} name={`${p.index}:name:`} type="text" disabled={!editable} style={{ width: "100%" }} value={l.getNameFromRedisEntry(rec0)} />
+                        <Input
+                            onInput={e => this.props.handleChange(e)}
+                            name={`${p.index}:name:`}
+                            type="text"
+                            disabled={!editable}
+                            style={{ width: "100%" }}
+                            value={l.getNameFromRedisEntry(rec0)}
+                        />
                     </span>
                     <span style={{ width: "100px", left: "340px", top: "18px" }}>
                         {rec0.value.rr_type === "SOA" ? (
                             <Input disabled={!editable} value={rec0.value.rr_type} />
                         ) : (
-                            <Select style={{ width: "100%" }} name={`${p.index}:type:`} disabled={!editable} value={rec0.value.rr_type} onChange={e => this.props.handleChange(e)}>
+                            <Select
+                                style={{ width: "100%" }}
+                                name={`${p.index}:type:`}
+                                disabled={!editable}
+                                value={rec0.value.rr_type}
+                                onChange={e => this.props.handleChange(e)}
+                            >
                                 {["A", "AAAA", "NS", "CNAME", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(e => (
                                     <MenuItem key={e} value={e}>
                                         {e}
@@ -123,7 +163,11 @@ export default class Row extends PureComponent<RowProps, RowState> {
 
                     <span style={{ width: "50px", position: "absolute", right: "40px", top: "17px" }}>
                         <IconButton size="small" onClick={e => this.props.changeMeta(e, p.index, "expanded")}>
-                            {this.props.meta?.expanded ? <KeyboardArrowUp name="expanded" /> : <KeyboardArrowDown name="expanded" />}
+                            {this.props.meta?.expanded ? (
+                                <KeyboardArrowUp name="expanded" />
+                            ) : (
+                                <KeyboardArrowDown name="expanded" />
+                            )}
                         </IconButton>
                     </span>
                     <span style={{ width: "50px", position: "absolute", right: "0px", top: "13px" }}>
@@ -135,12 +179,16 @@ export default class Row extends PureComponent<RowProps, RowState> {
                 <div
                     className="advancedRow"
                     style={{
-                        borderLeft: `5px solid rgb(${color})`,
                         borderBottom: this.props.meta?.expanded ? "" : "unset"
                     }}
                 >
                     <div>
-                        <Collapse in={this.props.meta?.expanded} style={{ padding: "16px" }} timeout={{ appear: 0, enter: 0, exit: 0 }} unmountOnExit>
+                        <Collapse
+                            in={this.props.meta?.expanded}
+                            style={{ padding: "16px" }}
+                            timeout={{ appear: 0, enter: 0, exit: 0 }}
+                            unmountOnExit
+                        >
                             <Grid container spacing={3} style={{ maxWidth: "100%", margin: "20px 0px" }}>
                                 <Grid item xs={4}>
                                     <Grid item xs={12} style={{ marginBottom: "20px" }}>

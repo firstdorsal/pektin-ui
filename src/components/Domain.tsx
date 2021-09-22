@@ -1,7 +1,7 @@
 import { Component, Fragment } from "react";
-import { Checkbox, IconButton } from "@material-ui/core";
+import { Checkbox, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
-import { AddCircle, Delete, Flare, Map, VerticalAlignCenter } from "@material-ui/icons";
+import { AddCircle, Delete, Flare, Map } from "@material-ui/icons";
 import * as l from "./lib";
 import isEqual from "lodash/isEqual";
 import cloneDeep from "lodash/cloneDeep";
@@ -12,6 +12,7 @@ import { AutoSizer, List } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
 import { FaSortAlphaDownAlt, FaSortAlphaDown, FaSortNumericDownAlt, FaSortNumericDown } from "react-icons/fa";
 import { ContextMenu } from "./ContextMenu";
+import { VscReplaceAll } from "react-icons/vsc";
 
 interface DomainState {
     readonly data: t.RedisEntry[];
@@ -20,6 +21,8 @@ interface DomainState {
     readonly selectAll: boolean;
     readonly columnItems: ColumnItem[];
     readonly defaultOrder: number[];
+    readonly search: string;
+    readonly replace: string;
 }
 
 interface DomainRouterProps {
@@ -28,10 +31,10 @@ interface DomainRouterProps {
 
 interface DomainProps extends RouteComponentProps<DomainRouterProps> {
     readonly config: t.Config;
-    readonly variant?: "headless";
+    readonly g: t.Glob;
+    readonly variant?: "import";
     readonly records?: t.RedisEntry[];
     readonly style?: any;
-    readonly g: t.Glob;
 }
 
 interface ColumnItem {
@@ -55,13 +58,16 @@ class Domain extends Component<DomainProps, DomainState> {
         ogData: [],
         selectAll: false,
         columnItems,
-        defaultOrder: []
+        defaultOrder: [],
+        search: "",
+        replace: ""
     };
     list: any;
     saveRecord = () => {};
 
     changeMeta = (e: any, index: number, fieldName: string) => {
         this.setState(({ meta }) => {
+            meta = cloneDeep(meta);
             const m = meta[index];
             if (fieldName === "selected") {
                 m.selected = !meta[index].selected;
@@ -70,7 +76,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 this.list.recomputeRowHeights();
             }
 
-            return { meta: cloneDeep(meta) };
+            return { meta };
         });
     };
 
@@ -81,6 +87,8 @@ class Domain extends Component<DomainProps, DomainState> {
         const [i, fieldName, fieldChildName] = fullName.split(":");
 
         this.setState(({ data, meta }) => {
+            data = cloneDeep(data);
+            meta = cloneDeep(meta);
             const rr_set = data[i].value.rr_set[0];
             const rr_type = data[i].value.rr_type;
 
@@ -131,6 +139,7 @@ class Domain extends Component<DomainProps, DomainState> {
 
     selectAll = () => {
         this.setState(({ selectAll, meta }) => {
+            meta = cloneDeep(meta);
             meta = meta.map(m => {
                 m.selected = !selectAll;
                 return m;
@@ -185,6 +194,10 @@ class Domain extends Component<DomainProps, DomainState> {
         }
     };
 
+    handleSearchAndReplace = (e: any) => {
+        this.setState(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+    };
+
     render = () => {
         const rowRenderer = (r: { key: any; index: number; style: any; data: t.RedisEntry; meta: t.DomainMeta }) => {
             const { key, index, style } = r;
@@ -204,7 +217,10 @@ class Domain extends Component<DomainProps, DomainState> {
             );
         };
         const sortDirectionIcon = (columnItem: ColumnItem) => {
-            const style = { height: "1px", transform: "translate(4px,-5px) scale(20)" };
+            const style = {
+                height: "1px",
+                transform: "translate(4px,-5px) scale(20)"
+            };
             if (columnItem.direction === 0) return;
             if (columnItem.direction === 1) {
                 if (columnItem.type === "string") return <FaSortAlphaDown style={style} />;
@@ -218,16 +234,34 @@ class Domain extends Component<DomainProps, DomainState> {
 
         const tableHead = () => {
             return (
-                <div style={{ height: "70px", position: "relative", borderBottom: "1px solid var(--b1)", width: "100%" }}>
-                    <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
-
-                    <span style={{ left: "15px", top: "10px", position: "absolute" }}>
+                <div
+                    style={{
+                        height: "70px",
+                        position: "relative",
+                        borderBottom: "1px solid var(--b1)",
+                        width: "100%"
+                    }}
+                >
+                    <span
+                        style={{
+                            left: "15px",
+                            top: "10px",
+                            position: "absolute"
+                        }}
+                    >
                         <Checkbox checked={this.state.selectAll} onChange={this.selectAll} />
                     </span>
                     {columnItems.map((item, i) => {
                         return (
                             <span
-                                style={{ left: item.left, top: "26px", position: "absolute", fontWeight: 500, fontSize: "14px", cursor: item.name !== "value" ? "pointer" : "default" }}
+                                style={{
+                                    left: item.left,
+                                    top: "26px",
+                                    position: "absolute",
+                                    fontWeight: 500,
+                                    fontSize: "14px",
+                                    cursor: item.name !== "value" ? "pointer" : "default"
+                                }}
                                 className="caps"
                                 key={item.name}
                                 onClick={() => (item.name !== "value" ? this.sort(item.name) : "")}
@@ -240,20 +274,76 @@ class Domain extends Component<DomainProps, DomainState> {
                 </div>
             );
         };
+
+        const searchAndReplace = () => {
+            return (
+                <span
+                    style={{
+                        position: "absolute",
+                        top: "-10px",
+                        right: "10px",
+                        padding: "20px"
+                    }}
+                >
+                    <TextField
+                        style={{ paddingRight: "20px" }}
+                        color="secondary"
+                        variant="standard"
+                        type="text"
+                        name="search"
+                        placeholder="Search"
+                        value={this.state.search}
+                        onChange={this.handleSearchAndReplace}
+                    />
+                    <TextField
+                        variant="standard"
+                        type="text"
+                        color="secondary"
+                        name="replace"
+                        placeholder="Replace All"
+                        value={this.state.replace}
+                        onChange={this.handleSearchAndReplace}
+                    />
+                    <IconButton style={{ paddingTop: "7px" }} size="small">
+                        <VscReplaceAll></VscReplaceAll>
+                    </IconButton>
+                </span>
+            );
+        };
+
         return (
             <div style={{ ...this.props.style }}>
-                {this.props.variant !== "headless" ? (
-                    <div style={{ height: "55px", width: "100%", background: "var(--a2)", padding: "3px" }}>
-                        <IconButton>{<AddCircle />}</IconButton>
-                        <IconButton>{<Delete />}</IconButton>
-                        <IconButton>{<VerticalAlignCenter />}</IconButton>
-                        <IconButton>{<Flare />}</IconButton>
-                        <IconButton>{<Map />}</IconButton>
-                    </div>
-                ) : (
-                    ""
-                )}
-                <div style={{ height: "calc(100% - 55px - 70px)", width: "100%", background: this.props.config.local.synesthesia ? "lightgrey" : "" }}>
+                <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
+
+                <div
+                    style={{
+                        height: "55px",
+                        width: "100%",
+                        background: "var(--a2)",
+                        padding: "3px",
+                        position: "relative"
+                    }}
+                >
+                    <IconButton>{<AddCircle />}</IconButton>
+                    <IconButton>{<Delete />}</IconButton>
+                    {this.props.variant !== "import" ? (
+                        <Fragment>
+                            <IconButton>{<Flare />}</IconButton>
+                            <IconButton>{<Map />}</IconButton>
+                        </Fragment>
+                    ) : (
+                        ""
+                    )}
+                    {searchAndReplace()}
+                </div>
+
+                <div
+                    style={{
+                        height: "calc(100% - 55px - 70px)",
+                        width: "100%",
+                        background: this.props.config.local.synesthesia ? "lightgrey" : ""
+                    }}
+                >
                     {tableHead()}
                     <AutoSizer>
                         {({ height, width }) => (
@@ -268,7 +358,13 @@ class Domain extends Component<DomainProps, DomainState> {
                                     rowHeight={({ index }) => {
                                         return this.state.meta[index].expanded ? 670 : 70;
                                     }}
-                                    rowRenderer={props => rowRenderer({ ...props, data: this.state.data[props.index], meta: this.state.meta[props.index] })}
+                                    rowRenderer={props =>
+                                        rowRenderer({
+                                            ...props,
+                                            data: this.state.data[props.index],
+                                            meta: this.state.meta[props.index]
+                                        })
+                                    }
                                     rowCount={this.state.data.length}
                                 />
                             </Fragment>

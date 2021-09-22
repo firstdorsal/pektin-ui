@@ -12,6 +12,7 @@ import * as vaultApi from "./components/apis/vault";
 import Auth from "./components/Auth";
 import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
+import cloneDeep from "lodash/cloneDeep";
 
 interface AppState {
     readonly config: t.Config;
@@ -48,6 +49,7 @@ export default class App extends Component<AppProps, AppState> {
     updateLocalConfig = (e: any, type: string, i: number) => {
         const db = this.state.db;
         this.setState(({ config }) => {
+            config = cloneDeep(config);
             if (type === "codeStyle") config.local = { ...config.local, [e.target.name]: e.target.value };
             if (type === "newVariable") config.local.variables = [e, ...config.local.variables];
             /*@ts-ignore*/
@@ -86,7 +88,10 @@ export default class App extends Component<AppProps, AppState> {
         await this.loadPektinConfig();
 
         // handle custom right click menu
-        this.setState(({ g }) => ({ configLoaded: true, g: { ...g, changeContextMenu: this.changeContextMenu, updateLocalConfig: this.updateLocalConfig } }));
+        this.setState(({ g }) => ({
+            configLoaded: true,
+            g: { ...g, changeContextMenu: this.changeContextMenu, updateLocalConfig: this.updateLocalConfig }
+        }));
         document.addEventListener("contextmenu", this.handleContextMenu);
     };
     componentWillUnmount() {
@@ -121,9 +126,21 @@ export default class App extends Component<AppProps, AppState> {
 
         return (
             <Router>
-                {this.state.g.contextMenu ? <div onClick={this.handleContextMenuOffClick} onContextMenu={this.handleContextMenuOffClick} className="cmOverlay" /> : ""}
+                {this.state.g.contextMenu ? (
+                    <div
+                        onClick={this.handleContextMenuOffClick}
+                        onContextMenu={this.handleContextMenuOffClick}
+                        className="cmOverlay"
+                    />
+                ) : (
+                    ""
+                )}
                 <Switch>
-                    <Route exact path="/auth" render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />} />
+                    <Route
+                        exact
+                        path="/auth"
+                        render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />}
+                    />
 
                     <PrivateRoute config={this.state.config} exact path="/">
                         <Base config={this.state.config}></Base>

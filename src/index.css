@@ -74,6 +74,10 @@ h1 {
     margin: 15px 0px;
 }
 
+pre {
+    user-select: text;
+    cursor: text;
+}
 code *,
 code,
 pre {
@@ -85,11 +89,6 @@ code * {
     white-space: pre-wrap !important;
     word-wrap: break-word;
     pointer-events: none;
-}
-
-pre {
-    user-select: text;
-    cursor: text;
 }
 
 .__json-string__ {

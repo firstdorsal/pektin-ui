@@ -27,6 +27,7 @@ interface RowProps {
     meta: t.DomainMeta;
     config: t.Config;
     style: any;
+    search: string;
 }
 interface RowState {
     //dnssec: boolean;
@@ -108,14 +109,18 @@ export default class Row extends Component<RowProps, RowState> {
         const rr = rec0.value.rr_set[0];
         const color = JSON.stringify(l.rrTemplates[rec0.value.rr_type]?.color).replace("[", "").replace("]", "") || "0 0 0";
 
+        const backgroundColor = this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "";
+        const borderBottom = this.props.config.local.synesthesia ? "" : "1px solid lightgrey";
+        const opacity = this.props.meta.searchMatch?.length || this.props.search.length === 0 ? 1 : 0.3;
         return (
             <div
                 className="rowWrapper"
                 style={{
                     ...this.props.style,
-                    background: this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "",
-                    borderBottom: this.props.config.local.synesthesia ? "" : "1px solid lightgrey",
-                    borderLeft: `5px solid rgb(${color})`
+                    background: backgroundColor,
+                    borderBottom,
+                    borderLeft: `5px solid rgb(${color})`,
+                    opacity
                 }}
             >
                 <div className="recRow" style={{ position: "relative" }}>
@@ -185,7 +190,7 @@ export default class Row extends Component<RowProps, RowState> {
                     <div>
                         <Collapse
                             in={this.props.meta?.expanded}
-                            style={{ padding: "16px" }}
+                            style={{ padding: "10px", paddingTop: "0px", marginTop: "-30px" }}
                             timeout={{ appear: 0, enter: 0, exit: 0 }}
                             unmountOnExit
                         >
@@ -215,7 +220,7 @@ export default class Row extends Component<RowProps, RowState> {
                                     </Grid>
                                 </Grid>
 
-                                <DataDisplay config={this.props.config} data={rec0}></DataDisplay>
+                                <DataDisplay style={{ maxHeight: "600px" }} config={this.props.config} data={rec0}></DataDisplay>
                             </Grid>
                         </Collapse>
                     </div>

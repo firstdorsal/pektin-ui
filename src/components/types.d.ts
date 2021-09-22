@@ -48,6 +48,7 @@ export interface DomainMeta {
     selected: boolean;
     expanded: boolean;
     changed: boolean;
+    searchMatch: string | undefined;
 }
 
 export interface Response {

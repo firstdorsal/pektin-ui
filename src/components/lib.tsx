@@ -16,7 +16,10 @@ export const isSupportedRecord = (record: t.RedisEntry) => {
 export const simpleDnsRecordToRedisEntry = (simple: t.SimpleDnsRecord): t.RedisEntry => {
     let rrValue = textToRRValue(simple.type, simple.data);
 
-    return { name: `${simple.name}:${simple.type}`, value: { rr_set: [{ ttl: simple.ttl, value: rrValue }], rr_type: simple.type } };
+    return {
+        name: `${simple.name}:${simple.type}`,
+        value: { rr_set: [{ ttl: simple.ttl, value: rrValue }], rr_type: simple.type }
+    };
 };
 
 export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRecordValue => {
@@ -136,7 +139,8 @@ export const defaulConfig: t.Config = {
         {
             name: "Wanderlust",
             class: Wanderlust,
-            description: "Wanderlust imports a single domain per import with NSEC zone walking. To resolve the records dns queries are sent through Google or Cloudflare."
+            description:
+                "Wanderlust imports a single domain per import with NSEC zone walking. To resolve the records dns queries are sent through Google or Cloudflare."
         },
         { name: "Pektin Backup", class: PektinBackup, description: "" },
         { name: "PowerDNS", class: PowerDns, description: "" }
@@ -165,9 +169,9 @@ export const rec0ToBind = (rec0: t.RedisEntry, onlyValues: boolean = false): Rea
         const soa = rec1.rr_set[0].value.SOA as t.SOAValue;
         const rr_set = rec1.rr_set[0];
         if (onlyValues) return `${soa.mname} ${soa.rname}`;
-        return `${absoluteName(getNameFromRedisEntry(rec0))} ${rr_set.ttl ? rr_set.ttl : ""} IN ${rec1.rr_type} ${soa.mname} ${soa.rname} ${soa.serial} ${soa.refresh} ${soa.retry} ${soa.expire} ${
-            soa.minimum
-        }`;
+        return `${absoluteName(getNameFromRedisEntry(rec0))} ${rr_set.ttl ? rr_set.ttl : ""} IN ${rec1.rr_type} ${soa.mname} ${
+            soa.rname
+        } ${soa.serial} ${soa.refresh} ${soa.retry} ${soa.expire} ${soa.minimum}`;
     }
     return "Not Implemented for this record";
 };

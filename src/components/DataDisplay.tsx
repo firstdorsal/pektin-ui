@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";
 import * as pektinApi from "./apis/pektin";
-import { Box, Container, Grid, Paper, Switch, Tab, Tabs } from "@material-ui/core";
+import { Container, Grid, Paper, Switch, Tab, Tabs } from "@material-ui/core";
 import { AccountTree, Code } from "@material-ui/icons";
 import { SiCurl, SiJavascript } from "react-icons/si";
 import { MdShortText } from "react-icons/md";
@@ -56,23 +56,37 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         return (
             <Grid className="DataDisplay" style={this.props.style ? { ...this.props.style } : {}} container item xs={8}>
                 <Grid style={{ marginBottom: "20px" }} item xs={12}>
-                    <Paper elevation={3}>
-                        <Container>
+                    <Paper style={{ maxHeight: "100%" }} elevation={3}>
+                        <div style={{ marginLeft: "20px", height: "40px" }}>
                             <div className="cardHead">
                                 <Code />
                                 <span className="caps label">code</span>
                             </div>
-                        </Container>
-                        <Box>
-                            <Tabs variant="fullWidth" value={this.state.activeTab} onChange={(e, n) => this.setState({ activeTab: n })}>
-                                <Tab label="JSON" icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />} value={0} />
-                                <Tab label="YAML" icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />} value={1} />
+                        </div>
+                        <div style={{ height: "80px" }}>
+                            <Tabs
+                                variant="fullWidth"
+                                value={this.state.activeTab}
+                                onChange={(e, n) => this.setState({ activeTab: n })}
+                            >
+                                <Tab
+                                    label="JSON"
+                                    icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />}
+                                    value={0}
+                                />
+                                <Tab
+                                    label="YAML"
+                                    icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />}
+                                    value={1}
+                                />
                                 <Tab label="JAVASCRIPT" icon={<SiJavascript style={{ width: "25px" }} />} value={2} />
                                 <Tab label="CURL" icon={<SiCurl style={{ width: "25px" }} />} value={3} />
                                 <Tab label="BIND" icon={<MdShortText style={{ width: "25px" }} />} value={4} />
                             </Tabs>
-                        </Box>
-                        <Box className="tabs">{tabs[this.state.activeTab]}</Box>
+                        </div>
+                        <div style={{ overflowY: "scroll", maxHeight: "460px" }} className="tabs">
+                            {tabs[this.state.activeTab]}
+                        </div>
                     </Paper>
                 </Grid>
             </Grid>

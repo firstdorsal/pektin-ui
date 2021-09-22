@@ -117,7 +117,7 @@ class Domain extends Component<DomainProps, DomainState> {
 
     initData = (d: t.RedisEntry[]) => {
         const meta = d.map((rec0: t.RedisEntry, i: number) => {
-            return { selected: false, expanded: false, changed: false };
+            return { selected: false, expanded: false, changed: false, searchMatch: "" };
         });
 
         const defaultOrder = d.map((e, i) => i);
@@ -147,7 +147,7 @@ class Domain extends Component<DomainProps, DomainState> {
             return { selectAll: !selectAll, meta };
         });
     };
-    sort = (name: string) => {
+    sortColumns = (name: string) => {
         this.setState(({ data, meta, columnItems, defaultOrder }) => {
             let combine: [t.RedisEntry, t.DomainMeta, number][] = data.map((e, i) => {
                 return [data[i], meta[i], defaultOrder[i]];
@@ -158,8 +158,6 @@ class Domain extends Component<DomainProps, DomainState> {
                 if (name === e.name) {
                     if (e.direction === 2) {
                         e.direction = 0;
-                    } else if (e.direction === 1) {
-                        e.direction += 1;
                     } else {
                         e.direction += 1;
                     }
@@ -175,6 +173,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     if (name === "name") return key[0].name;
                     if (name === "ttl") return key[0].value.rr_set[0].ttl;
                     if (name === "type") return key[0].value.rr_type;
+                    if (name === "search") return key[1].searchMatch;
                 }
             ]);
             if (currentSortDirection === 2) combine.reverse();
@@ -195,7 +194,40 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     handleSearchAndReplace = (e: any) => {
-        this.setState(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+        if (e.target.name === "search") {
+            const v = e.target.value;
+            this.setState(({ data, meta, defaultOrder }) => {
+                meta = cloneDeep(meta);
+                data.forEach((rec, i) => {
+                    const a = l.getNameFromRedisEntry(rec).match(v);
+                    if (a && a[0]) {
+                        meta[i].searchMatch = a[0];
+                    } else {
+                        meta[i].searchMatch = "";
+                    }
+                });
+
+                let combine: [t.RedisEntry, t.DomainMeta, number][] = data.map((e, i) => {
+                    return [data[i], meta[i], defaultOrder[i]];
+                });
+                combine = sortBy(combine, [
+                    key => {
+                        if (!v.length) return key[2];
+                        return key[1].searchMatch;
+                    }
+                ]);
+                if (v.length) combine.reverse();
+                combine.forEach((e, i) => {
+                    data[i] = combine[i][0];
+                    meta[i] = combine[i][1];
+                    defaultOrder[i] = combine[i][2];
+                });
+
+                return { data, meta, search: v };
+            });
+        } else {
+            this.setState(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+        }
     };
 
     render = () => {
@@ -209,6 +241,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     handleChange={this.handleChange}
                     saveRecord={this.saveRecord}
                     changeMeta={this.changeMeta}
+                    search={this.state.search}
                     key={key}
                     index={index}
                     rec0={r.data}
@@ -264,7 +297,7 @@ class Domain extends Component<DomainProps, DomainState> {
                                 }}
                                 className="caps"
                                 key={item.name}
-                                onClick={() => (item.name !== "value" ? this.sort(item.name) : "")}
+                                onClick={() => (item.name !== "value" ? this.sortColumns(item.name) : "")}
                             >
                                 <span>{item.name}</span>
                                 <span> {sortDirectionIcon(this.state.columnItems[i])}</span>
@@ -304,7 +337,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         value={this.state.replace}
                         onChange={this.handleSearchAndReplace}
                     />
-                    <IconButton style={{ paddingTop: "7px" }} size="small">
+                    <IconButton onClick={() => this.sortColumns("search")} style={{ paddingTop: "7px" }} size="small">
                         <VscReplaceAll></VscReplaceAll>
                     </IconButton>
                 </span>

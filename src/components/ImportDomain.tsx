@@ -42,7 +42,12 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                     <Paper elevation={3} style={{ padding: "30px 20px" }}>
                         <Container>
                             <h2 style={{ display: "inline-block", paddingRight: "10px" }}>Method</h2>
-                            <Select name="apiPicker" onChange={e => this.handleChange(e)} style={{ width: "200px" }} value={this.state.selectedApi}>
+                            <Select
+                                name="apiPicker"
+                                onChange={e => this.handleChange(e)}
+                                style={{ width: "200px" }}
+                                value={this.state.selectedApi}
+                            >
                                 {this.props.config.foreignApis.map((api, i) => {
                                     return (
                                         <MenuItem key={i} value={i}>
@@ -63,7 +68,15 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
             );
         };
         const step2 = () => {
-            return <Domain g={this.props.g} style={{ height: "calc(100% - 70px)" }} records={this.state.records} config={this.props.config}></Domain>;
+            return (
+                <Domain
+                    variant="import"
+                    g={this.props.g}
+                    style={{ height: "calc(100% - 70px)" }}
+                    records={this.state.records}
+                    config={this.props.config}
+                ></Domain>
+            );
         };
 
         const steps = [step1, step2];

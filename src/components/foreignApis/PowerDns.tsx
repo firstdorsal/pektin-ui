@@ -6,8 +6,8 @@ import { ArrowRight } from "@material-ui/icons";
 //import { IoKeypadSharp } from "react-icons/io5";
 interface PowerDnsProps {}
 interface PowerDnsState {
-    endpoint: string;
-    apiKey: string;
+    readonly endpoint: string;
+    readonly apiKey: string;
 }
 
 export default class PowerDns extends Component<PowerDnsProps, PowerDnsState> {
@@ -31,9 +31,21 @@ export default class PowerDns extends Component<PowerDnsProps, PowerDnsState> {
                     name="endpoint"
                     label="PowerDNS Enpoint"
                 />
-                <TextField helperText="Your PowerDNS api key" value={this.state.apiKey} onChange={this.handleChange} name="apiKey" label="PowerDNS Api Key" type="password" />
+                <TextField
+                    helperText="Your PowerDNS api key"
+                    value={this.state.apiKey}
+                    onChange={this.handleChange}
+                    name="apiKey"
+                    label="PowerDNS Api Key"
+                    type="password"
+                />
 
-                <Button style={{ position: "absolute", bottom: "10px", right: "10px" }} variant="contained" color="primary" endIcon={<ArrowRight />}>
+                <Button
+                    style={{ position: "absolute", bottom: "10px", right: "10px" }}
+                    variant="contained"
+                    color="primary"
+                    endIcon={<ArrowRight />}
+                >
                     Next
                 </Button>
             </Container>

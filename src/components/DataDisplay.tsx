@@ -21,13 +21,13 @@ SyntaxHighlighter.registerLanguage("yaml", yaml);
 //import { format } from "prettier/standalone";
 
 interface DataDisplayProps {
-    data: t.RedisEntry;
-    config: t.Config;
-    style?: any;
+    readonly data: t.RedisEntry;
+    readonly config: t.Config;
+    readonly style?: any;
 }
 
 interface DataDisplayState {
-    activeTab: number;
+    readonly activeTab: number;
 }
 
 export default class DataDisplay extends Component<DataDisplayProps, DataDisplayState> {

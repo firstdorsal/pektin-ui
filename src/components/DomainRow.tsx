@@ -19,15 +19,15 @@ import { Ballot, Check, Info, KeyboardArrowDown, KeyboardArrowUp } from "@materi
 import isEqual from "lodash/isEqual";
 
 interface RowProps {
-    handleChange: Function;
-    saveRecord: any;
-    changeMeta: Function;
-    index: number;
-    rec0: t.RedisEntry;
-    meta: t.DomainMeta;
-    config: t.Config;
-    style: any;
-    search: string;
+    readonly handleChange: Function;
+    readonly saveRecord: any;
+    readonly changeMeta: Function;
+    readonly index: number;
+    readonly rec0: t.RedisEntry;
+    readonly meta: t.DomainMeta;
+    readonly config: t.Config;
+    readonly style: any;
+    readonly search: string;
 }
 interface RowState {
     //dnssec: boolean;

@@ -8,13 +8,13 @@ import * as t from "../types";
 const f = fetch;
 
 interface WanderlustProps {
-    import: any;
+    readonly import: any;
 }
 interface WanderlustState {
-    domainName: string;
-    providerName: string;
-    console: string;
-    limit: number;
+    readonly domainName: string;
+    readonly providerName: string;
+    readonly console: string;
+    readonly limit: number;
 }
 
 export default class Wanderlust extends Component<WanderlustProps, WanderlustState> {

@@ -23,10 +23,11 @@ interface DomainState {
     readonly defaultOrder: number[];
     readonly search: string;
     readonly replace: string;
+    readonly anySelected: boolean;
 }
 
 interface DomainRouterProps {
-    domainName: string; // This one is coming from the router
+    readonly domainName: string; // This one is coming from the router
 }
 
 interface DomainProps extends RouteComponentProps<DomainRouterProps> {
@@ -61,7 +62,8 @@ class Domain extends Component<DomainProps, DomainState> {
         columnItems,
         defaultOrder: [],
         search: "",
-        replace: ""
+        replace: "",
+        anySelected: false
     };
     list: any;
     saveRecord = () => {};
@@ -154,6 +156,7 @@ class Domain extends Component<DomainProps, DomainState> {
             return { selectAll: !selectAll, meta };
         });
     };
+
     sortColumns = (name: string) => {
         this.setState(({ data, meta, columnItems, defaultOrder }) => {
             let combine: [t.RedisEntry, t.DomainMeta, number][] = data.map((e, i) => {
@@ -194,6 +197,7 @@ class Domain extends Component<DomainProps, DomainState> {
             return { data, meta, columnItems };
         });
     };
+
     cmClick = (target: any, action: string, value: string | number) => {
         if (action === "paste") {
             this.handleChange({ name: target.name, value }, action);
@@ -340,6 +344,8 @@ class Domain extends Component<DomainProps, DomainState> {
             return { data };
         });
     };
+
+    handleDeleteClick = () => {};
 
     render = () => {
         const rowRenderer = (r: { key: any; index: number; style: any; data: t.RedisEntry; meta: t.DomainMeta }) => {

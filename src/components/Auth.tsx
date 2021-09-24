@@ -10,15 +10,15 @@ import { RouteComponentProps } from "react-router-dom";
 const defaultAuthHelper = <span>JSON blob containing the URL, username, and password for vault</span>;
 
 interface AuthProps extends RouteComponentProps {
-    config: t.Config;
-    saveAuth: Function;
+    readonly config: t.Config;
+    readonly saveAuth: Function;
 }
 interface AuthState {
-    open: boolean;
-    authField: string;
-    authError: boolean;
-    authHelper: ReactElement;
-    lastValue: string;
+    readonly open: boolean;
+    readonly authField: string;
+    readonly authError: boolean;
+    readonly authHelper: ReactElement;
+    readonly lastValue: string;
 }
 export default class Auth extends Component<AuthProps, AuthState> {
     state: AuthState = {

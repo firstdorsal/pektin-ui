@@ -5,10 +5,10 @@ import * as pektinApi from "./apis/pektin";
 import * as t from "./types";
 
 interface BaseProps {
-    config: t.Config;
+    readonly config: t.Config;
 }
 interface BaseState {
-    domains: String[];
+    readonly domains: String[];
 }
 
 export default class Base extends Component<BaseProps, BaseState> {

@@ -31,8 +31,8 @@ const defaultSOA: t.RedisEntry = {
 };
 
 interface AddDomainProps {
-    config: t.Config;
-    g: t.Glob;
+    readonly config: t.Config;
+    readonly g: t.Glob;
 }
 
 interface AddDomainState {
@@ -143,7 +143,11 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                     />
                                 </div>
                                 <div>
-                                    <Button color="primary" variant="contained" onClick={() => pektinApi.addDomain(this.props.config, [this.state.rec0])}>
+                                    <Button
+                                        color="primary"
+                                        variant="contained"
+                                        onClick={() => pektinApi.addDomain(this.props.config, [this.state.rec0])}
+                                    >
                                         Add Domain
                                     </Button>
                                 </div>

@@ -4,7 +4,7 @@ interface PektinBackupProps {}
 interface PektinBackupState {}
 
 export default class PektinBackup extends Component<PektinBackupProps, PektinBackupState> {
-    render() {
+    render = () => {
         return <div>test</div>;
-    }
+    };
 }

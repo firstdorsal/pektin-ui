@@ -90,7 +90,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
         }
         this.setState({ authField: value, authError, authHelper });
     };
-    render() {
+    render = () => {
         return (
             <Container maxWidth="sm" style={{ marginTop: "30vh" }}>
                 <Paper style={{ padding: "20px" }} elevation={3}>
@@ -104,7 +104,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
                         required
                         value={this.state.authField}
                         name="pektin-ui-connection-config"
-                        label="Pektin Ui Connection Config"
+                        label="Pektin UI Connection Config"
                         helperText={this.state.authHelper}
                         onChange={this.authChange}
                     ></TextField>
@@ -116,7 +116,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
                 </Paper>
             </Container>
         );
-    }
+    };
 }
 /*
 

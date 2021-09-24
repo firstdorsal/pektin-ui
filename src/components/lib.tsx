@@ -140,7 +140,7 @@ export const defaulConfig: t.Config = {
             name: "Wanderlust",
             class: Wanderlust,
             description:
-                "Wanderlust imports a single domain per import with NSEC zone walking. To resolve the records dns queries are sent through Google or Cloudflare."
+                "Wanderlust imports a single domain per import with NSEC zone walking. To resolve the records, DNS queries are sent through Google or Cloudflare."
         },
         { name: "Pektin Backup", class: PektinBackup, description: "" },
         { name: "PowerDNS", class: PowerDns, description: "" }
@@ -273,14 +273,14 @@ export const rrTemplates: any = {
             {
                 name: "mname",
                 placeholder: "ns1.example.com.",
-                helperText: "The domains primary name server",
+                helperText: "The domain's primary name server",
                 inputType: "text",
                 width: 6
             },
             {
                 name: "rname",
                 placeholder: "hostmaster.example.com.",
-                helperText: "hostmaster email, the @ is replaced with a .",
+                helperText: "Hostmaster email, the @ is replaced with a dot",
                 inputType: "text",
                 width: 6
             }
@@ -289,7 +289,7 @@ export const rrTemplates: any = {
         info: (
             <div>
                 <h2>SOA Record</h2>
-                <p>The "Start Of Authority" record is the most important one as it defines the existence of the zone.</p>
+                <p>The "Start Of Authority" record is the most important one, as it defines the existence of the zone.</p>
             </div>
         ),
         complex: true

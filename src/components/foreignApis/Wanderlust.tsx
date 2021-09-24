@@ -67,7 +67,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
         this.props.import(records.map(l.simpleDnsRecordToRedisEntry).filter(l.isSupportedRecord));
     };
 
-    render() {
+    render = () => {
         return (
             <Box style={{ position: "relative" }}>
                 <TextField
@@ -125,7 +125,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                 <div>{this.state.console}</div>
             </Box>
         );
-    }
+    };
 }
 
 type getDnsRecord = (name: string, type: string) => Promise<any>;

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { Component } from "react";
 /* @ts-ignore*/
 //import { PowerdnsClient } from "@firstdorsal/powerdns-api";
 import { Button, Container, TextField } from "@material-ui/core";

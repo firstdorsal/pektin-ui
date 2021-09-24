@@ -1,5 +1,5 @@
 import { Container, IconButton, MenuItem, Select, TextField } from "@material-ui/core";
-import React, { Component } from "react";
+import { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";
 import { AddCircle, RemoveCircle } from "@material-ui/icons";

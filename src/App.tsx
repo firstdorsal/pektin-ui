@@ -175,9 +175,9 @@ export default class App extends Component<AppProps, AppState> {
     };
 }
 interface PrivateRouteProps {
-    config: t.Config;
-    [propName: string]: any;
-    children: any;
+    readonly config: t.Config;
+    readonly [propName: string]: any;
+    readonly children: any;
 }
 interface PrivateRouteState {}
 class PrivateRoute extends Component<PrivateRouteProps, PrivateRouteState> {

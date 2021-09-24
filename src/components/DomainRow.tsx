@@ -69,19 +69,27 @@ export default class Row extends Component<RowProps, RowState> {
     simpleView = (rec0: t.RedisEntry) => {
         const p = this.props;
         const rr = rec0.value.rr_set[0];
-        const v: any = rr.value[rec0.value.rr_type];
-        const fields = l.rrTemplates[rec0.value.rr_type]?.fields;
+        const type = rec0.value.rr_type;
+        const v: any = rr.value[type];
+        const fields = l.rrTemplates[type]?.fields;
         if (!fields) return;
+
+        const currentSearchField = this.props.meta.searchMatch.value[type] || false;
 
         return (
             <Grid spacing={2} container>
                 {fields.map((field: any) => {
+                    const isSearchMatch = fields.length > 1 ? currentSearchField[field.name] : currentSearchField;
+
                     return (
                         <Grid key={field.name} xs={field.width} item>
                             <TextField
                                 size="small"
                                 type={field.inputType}
-                                style={{ width: "100%" }}
+                                style={{
+                                    width: "100%"
+                                }}
+                                className={isSearchMatch ? "searchMatch" : ""}
                                 onChange={e => this.props.handleChange(e)}
                                 placeholder={field.placeholder.toString()}
                                 InputLabelProps={{
@@ -111,7 +119,7 @@ export default class Row extends Component<RowProps, RowState> {
 
         const backgroundColor = this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "";
         const borderBottom = this.props.config.local.synesthesia ? "" : "1px solid lightgrey";
-        const opacity = this.props.meta.searchMatch?.length || this.props.search.length === 0 ? 1 : 0.3;
+        const opacity = this.props.meta.anySearchMatch || this.props.search.length === 0 ? 1 : 1;
         return (
             <div
                 className="rowWrapper"
@@ -132,7 +140,14 @@ export default class Row extends Component<RowProps, RowState> {
                         />
                     </span>
 
-                    <span style={{ width: "250px", left: "70px", top: "18px" }}>
+                    <span
+                        style={{
+                            width: "250px",
+                            left: "70px",
+                            top: "18px"
+                        }}
+                        className={this.props.meta.searchMatch.name ? "searchMatch" : ""}
+                    >
                         <Input
                             onInput={e => this.props.handleChange(e)}
                             name={`${p.index}:name:`}
@@ -142,7 +157,14 @@ export default class Row extends Component<RowProps, RowState> {
                             value={l.getNameFromRedisEntry(rec0)}
                         />
                     </span>
-                    <span style={{ width: "100px", left: "340px", top: "18px" }}>
+                    <span
+                        style={{
+                            width: "100px",
+                            left: "340px",
+                            top: "18px"
+                        }}
+                        className={this.props.meta.searchMatch.type ? "searchMatch" : ""}
+                    >
                         {rec0.value.rr_type === "SOA" ? (
                             <Input disabled={!editable} value={rec0.value.rr_type} />
                         ) : (
@@ -161,7 +183,14 @@ export default class Row extends Component<RowProps, RowState> {
                             </Select>
                         )}
                     </span>
-                    <span style={{ width: "100px", left: "460px", top: "18px" }}>
+                    <span
+                        style={{
+                            width: "100px",
+                            left: "460px",
+                            top: "18px"
+                        }}
+                        className={this.props.meta.searchMatch.ttl ? "searchMatch" : ""}
+                    >
                         <Input onInput={e => this.props.handleChange(e)} name={`${p.index}:ttl:`} type="number" value={rr.ttl} />
                     </span>
                     <span style={{ right: "100px", left: "580px", top: "5px" }}>{this.simpleView(rec0)}</span>

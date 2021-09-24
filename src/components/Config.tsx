@@ -1,5 +1,5 @@
 import { Container, IconButton, MenuItem, Select, TextField } from "@material-ui/core";
-import { Component } from "react";
+import React, { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";
 import { AddCircle, RemoveCircle } from "@material-ui/icons";
@@ -30,11 +30,19 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                 <br />
                 <br />
                 <h2>Variables</h2>
-                <p>These are stored locally in your browser and can be pasted in every input field via the context menu (right click)</p>
+                <p>
+                    These are stored locally in your browser and can be pasted in every input field via the context menu (right
+                    click)
+                </p>
                 <p>The default context menu can still be accessed by holding alt, shift or ctrl</p>
                 <div>
                     <TextField value={this.state.newKey} name="newKey" onChange={this.handleInputChange} placeholder="key" />
-                    <TextField value={this.state.newValue} name="newValue" onChange={this.handleInputChange} placeholder="value" />
+                    <TextField
+                        value={this.state.newValue}
+                        name="newValue"
+                        onChange={this.handleInputChange}
+                        placeholder="value"
+                    />
                     <IconButton
                         onClick={() => {
                             this.props.g.updateLocalConfig({ key: this.state.newKey, value: this.state.newValue }, "newVariable");
@@ -48,8 +56,18 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                 {this.props.config.local.variables.map((v, i) => {
                     return (
                         <div key={i}>
-                            <TextField onChange={e => this.props.g.updateLocalConfig(e, "updateVariable", i)} name="key" placeholder="key" value={v.key} />
-                            <TextField onChange={e => this.props.g.updateLocalConfig(e, "updateVariable", i)} name="value" placeholder="value" value={v.value} />
+                            <TextField
+                                onChange={e => this.props.g.updateLocalConfig(e, "updateVariable", i)}
+                                name="key"
+                                placeholder="key"
+                                value={v.key}
+                            />
+                            <TextField
+                                onChange={e => this.props.g.updateLocalConfig(e, "updateVariable", i)}
+                                name="value"
+                                placeholder="value"
+                                value={v.value}
+                            />
                             <IconButton onClick={e => this.props.g.updateLocalConfig(i, "removeVariable")}>
                                 <RemoveCircle />
                             </IconButton>
@@ -69,7 +87,14 @@ export class CodeStylePicker extends Component<CodeStylePickerProps, CodeStylePi
         const codeStyle = this.props?.config?.local?.codeStyle;
 
         return (
-            <Select className={this.props.className} variant="standard" style={{ width: "230px" }} onChange={e => this.props.g.updateLocalConfig(e, "codeStyle")} name="codeStyle" value={codeStyle}>
+            <Select
+                className={this.props.className}
+                variant="standard"
+                style={{ width: "230px" }}
+                onChange={e => this.props.g.updateLocalConfig(e, "codeStyle")}
+                name="codeStyle"
+                value={codeStyle}
+            >
                 {l.codeStyles.map(codeStyle => (
                     <MenuItem className={this.props.className} value={codeStyle} key={codeStyle}>
                         {codeStyle}
@@ -79,3 +104,11 @@ export class CodeStylePicker extends Component<CodeStylePickerProps, CodeStylePi
         );
     };
 }
+/*
+                <div>
+                    <div contentEditable onInput={(e: any) => this.setState({ field: e.target.innerText })}>
+                        {this.state.field.split(this.state.search)[0]}
+                        <mark>{this.state.search}</mark>
+                        {this.state.field.split(this.state.search)[1]}
+                    </div>
+                </div>*/

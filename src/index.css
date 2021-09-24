@@ -74,6 +74,10 @@ h1 {
     margin: 15px 0px;
 }
 
+.searchMatch > div {
+    background: yellow;
+}
+
 pre {
     user-select: text;
     cursor: text;
@@ -221,3 +225,8 @@ aside h2 {
     top: 0px;
     z-index: 2;
 }
+/*
+input[value*="tick"] {
+    color: red;
+}
+*/

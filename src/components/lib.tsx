@@ -195,7 +195,8 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: [82, 51, 18]
+        color: [82, 51, 18],
+        complex: false
     },
     AAAA: {
         template: {
@@ -209,7 +210,8 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: [43, 255, 0]
+        color: [43, 255, 0],
+        complex: false
     },
     NS: {
         template: {
@@ -223,7 +225,8 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: [29, 117, 0]
+        color: [29, 117, 0],
+        complex: false
     },
     CNAME: {
         template: {
@@ -237,7 +240,8 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: [255, 0, 0]
+        color: [255, 0, 0],
+        complex: false
     },
     PTR: {
         template: {
@@ -250,7 +254,8 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12
             }
-        ]
+        ],
+        complex: false
     },
     SOA: {
         template: {
@@ -286,7 +291,8 @@ export const rrTemplates: any = {
                 <h2>SOA Record</h2>
                 <p>The "Start Of Authority" record is the most important one as it defines the existence of the zone.</p>
             </div>
-        )
+        ),
+        complex: true
     },
     MX: {
         template: {
@@ -304,7 +310,8 @@ export const rrTemplates: any = {
             },
             { name: "exchange", placeholder: "mx.example.com.", inputType: "text", width: 9 }
         ],
-        color: [29, 94, 224]
+        color: [29, 94, 224],
+        complex: true
     },
     TXT: {
         template: {
@@ -318,7 +325,8 @@ export const rrTemplates: any = {
                 width: 12
             }
         ],
-        color: [140, 140, 140]
+        color: [140, 140, 140],
+        complex: false
     },
     SRV: {
         template: {
@@ -333,9 +341,10 @@ export const rrTemplates: any = {
             { name: "priority", placeholder: 1, inputType: "text", width: 2 },
             { name: "weight", placeholder: 1, inputType: "text", width: 2 },
             { name: "port", placeholder: 443, inputType: "text", width: 2 },
-            { name: "target", placeholder: "ex.example.com.", inputType: "text", width: 6 }
+            { name: "target", placeholder: "mx.example.com.", inputType: "text", width: 6 }
         ],
-        color: [149, 61, 196]
+        color: [149, 61, 196],
+        complex: true
     },
     CAA: {
         template: {
@@ -354,14 +363,16 @@ export const rrTemplates: any = {
             },
             { name: "value", placeholder: "letsencrypt.org", inputType: "text", width: 6 }
         ],
-        color: [212, 11, 165]
+        color: [212, 11, 165],
+        complex: true
     },
     OPENPGPKEY: {
         template: {
             OPENPGPKEY: ""
         },
         fields: [{ name: "key", placeholder: "", inputType: "text", width: 12 }],
-        color: [145, 0, 7]
+        color: [145, 0, 7],
+        complex: false
     },
     TLSA: {
         template: {
@@ -378,7 +389,8 @@ export const rrTemplates: any = {
             { name: "matching_type", placeholder: 1, inputType: "number", width: 2 },
             { name: "data", placeholder: "50c1ab1e11feb0a75", inputType: "text", width: 6 }
         ],
-        color: [255, 217, 0]
+        color: [255, 217, 0],
+        complex: true
     }
 };
 

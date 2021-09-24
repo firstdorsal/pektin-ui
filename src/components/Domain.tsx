@@ -50,6 +50,7 @@ const columnItems: ColumnItem[] = [
     { name: "ttl", left: "465px", type: "number", direction: 0 },
     { name: "value", left: "580px", type: "string", direction: 0 }
 ];
+const defaultSearchMatch = { name: false, type: false, ttl: false, value: {} };
 
 class Domain extends Component<DomainProps, DomainState> {
     state: DomainState = {
@@ -102,7 +103,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     rr_set.value[rr_type][fieldChildName] = v;
                 }
             } else if (fieldName === "ttl") {
-                if (v >= 0) rr_set.ttl = v;
+                if (v >= 0) rr_set.ttl = parseInt(v);
             } else if (fieldName === "type") {
                 data[i].name = `${l.getNameFromRedisEntry(data[i])}:${v}`;
                 data[i].value.rr_type = v;
@@ -117,7 +118,13 @@ class Domain extends Component<DomainProps, DomainState> {
 
     initData = (d: t.RedisEntry[]) => {
         const meta = d.map((rec0: t.RedisEntry, i: number) => {
-            return { selected: false, expanded: false, changed: false, searchMatch: "" };
+            return {
+                selected: false,
+                expanded: false,
+                changed: false,
+                searchMatch: defaultSearchMatch,
+                anySearchMatch: false
+            };
         });
 
         const defaultOrder = d.map((e, i) => i);
@@ -183,7 +190,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 meta[i] = combine[i][1];
                 defaultOrder[i] = combine[i][2];
             });
-
+            this.list.recomputeRowHeights();
             return { data, meta, columnItems };
         });
     };
@@ -193,17 +200,59 @@ class Domain extends Component<DomainProps, DomainState> {
         }
     };
 
-    handleSearchAndReplace = (e: any) => {
+    handleSearchAndReplaceChange = (e: any) => {
         if (e.target.name === "search") {
             const v = e.target.value;
             this.setState(({ data, meta, defaultOrder }) => {
                 meta = cloneDeep(meta);
+
                 data.forEach((rec, i) => {
-                    const a = l.getNameFromRedisEntry(rec).match(v);
-                    if (a && a[0]) {
-                        meta[i].searchMatch = a[0];
-                    } else {
-                        meta[i].searchMatch = "";
+                    // reset all
+                    meta[i].anySearchMatch = false;
+                    meta[i].searchMatch = cloneDeep(defaultSearchMatch);
+                    // handle first three columns
+                    if (v.length) {
+                        {
+                            const match = l.getNameFromRedisEntry(rec).match(v);
+                            if (match) {
+                                meta[i].searchMatch.name = !!match;
+                                meta[i].anySearchMatch = true;
+                            }
+                        }
+                        {
+                            const match = rec.value.rr_type.match(v);
+                            if (match) {
+                                meta[i].searchMatch.type = !!match;
+                                meta[i].anySearchMatch = true;
+                            }
+                        }
+                        {
+                            const match = rec.value.rr_set[0].ttl.toString().match(v);
+                            if (match) {
+                                meta[i].searchMatch.ttl = !!match;
+                                meta[i].anySearchMatch = true;
+                            }
+                        }
+                        const type = rec.value.rr_type;
+                        const value = rec.value.rr_set[0].value[type];
+                        if (typeof value === "string") {
+                            const m = value.match(v);
+                            if (m) {
+                                meta[i].searchMatch.value[type] = !!m;
+                                meta[i].anySearchMatch = true;
+                            }
+                        } else {
+                            const values = Object.values(value);
+                            const keys = Object.keys(value);
+                            meta[i].searchMatch.value[type] = {};
+                            for (let ii = 0; ii < values.length; ii++) {
+                                const m = values[ii].toString().match(v);
+                                if (m) {
+                                    meta[i].searchMatch.value[type][keys[ii]] = !!m;
+                                    meta[i].anySearchMatch = true;
+                                }
+                            }
+                        }
                     }
                 });
 
@@ -213,7 +262,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 combine = sortBy(combine, [
                     key => {
                         if (!v.length) return key[2];
-                        return key[1].searchMatch;
+                        return key[1].anySearchMatch;
                     }
                 ]);
                 if (v.length) combine.reverse();
@@ -222,12 +271,74 @@ class Domain extends Component<DomainProps, DomainState> {
                     meta[i] = combine[i][1];
                     defaultOrder[i] = combine[i][2];
                 });
-
+                this.list.recomputeRowHeights();
                 return { data, meta, search: v };
             });
         } else {
-            this.setState(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+            this.setState(prevState => ({ ...prevState, [e.target.name]: e.target.value.toString() }));
         }
+    };
+
+    handleReplaceClick = () => {
+        this.setState(({ meta, search, replace, data }) => {
+            data = cloneDeep(data);
+            const regex = true;
+            meta.forEach((m, i) => {
+                if (!m.anySearchMatch) return;
+                if (m.searchMatch.name) {
+                    const replaced = regex
+                        ? `${l.getNameFromRedisEntry(data[i]).replaceAll(RegExp(search, "g"), replace)}:${l.getTypeFromRedisEntry(
+                              data[i]
+                          )}`
+                        : `${l.getNameFromRedisEntry(data[i]).replaceAll(search, replace)}:${l.getTypeFromRedisEntry(data[i])}`;
+
+                    data[i].name = replaced;
+                }
+                if (m.searchMatch.type) {
+                    const replaced = regex
+                        ? (l.getTypeFromRedisEntry(data[i]).replaceAll(RegExp(search, "g"), replace) as t.RRTypes)
+                        : (l.getTypeFromRedisEntry(data[i]).replaceAll(search, replace) as t.RRTypes);
+
+                    data[i].name = `${l.getNameFromRedisEntry(data[i])}:${replaced}`;
+                    data[i].value.rr_type = replaced;
+                    data[i].value.rr_set[0].value = l.rrTemplates[replaced].template;
+                }
+                if (m.searchMatch.ttl) {
+                    const replaced = regex
+                        ? parseInt(data[i].value.rr_set[0].ttl.toString().replaceAll(RegExp(search, "g"), replace))
+                        : parseInt(data[i].value.rr_set[0].ttl.toString().replaceAll(search, replace));
+
+                    if (!isNaN(replaced) && replaced >= 0) data[i].value.rr_set[0].ttl = replaced;
+                }
+                if (m.searchMatch.value) {
+                    const type = data[i].value.rr_type;
+                    const value = data[i].value.rr_set[0].value[type];
+                    if (typeof value === "string") {
+                        const replaced = regex
+                            ? value.replaceAll(RegExp(search, "g"), replace)
+                            : value.replaceAll(search, replace);
+                        data[i].value.rr_set[0].value[type] = replaced;
+                    } else {
+                        const smKeys = Object.keys(m.searchMatch.value[type]);
+                        for (let ii = 0; ii < smKeys.length; ii++) {
+                            if (m.searchMatch.value[type][smKeys[ii]]) {
+                                /*@ts-ignore*/
+                                const fieldValue = value[smKeys[ii]];
+                                if (!fieldValue) break;
+
+                                const replaced = regex
+                                    ? fieldValue.replaceAll(RegExp(search, "g"), replace)
+                                    : fieldValue.replaceAll(search, replace);
+                                /*@ts-ignore*/
+                                data[i].value.rr_set[0].value[type][smKeys[ii]] = replaced;
+                            }
+                        }
+                    }
+                }
+            });
+
+            return { data };
+        });
     };
 
     render = () => {
@@ -326,7 +437,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         name="search"
                         placeholder="Search"
                         value={this.state.search}
-                        onChange={this.handleSearchAndReplace}
+                        onChange={this.handleSearchAndReplaceChange}
                     />
                     <TextField
                         variant="standard"
@@ -335,9 +446,14 @@ class Domain extends Component<DomainProps, DomainState> {
                         name="replace"
                         placeholder="Replace All"
                         value={this.state.replace}
-                        onChange={this.handleSearchAndReplace}
+                        onChange={this.handleSearchAndReplaceChange}
                     />
-                    <IconButton onClick={() => this.sortColumns("search")} style={{ paddingTop: "7px" }} size="small">
+                    <IconButton
+                        disabled={this.state.search.length ? false : true}
+                        onClick={this.handleReplaceClick}
+                        style={{ paddingTop: "7px" }}
+                        size="small"
+                    >
                         <VscReplaceAll></VscReplaceAll>
                     </IconButton>
                 </span>
@@ -367,6 +483,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     ) : (
                         ""
                     )}
+
                     {searchAndReplace()}
                 </div>
 

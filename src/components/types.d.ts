@@ -44,11 +44,23 @@ export interface PektinUiConnectionConfig {
     vaultEndpoint: string;
 }
 
+export interface ValueSearchMatch {
+    [key: string]: boolean | any;
+}
+
+export interface SearchMatch {
+    name: boolean;
+    type: boolean;
+    ttl: boolean;
+    value: ValueSearchMatch;
+}
+
 export interface DomainMeta {
     selected: boolean;
     expanded: boolean;
     changed: boolean;
-    searchMatch: string | undefined;
+    searchMatch: SearchMatch;
+    anySearchMatch: boolean;
 }
 
 export interface Response {

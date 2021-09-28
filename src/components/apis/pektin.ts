@@ -31,8 +31,8 @@ interface PektinResponse {
 
 export const getDomainFromConfig = (config: t.Config): string => {
     if (!config?.pektin?.dev) return "no endpoint";
-    if (config?.pektin?.dev === "local") return "http://127.0.0.1:3001";
-    if (config?.pektin?.dev === "insecure-online") return `http://${config?.pektin?.insecureDevIp}:3001`;
+    if (config?.pektin?.dev === "local") return "127.0.0.1:3001";
+    if (config?.pektin?.dev === "insecure-online") return `${config?.pektin?.insecureDevIp}:3001`;
 
     if (!config?.pektin?.apiSubDomain || !config?.pektin?.domain) return "";
     return config?.pektin?.apiSubDomain + "." + config?.pektin?.domain;
@@ -53,8 +53,8 @@ export const getAuthFromConfig = async (config: t.Config): Promise<PektinApiAuth
 
 const request = async (config: t.Config, type: RequestType, body: RequestBody): Promise<PektinResponse> => {
     const { token, endpoint, dev } = await getAuthFromConfig(config);
-    const uri = `${dev ? endpoint : "https://"}${endpoint}/${type}`;
-    const res = await f(uri, {
+    const uri = dev ? "http://" + endpoint : "https://" + endpoint;
+    const res = await f(`${uri}/${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...body, token })

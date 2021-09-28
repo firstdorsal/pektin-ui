@@ -75,7 +75,7 @@ export default class App extends Component<AppProps, AppState> {
     loadPektinConfig = async () => {
         const { endpoint, token } = this.state.config.vaultAuth;
         if (endpoint.length) {
-            const pektin = await vaultApi.getKey({ endpoint, token, key: "pektin-config" });
+            const pektin = await vaultApi.getValue({ endpoint, token, key: "pektin-config" });
             this.setState(({ config }) => ({ config: { ...config, pektin } }));
         }
     };

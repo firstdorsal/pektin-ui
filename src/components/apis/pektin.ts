@@ -4,12 +4,10 @@ import * as l from "../lib";
 import * as vaultApi from "./vault";
 const f = fetch;
 
-const pektinDevEndpoint = "127.0.0.1:8081";
-
 export interface PektinApiAuth {
     endpoint: string;
     token: string;
-    dev?: boolean;
+    dev?: string | false;
 }
 export interface GetRequestBody {
     query: string;
@@ -32,29 +30,39 @@ interface PektinResponse {
 }
 
 export const getDomainFromConfig = (config: t.Config): string => {
-    if (getDevFromConfig(config)) return pektinDevEndpoint;
+    if (!config?.pektin?.dev) return "no endpoint";
+    if (config?.pektin?.dev === "local") return "http://127.0.0.1:3001";
+    if (config?.pektin?.dev === "insecure-online") return `http://${config?.pektin?.insecureDevIp}:3001`;
+
     if (!config?.pektin?.apiSubDomain || !config?.pektin?.domain) return "";
     return config?.pektin?.apiSubDomain + "." + config?.pektin?.domain;
 };
 
 export const getTokenFromConfig = async (config: t.Config): Promise<string> => {
-    const res = await vaultApi.getKey({ ...config.vaultAuth, key: "gss_token" });
+    const res = await vaultApi.getValue({ ...config.vaultAuth, key: "gss_token" });
     return res?.token;
 };
 
-export const getDevFromConfig = (config: t.Config): boolean => (config?.pektin?.dev ? true : false);
-
 export const getAuthFromConfig = async (config: t.Config): Promise<PektinApiAuth> => {
+    let dev = config?.pektin?.dev === undefined ? false : config?.pektin?.dev;
+    if (config?.pektin?.dev === "local") dev = "http://127.0.0.1:3001";
+    if (config?.pektin?.dev === "insecure-online") dev = `http://${config?.pektin?.insecureDevIp}:3001`;
+
     return {
         token: await getTokenFromConfig(config),
         endpoint: getDomainFromConfig(config),
-        dev: getDevFromConfig(config)
+        dev
     };
 };
 
 const request = async (config: t.Config, type: RequestType, body: RequestBody): Promise<PektinResponse> => {
     const { token, endpoint, dev } = await getAuthFromConfig(config);
-    const res = await f(`${dev ? "http://" : "https://"}${endpoint}/${type}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, token }) });
+    const uri = `${dev ? dev : "https://"}${endpoint}/${type}`;
+    const res = await f(uri, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, token })
+    });
     return await res.json().catch(() => ({ error: true, message: res.statusText, data: {} }));
 };
 

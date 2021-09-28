@@ -24,7 +24,8 @@ export interface PektinConfig {
     autoRotate: boolean;
     autoCertificates: boolean;
     autoConfigureMainDomain: boolean;
-    dev: boolean;
+    dev: string | false;
+    insecureDevIp: string;
 }
 
 export interface Variable {

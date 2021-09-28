@@ -22,7 +22,7 @@ export const getToken = async (auth: VaultAuthJSON): Promise<Object> => {
     return await loginCredRes.json();
 };
 
-export const getKey = async ({ endpoint, token, key }: { endpoint: string; token: string; key: string }) => {
+export const getValue = async ({ endpoint, token, key }: { endpoint: string; token: string; key: string }) => {
     const res = await f(endpoint + `/v1/pektin-kv/data/${key}`, {
         headers: {
             "X-Vault-Token": token

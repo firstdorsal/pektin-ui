@@ -44,20 +44,16 @@ export const getTokenFromConfig = async (config: t.Config): Promise<string> => {
 };
 
 export const getAuthFromConfig = async (config: t.Config): Promise<PektinApiAuth> => {
-    let dev = config?.pektin?.dev === undefined ? false : config?.pektin?.dev;
-    if (config?.pektin?.dev === "local") dev = "http://127.0.0.1:3001";
-    if (config?.pektin?.dev === "insecure-online") dev = `http://${config?.pektin?.insecureDevIp}:3001`;
-
     return {
         token: await getTokenFromConfig(config),
         endpoint: getDomainFromConfig(config),
-        dev
+        dev: config?.pektin?.dev
     };
 };
 
 const request = async (config: t.Config, type: RequestType, body: RequestBody): Promise<PektinResponse> => {
     const { token, endpoint, dev } = await getAuthFromConfig(config);
-    const uri = `${dev ? dev : "https://"}${endpoint}/${type}`;
+    const uri = `${dev ? endpoint : "https://"}${endpoint}/${type}`;
     const res = await f(uri, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

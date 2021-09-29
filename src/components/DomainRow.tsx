@@ -23,7 +23,7 @@ interface RowProps {
     readonly saveRecord: any;
     readonly changeMeta: Function;
     readonly index: number;
-    readonly rec0: t.RedisEntry;
+    readonly dData: t.DisplayRecord;
     readonly meta: t.DomainMeta;
     readonly config: t.Config;
     readonly style: any;
@@ -34,11 +34,12 @@ interface RowState {
 }
 
 export default class Row extends Component<RowProps, RowState> {
-    advancedView = (rec0: t.RedisEntry, rr: t.ResourceRecord) => {
+    advancedView = (dData: t.DisplayRecord) => {
         const p = this.props;
+        const rr = dData.value;
 
-        if (rec0.value.rr_type === "SOA") {
-            const v = rr.value["SOA"] as t.SOAValue;
+        if (dData.type === "SOA") {
+            const v = rr["SOA"] as t.SOAValue;
             return (
                 <Fragment>
                     <div>
@@ -66,11 +67,11 @@ export default class Row extends Component<RowProps, RowState> {
             );
         }
     };
-    simpleView = (rec0: t.RedisEntry) => {
+    simpleView = (dData: t.DisplayRecord) => {
         const p = this.props;
-        const rr = rec0.value.rr_set[0];
-        const type = rec0.value.rr_type;
-        const v: any = rr.value[type];
+        const rr = dData.value;
+        const type = dData.type;
+        const v: any = rr[type];
         const fields = l.rrTemplates[type]?.fields;
         if (!fields) return;
 
@@ -112,10 +113,9 @@ export default class Row extends Component<RowProps, RowState> {
 
     render = () => {
         const p = this.props;
-        const { rec0 } = p;
-        const editable = rec0.value.rr_type === "SOA" ? false : true;
-        const rr = rec0.value.rr_set[0];
-        const color = JSON.stringify(l.rrTemplates[rec0.value.rr_type]?.color).replace("[", "").replace("]", "") || "0 0 0";
+        const { dData } = p;
+        const editable = dData.type === "SOA" ? false : true;
+        const color = JSON.stringify(l.rrTemplates[dData.type]?.color).replace("[", "").replace("]", "") || "0 0 0";
 
         const backgroundColor = this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "";
         const borderBottom = this.props.config.local.synesthesia ? "" : "1px solid lightgrey";
@@ -154,7 +154,7 @@ export default class Row extends Component<RowProps, RowState> {
                             type="text"
                             disabled={!editable}
                             style={{ width: "100%" }}
-                            value={l.getNameFromRedisEntry(rec0)}
+                            value={dData.name}
                         />
                     </span>
                     <span
@@ -165,14 +165,14 @@ export default class Row extends Component<RowProps, RowState> {
                         }}
                         className={this.props.meta.searchMatch.type ? "searchMatch" : ""}
                     >
-                        {rec0.value.rr_type === "SOA" ? (
-                            <Input disabled={!editable} value={rec0.value.rr_type} />
+                        {dData.type === "SOA" ? (
+                            <Input disabled={!editable} value={dData.type} />
                         ) : (
                             <Select
                                 style={{ width: "100%" }}
                                 name={`${p.index}:type:`}
                                 disabled={!editable}
-                                value={rec0.value.rr_type}
+                                value={dData.type}
                                 onChange={e => this.props.handleChange(e)}
                             >
                                 {["A", "AAAA", "NS", "CNAME", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(e => (
@@ -191,9 +191,14 @@ export default class Row extends Component<RowProps, RowState> {
                         }}
                         className={this.props.meta.searchMatch.ttl ? "searchMatch" : ""}
                     >
-                        <Input onInput={e => this.props.handleChange(e)} name={`${p.index}:ttl:`} type="number" value={rr.ttl} />
+                        <Input
+                            onInput={e => this.props.handleChange(e)}
+                            name={`${p.index}:ttl:`}
+                            type="number"
+                            value={dData.ttl}
+                        />
                     </span>
-                    <span style={{ right: "100px", left: "580px", top: "5px" }}>{this.simpleView(rec0)}</span>
+                    <span style={{ right: "100px", left: "580px", top: "5px" }}>{this.simpleView(dData)}</span>
 
                     <span style={{ width: "50px", position: "absolute", right: "40px", top: "17px" }}>
                         <IconButton size="small" onClick={e => this.props.changeMeta(e, p.index, "expanded")}>
@@ -232,7 +237,7 @@ export default class Row extends Component<RowProps, RowState> {
                                                     <Ballot />
                                                     <span className="caps label">data</span>
                                                 </div>
-                                                {this.advancedView(rec0, rr)}
+                                                {this.advancedView(dData)}
                                             </Container>
                                         </Paper>
                                     </Grid>
@@ -243,13 +248,13 @@ export default class Row extends Component<RowProps, RowState> {
                                                     <Info />
                                                     <span className="caps label">info</span>
                                                 </div>
-                                                <div>{l.rrTemplates[rec0.value.rr_type]?.info}</div>
+                                                <div>{l.rrTemplates[dData.type]?.info}</div>
                                             </Container>
                                         </Paper>
                                     </Grid>
                                 </Grid>
 
-                                <DataDisplay style={{ maxHeight: "600px" }} config={this.props.config} data={rec0}></DataDisplay>
+                                <DataDisplay style={{ maxHeight: "600px" }} config={this.props.config} data={dData}></DataDisplay>
                             </Grid>
                         </Collapse>
                     </div>

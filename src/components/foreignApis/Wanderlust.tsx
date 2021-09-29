@@ -39,7 +39,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
         const allTypes: string[] = [];
         for (let i = 0; i < limit; i++) {
             const newNameRes = await providers[provider](currentName, "NSEC");
-            const newNameData = newNameRes.data.split(" ");
+            const newNameData = newNameRes.value.split(" ");
             /*eslint no-loop-func: "off"*/
 
             if (newNameRes.typeId !== 47) break;
@@ -51,7 +51,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
             currentName = newNameData[0];
             if (newNameData[0] === ogName && i > 0) break;
         }
-        const allRecords: t.SimpleDnsRecord[] = await Promise.all(allRecordsRequests);
+        const allRecords: t.RawDnsRecord[] = await Promise.all(allRecordsRequests);
         return allRecords.map((record: any) => {
             if (record.type === "TYPE61") record.type = "OPENPGPKEY";
             return record;
@@ -63,8 +63,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
     };
     import = async () => {
         const records = await this.walk(this.state.domainName, this.state.providerName, this.state.limit);
-        console.log(records);
-        this.props.import(records.map(l.simpleDnsRecordToRedisEntry).filter(l.isSupportedRecord));
+        this.props.import(records.map(l.simpleDnsRecordToDisplayRecord).filter(l.isSupportedRecord));
     };
 
     render = () => {
@@ -139,6 +138,8 @@ const providers: { [provider: string]: getDnsRecord } = {
         delete answer.TTL;
         answer.typeId = answer.type;
         answer.type = type;
+        answer.value = answer.data;
+        delete answer.data;
         return answer;
     },
     Cloudflare: async (name: string, type: string): Promise<any> => {

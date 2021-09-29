@@ -5,21 +5,44 @@ import Dexie from "dexie";
 import PektinBackup from "./foreignApis/PektinBackup";
 import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
+import * as pektinApi from "./apis/pektin";
 
 const defaultApiEndpoint = "http://127.0.0.1:3001";
 
-export const isSupportedRecord = (record: t.RedisEntry) => {
-    if (supportedRecords.indexOf(record.value.rr_type) > -1) return true;
+export const isSupportedRecord = (record: t.DisplayRecord) => {
+    if (supportedRecords.indexOf(record.type) > -1) return true;
     return false;
 };
 
-export const simpleDnsRecordToRedisEntry = (simple: t.SimpleDnsRecord): t.RedisEntry => {
-    let rrValue = textToRRValue(simple.type, simple.data);
-
+export const simpleDnsRecordToDisplayRecord = (simple: t.RawDnsRecord): t.DisplayRecord => {
     return {
-        name: `${simple.name}:${simple.type}`,
-        value: { rr_set: [{ ttl: simple.ttl, value: rrValue }], rr_type: simple.type }
+        ...simple,
+        value: textToRRValue(simple.type, simple.value)
     };
+};
+
+export const addDomain = (config: t.Config, dData: t.DisplayRecord, format = "pektin") => {
+    if (format === "something") {
+        return pektinApi.addDomain(config, [pektinApi.toRealRecord(dData)]);
+    } else {
+        return pektinApi.addDomain(config, [pektinApi.toRealRecord(dData)]);
+    }
+};
+
+export const toRealRecord = (dData: t.DisplayRecord, format = "pektin"): t.RealData => {
+    if (format === "something") {
+        return pektinApi.toRealRecord(dData);
+    } else {
+        return pektinApi.toRealRecord(dData);
+    }
+};
+
+export const toDisplayRecord = (rData: t.RealData, format = "pektin"): t.DisplayRecord => {
+    if (format === "something") {
+        return pektinApi.toDisplayRecord(rData);
+    } else {
+        return pektinApi.toDisplayRecord(rData);
+    }
 };
 
 export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRecordValue => {
@@ -155,23 +178,14 @@ export const absoluteName = (name: string) => {
     return name;
 };
 
-export const getNameFromRedisEntry = (rec0: t.RedisEntry) => {
-    return rec0.name.substring(0, rec0.name.indexOf(":"));
-};
-export const getTypeFromRedisEntry = (rec0: t.RedisEntry) => {
-    return rec0.name.substring(rec0.name.indexOf(":") + 1);
-};
-
-export const rec0ToBind = (rec0: t.RedisEntry, onlyValues: boolean = false): ReactNode => {
+export const displayRecordToBind = (rec0: t.DisplayRecord, onlyValues: boolean = false): ReactNode => {
     if (!rec0 || !rec0.value) return "";
-    const rec1 = rec0.value as t.RedisValue;
-    if (rec1.rr_type === "SOA") {
-        const soa = rec1.rr_set[0].value.SOA as t.SOAValue;
-        const rr_set = rec1.rr_set[0];
+    if (rec0.type === "SOA") {
+        const soa = rec0.value.SOA as t.SOAValue;
         if (onlyValues) return `${soa.mname} ${soa.rname}`;
-        return `${absoluteName(getNameFromRedisEntry(rec0))} ${rr_set.ttl ? rr_set.ttl : ""} IN ${rec1.rr_type} ${soa.mname} ${
-            soa.rname
-        } ${soa.serial} ${soa.refresh} ${soa.retry} ${soa.expire} ${soa.minimum}`;
+        return `${absoluteName(rec0.name)} ${rec0.ttl ? rec0.ttl : ""} IN ${rec0.type} ${soa.mname} ${soa.rname} ${soa.serial} ${
+            soa.refresh
+        } ${soa.retry} ${soa.expire} ${soa.minimum}`;
     }
     return "Not Implemented for this record";
 };
@@ -222,7 +236,8 @@ export const rrTemplates: any = {
                 name: "name",
                 placeholder: "ns1.example.com.",
                 inputType: "text",
-                width: 12
+                width: 12,
+                absolute: true
             }
         ],
         color: [29, 117, 0],
@@ -237,7 +252,8 @@ export const rrTemplates: any = {
                 name: "name",
                 placeholder: "example.com.",
                 inputType: "text",
-                width: 12
+                width: 12,
+                absolute: true
             }
         ],
         color: [255, 0, 0],
@@ -275,14 +291,16 @@ export const rrTemplates: any = {
                 placeholder: "ns1.example.com.",
                 helperText: "The domain's primary name server",
                 inputType: "text",
-                width: 6
+                width: 6,
+                absolute: true
             },
             {
                 name: "rname",
                 placeholder: "hostmaster.example.com.",
                 helperText: "Hostmaster email, the @ is replaced with a dot",
                 inputType: "text",
-                width: 6
+                width: 6,
+                absolute: true
             }
         ],
         color: [255, 145, 0],
@@ -308,7 +326,7 @@ export const rrTemplates: any = {
                 inputType: "number",
                 width: 3
             },
-            { name: "exchange", placeholder: "mx.example.com.", inputType: "text", width: 9 }
+            { name: "exchange", placeholder: "mx.example.com.", inputType: "text", width: 9, absolute: true }
         ],
         color: [29, 94, 224],
         complex: true
@@ -341,7 +359,7 @@ export const rrTemplates: any = {
             { name: "priority", placeholder: 1, inputType: "text", width: 2 },
             { name: "weight", placeholder: 1, inputType: "text", width: 2 },
             { name: "port", placeholder: 443, inputType: "text", width: 2 },
-            { name: "target", placeholder: "mx.example.com.", inputType: "text", width: 6 }
+            { name: "target", placeholder: "mx.example.com.", inputType: "text", width: 6, absolute: true }
         ],
         color: [149, 61, 196],
         complex: true

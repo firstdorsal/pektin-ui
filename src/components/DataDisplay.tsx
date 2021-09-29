@@ -6,7 +6,7 @@ import { Container, Grid, Paper, Switch, Tab, Tabs } from "@material-ui/core";
 import { AccountTree, Code } from "@material-ui/icons";
 import { SiCurl, SiJavascript } from "react-icons/si";
 import { MdShortText } from "react-icons/md";
-import { dump } from "js-yaml";
+import { dump as toYaml } from "js-yaml";
 
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
@@ -21,7 +21,7 @@ SyntaxHighlighter.registerLanguage("yaml", yaml);
 //import { format } from "prettier/standalone";
 
 interface DataDisplayProps {
-    readonly data: t.RedisEntry;
+    readonly data: t.DisplayRecord;
     readonly config: t.Config;
     readonly style?: any;
 }
@@ -39,17 +39,17 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         const codeStyle = codeStyles[this.props.config.local.codeStyle];
         const tabs = [
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="json">
-                {JSON.stringify(this.props.data, null, "    ")}
+                {JSON.stringify(l.toRealRecord(this.props.data), null, "    ")}
             </SyntaxHighlighter>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="yaml">
-                {dump(this.props.data)}
+                {toYaml(l.toRealRecord(this.props.data))}
             </SyntaxHighlighter>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
-                {l.jsTemp(pektinApi.getDomainFromConfig(this.props.config), [this.props.data])}
+                {l.jsTemp(pektinApi.getDomainFromConfig(this.props.config), [l.toRealRecord(this.props.data)])}
             </SyntaxHighlighter>,
             <CurlTab config={this.props.config} data={this.props.data}></CurlTab>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="text">
-                {l.rec0ToBind(this.props.data)}
+                {l.displayRecordToBind(this.props.data)}
             </SyntaxHighlighter>
         ];
 
@@ -95,7 +95,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
 }
 
 interface CurlTabProps {
-    data: t.RedisEntry;
+    data: t.DisplayRecord;
     config: t.Config;
 }
 
@@ -111,8 +111,8 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
     componentDidMount = async () => {
         this.setState({ auth: await pektinApi.getAuthFromConfig(this.props.config) });
     };
-    curl = (auth: any, data: t.RedisEntry[], multiline: boolean) => {
-        const body = { token: auth.dev ? auth.token : "API_TOKEN", records: data };
+    curl = (auth: any, data: t.DisplayRecord, multiline: boolean) => {
+        const body = { token: auth.dev ? auth.token : "API_TOKEN", records: l.toRealRecord(data) };
 
         if (multiline)
             return `curl -v ${auth.endpoint}/set -H "Content-Type: application/json" -d '<< EOF
@@ -132,7 +132,7 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
                     Multiline
                 </Container>
                 <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="sh">
-                    {this.curl(this.state.auth, [this.props.data], this.state.multiline)}
+                    {this.curl(this.state.auth, this.props.data, this.state.multiline)}
                 </SyntaxHighlighter>
             </React.Fragment>
         );

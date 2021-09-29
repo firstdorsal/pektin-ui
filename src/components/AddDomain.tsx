@@ -3,31 +3,15 @@ import { Button, Grid, TextField, Container, Paper } from "@material-ui/core";
 import { Ballot } from "@material-ui/icons";
 import * as t from "./types";
 import * as l from "./lib";
-import * as pektinApi from "./apis/pektin";
 import DataDisplay from "../components/DataDisplay";
 import { ContextMenu } from "./ContextMenu";
+import { cloneDeep } from "lodash";
 
-const defaultSOA: t.RedisEntry = {
-    name: ".:SOA",
-    value: {
-        rr_type: "SOA",
-        rr_set: [
-            {
-                ttl: 3600,
-                value: {
-                    SOA: {
-                        mname: "",
-                        rname: "hostmaster.",
-                        serial: 0,
-                        refresh: 0,
-                        retry: 0,
-                        expire: 0,
-                        minimum: 0
-                    }
-                }
-            }
-        ]
-    }
+const defaultSOA: t.DisplayRecord = {
+    name: "",
+    type: "SOA",
+    ttl: 3600,
+    value: l.rrTemplates.SOA.template
 };
 
 interface AddDomainProps {
@@ -36,22 +20,12 @@ interface AddDomainProps {
 }
 
 interface AddDomainState {
-    readonly ttl: number;
-    readonly mname: string;
-    readonly rname: string;
-    readonly name: string;
-    readonly dnssec: boolean;
-    readonly rec0: t.RedisEntry;
+    readonly record: t.DisplayRecord;
 }
 
 export default class AddDomain extends Component<AddDomainProps, AddDomainState> {
     state: AddDomainState = {
-        ttl: 3600,
-        mname: "",
-        rname: "hostmaster.",
-        name: "",
-        dnssec: true,
-        rec0: defaultSOA
+        record: defaultSOA
     };
 
     handleChange = (e: any, mode: string = "default") => {
@@ -59,16 +33,15 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
         const v = mode === "default" ? e?.target?.value : e.value;
         if (!n || !v === undefined) return;
 
-        this.setState((prevState): any => {
-            const { rec0 } = prevState;
-            const rec1 = rec0.value;
-            //if (event.target.name === "dnssec") rec1.dnssec = event.target.checked;
-            if (n === "ttl") rec1.rr_set[0].ttl = parseInt(v);
-            const soa = rec1.rr_set[0].value as t.SOA;
-            if (n === "mname") soa.SOA.mname = l.absoluteName(v);
-            if (n === "rname") soa.SOA.rname = l.absoluteName(v).replace("@", ".");
-            if (n === "name") rec0.name = l.absoluteName(v) + ":SOA";
-            return { rec0, [n]: v };
+        this.setState(({ record }) => {
+            record = cloneDeep(record);
+            if (n === "ttl") record.ttl = parseInt(v);
+            /*@ts-ignore*/
+            if (n === "mname") record.value[record.type].mname = v;
+            /*@ts-ignore*/
+            if (n === "rname") record.value[record.type].rname = v;
+            if (n === "name") record.name = v;
+            return { record };
         });
     };
     cmClick = (target: any, action: string, value: string | number) => {
@@ -97,7 +70,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         name="name"
                                         label="name"
                                         onChange={this.handleChange}
-                                        value={this.state.name}
+                                        value={this.state.record.name}
                                         helperText="Name of the domain you want to add"
                                     />
                                 </div>
@@ -111,7 +84,8 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         required
                                         label="mname"
                                         placeholder="ns1.example.com"
-                                        value={this.state.mname}
+                                        /*@ts-ignore*/
+                                        value={this.state.record.value.SOA.mname}
                                         helperText="Address of the primary name server"
                                     />
                                 </div>
@@ -125,7 +99,8 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         required
                                         label="rname"
                                         placeholder="hostmaster.example.com"
-                                        value={this.state.rname}
+                                        /*@ts-ignore*/
+                                        value={this.state.record.value.SOA.rname}
                                         helperText="Contact of the domain admin"
                                     />
                                 </div>
@@ -136,7 +111,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         type="number"
                                         onChange={this.handleChange}
                                         name="ttl"
-                                        value={this.state.ttl}
+                                        value={this.state.record.ttl}
                                         required
                                         label="ttl"
                                         helperText="Time to cache the dns response"
@@ -146,7 +121,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                     <Button
                                         color="primary"
                                         variant="contained"
-                                        onClick={() => pektinApi.addDomain(this.props.config, [this.state.rec0])}
+                                        onClick={() => l.addDomain(this.props.config, this.state.record)}
                                     >
                                         Add Domain
                                     </Button>
@@ -154,7 +129,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                             </Container>
                         </Paper>
                     </Grid>
-                    <DataDisplay style={{ marginTop: "15px" }} config={this.props.config} data={this.state.rec0}></DataDisplay>
+                    <DataDisplay style={{ marginTop: "15px" }} config={this.props.config} data={this.state.record}></DataDisplay>
                 </Grid>
             </Container>
         );

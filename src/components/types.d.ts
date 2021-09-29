@@ -64,29 +64,20 @@ export interface DomainMeta {
     anySearchMatch: boolean;
 }
 
-export interface Response {
-    error: boolean;
-    message: string;
-    data: Object;
-}
-
-export interface PektinApiSetReqBody extends PektinApiReqBody {
-    records: RedisEntry[];
-}
-
-export interface PektinApiGetReqBody extends PektinApiReqBody {
-    query: string;
-}
-
-export interface PektinApiReqBody {
-    token: string;
-}
-
-export interface SimpleDnsRecord {
+export interface RawDnsRecord {
     name: string;
     type: RRTypes;
     ttl: number;
-    data: string;
+    value: string;
+}
+
+export type RealData = RedisEntry;
+
+export interface DisplayRecord {
+    name: string;
+    type: RRTypes;
+    ttl: number;
+    value: ResourceRecordValue;
 }
 
 export interface RedisEntry {

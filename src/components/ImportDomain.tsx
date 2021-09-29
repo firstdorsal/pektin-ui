@@ -1,7 +1,6 @@
 import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
 import React, { Component } from "react";
 import Domain from "./Domain";
-//import * as l from "./lib";
 import * as t from "./types";
 
 interface ImportDomainProps {
@@ -11,7 +10,7 @@ interface ImportDomainProps {
 interface ImportDomainState {
     readonly activeStep: number;
     readonly selectedApi: number;
-    readonly records: t.RedisEntry[];
+    readonly records: t.DisplayRecord[];
 }
 
 const stepNames = ["How?", "Which ones?", "Approve import?"];
@@ -30,7 +29,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
         });
     };
 
-    import = (records: t.RedisEntry[]) => {
+    import = (records: t.DisplayRecord[]) => {
         this.setState({ records, activeStep: 1 });
     };
 

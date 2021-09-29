@@ -75,3 +75,49 @@ export const getRecords = async (config: t.Config, domainName: string) => {
 export const addDomain = async (config: t.Config, records: t.RedisEntry[]) => {
     return await request(config, "set", { records });
 };
+
+export const toDisplayRecord = (record: t.RedisEntry): t.DisplayRecord => {
+    const [name, type] = record.name.split(":");
+    return {
+        name,
+        /*@ts-ignore*/
+        type,
+        ttl: record.value.rr_set[0].ttl,
+        value: record.value.rr_set[0].value
+    };
+};
+
+export const toRealRecord = (record: t.DisplayRecord): t.RedisEntry => {
+    let rr_set = [{ value: record.value, ttl: record.ttl }];
+
+    if (
+        (record.type === "A" || record.type === "AAAA" || record.type === "NS") &&
+        typeof record.value[record.type] === "string"
+    ) {
+        /*@ts-ignore*/
+        rr_set = record.value[record.type].split(" ").map((value: string) => {
+            if (typeof value === "string" && record.type === "NS") value = l.absoluteName(value);
+            return { value, ttl: record.ttl };
+        });
+    }
+
+    if (l.rrTemplates[record.type].complex) {
+        l.rrTemplates[record.type].fields.forEach((field: any) => {
+            if (field.absolute) {
+                /*@ts-ignore*/
+                record.value[record.type][field.name] = l.absoluteName(record.value[record.type][field.name]);
+                if (field.name === "rname") {
+                    /*@ts-ignore*/
+                    record.value[record.type][field.name] = record.value[record.type][field.name].replaceAll("@", ".");
+                }
+            }
+        });
+    }
+    return {
+        name: `${l.absoluteName(record.name)}:${record.type}`,
+        value: {
+            rr_set,
+            rr_type: record.type
+        }
+    };
+};

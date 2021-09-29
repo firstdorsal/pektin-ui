@@ -76,7 +76,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                     }}
                     style={{ paddingRight: "20px" }}
                     helperText="The domain you want to import"
-                    placeholder="example.com"
+                    placeholder="example.com."
                     value={this.state.domainName}
                     onChange={this.handleChange}
                     name="domainName"
@@ -105,7 +105,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                         shrink: true
                     }}
                     helperText="Maximum of steps to walk"
-                    placeholder="example.com"
+                    placeholder="100"
                     value={this.state.limit}
                     onChange={this.handleChange}
                     name="limit"

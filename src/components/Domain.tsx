@@ -15,7 +15,8 @@ import { ContextMenu } from "./ContextMenu";
 import { VscReplaceAll } from "react-icons/vsc";
 
 interface DomainState {
-    readonly data: t.RedisEntry[];
+    readonly dData: t.RedisEntry[];
+    readonly rData: t.RedisEntry[];
     readonly meta: Array<t.DomainMeta>;
     readonly ogData: t.RedisEntry[];
     readonly selectAll: boolean;
@@ -55,9 +56,10 @@ const defaultSearchMatch = { name: false, type: false, ttl: false, value: {} };
 
 class Domain extends Component<DomainProps, DomainState> {
     state: DomainState = {
-        data: [],
-        meta: [],
+        dData: [],
+        rData: [],
         ogData: [],
+        meta: [],
         selectAll: false,
         columnItems,
         defaultOrder: [],
@@ -89,14 +91,14 @@ class Domain extends Component<DomainProps, DomainState> {
         if (!fullName || !v === undefined) return;
         const [i, fieldName, fieldChildName] = fullName.split(":");
 
-        this.setState(({ data, meta }) => {
-            data = cloneDeep(data);
+        this.setState(({ dData, meta }) => {
+            dData = cloneDeep(dData);
             meta = cloneDeep(meta);
-            const rr_set = data[i].value.rr_set[0];
-            const rr_type = data[i].value.rr_type;
+            const rr_set = dData[i].value.rr_set[0];
+            const rr_type = dData[i].value.rr_type;
 
             if (fieldName === "name") {
-                data[i].name = `${v}:${l.getTypeFromRedisEntry(data[i])}`;
+                dData[i].name = `${v}:${l.getTypeFromRedisEntry(dData[i])}`;
             } else if (fieldName === "rrField") {
                 if (typeof rr_set.value[rr_type] === "string") {
                     rr_set.value[rr_type] = v;
@@ -107,14 +109,12 @@ class Domain extends Component<DomainProps, DomainState> {
             } else if (fieldName === "ttl") {
                 if (v >= 0) rr_set.ttl = parseInt(v);
             } else if (fieldName === "type") {
-                data[i].name = `${l.getNameFromRedisEntry(data[i])}:${v}`;
-                data[i].value.rr_type = v;
-                data[i].value.rr_set[0].value = l.rrTemplates[v].template;
-            } else if (fieldName === "switch") {
-                //if (n === "dnssec") data[rec_index].value.dnssec = e.target.checked;
+                dData[i].name = `${l.getNameFromRedisEntry(dData[i])}:${v}`;
+                dData[i].value.rr_type = v;
+                dData[i].value.rr_set[0].value = l.rrTemplates[v].template;
             }
-            meta[i].changed = !isEqual(data[i], this.state.ogData[i]);
-            return { data, meta };
+            meta[i].changed = !isEqual(dData[i], this.state.ogData[i]);
+            return { dData, meta };
         });
     };
 
@@ -130,7 +130,7 @@ class Domain extends Component<DomainProps, DomainState> {
         });
 
         const defaultOrder = d.map((e, i) => i);
-        this.setState({ data: d, ogData: cloneDeep(d), meta, defaultOrder });
+        this.setState({ dData: d, ogData: cloneDeep(d), meta, defaultOrder, rData: cloneDeep(d) });
     };
 
     componentDidMount = async () => {
@@ -158,9 +158,9 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     sortColumns = (name: string) => {
-        this.setState(({ data, meta, columnItems, defaultOrder }) => {
-            let combine: [t.RedisEntry, t.DomainMeta, number][] = data.map((e, i) => {
-                return [data[i], meta[i], defaultOrder[i]];
+        this.setState(({ dData, rData, meta, columnItems, defaultOrder }) => {
+            let combine: [t.RedisEntry, t.DomainMeta, number, t.RedisEntry][] = dData.map((e, i) => {
+                return [dData[i], meta[i], defaultOrder[i], rData[i]];
             });
 
             let currentSortDirection = 0;
@@ -189,12 +189,13 @@ class Domain extends Component<DomainProps, DomainState> {
             if (currentSortDirection === 2) combine.reverse();
 
             combine.forEach((e, i) => {
-                data[i] = combine[i][0];
+                dData[i] = combine[i][0];
                 meta[i] = combine[i][1];
                 defaultOrder[i] = combine[i][2];
+                rData[i] = combine[i][3];
             });
             this.list.recomputeRowHeights();
-            return { data, meta, columnItems };
+            return { dData, rData, meta, columnItems };
         });
     };
 
@@ -207,10 +208,10 @@ class Domain extends Component<DomainProps, DomainState> {
     handleSearchAndReplaceChange = (e: any) => {
         if (e.target.name === "search") {
             const v = e.target.value;
-            this.setState(({ data, meta, defaultOrder }) => {
+            this.setState(({ dData, rData, meta, defaultOrder }) => {
                 meta = cloneDeep(meta);
 
-                data.forEach((rec, i) => {
+                dData.forEach((rec, i) => {
                     // reset all
                     meta[i].anySearchMatch = false;
                     meta[i].searchMatch = cloneDeep(defaultSearchMatch);
@@ -260,8 +261,8 @@ class Domain extends Component<DomainProps, DomainState> {
                     }
                 });
 
-                let combine: [t.RedisEntry, t.DomainMeta, number][] = data.map((e, i) => {
-                    return [data[i], meta[i], defaultOrder[i]];
+                let combine: [t.RedisEntry, t.DomainMeta, number, t.RedisEntry][] = dData.map((e, i) => {
+                    return [dData[i], meta[i], defaultOrder[i], rData[i]];
                 });
                 combine = sortBy(combine, [
                     key => {
@@ -271,12 +272,13 @@ class Domain extends Component<DomainProps, DomainState> {
                 ]);
                 if (v.length) combine.reverse();
                 combine.forEach((e, i) => {
-                    data[i] = combine[i][0];
+                    dData[i] = combine[i][0];
                     meta[i] = combine[i][1];
                     defaultOrder[i] = combine[i][2];
+                    rData[i] = combine[i][3];
                 });
                 this.list.recomputeRowHeights();
-                return { data, meta, search: v };
+                return { dData, rData, meta, search: v };
             });
         } else {
             this.setState(prevState => ({ ...prevState, [e.target.name]: e.target.value.toString() }));
@@ -284,44 +286,44 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     handleReplaceClick = () => {
-        this.setState(({ meta, search, replace, data }) => {
-            data = cloneDeep(data);
+        this.setState(({ meta, search, replace, dData }) => {
+            dData = cloneDeep(dData);
             const regex = true;
             meta.forEach((m, i) => {
                 if (!m.anySearchMatch) return;
                 if (m.searchMatch.name) {
                     const replaced = regex
-                        ? `${l.getNameFromRedisEntry(data[i]).replaceAll(RegExp(search, "g"), replace)}:${l.getTypeFromRedisEntry(
-                              data[i]
-                          )}`
-                        : `${l.getNameFromRedisEntry(data[i]).replaceAll(search, replace)}:${l.getTypeFromRedisEntry(data[i])}`;
+                        ? `${l
+                              .getNameFromRedisEntry(dData[i])
+                              .replaceAll(RegExp(search, "g"), replace)}:${l.getTypeFromRedisEntry(dData[i])}`
+                        : `${l.getNameFromRedisEntry(dData[i]).replaceAll(search, replace)}:${l.getTypeFromRedisEntry(dData[i])}`;
 
-                    data[i].name = replaced;
+                    dData[i].name = replaced;
                 }
                 if (m.searchMatch.type) {
                     const replaced = regex
-                        ? (l.getTypeFromRedisEntry(data[i]).replaceAll(RegExp(search, "g"), replace) as t.RRTypes)
-                        : (l.getTypeFromRedisEntry(data[i]).replaceAll(search, replace) as t.RRTypes);
+                        ? (l.getTypeFromRedisEntry(dData[i]).replaceAll(RegExp(search, "g"), replace) as t.RRTypes)
+                        : (l.getTypeFromRedisEntry(dData[i]).replaceAll(search, replace) as t.RRTypes);
 
-                    data[i].name = `${l.getNameFromRedisEntry(data[i])}:${replaced}`;
-                    data[i].value.rr_type = replaced;
-                    data[i].value.rr_set[0].value = l.rrTemplates[replaced].template;
+                    dData[i].name = `${l.getNameFromRedisEntry(dData[i])}:${replaced}`;
+                    dData[i].value.rr_type = replaced;
+                    dData[i].value.rr_set[0].value = l.rrTemplates[replaced].template;
                 }
                 if (m.searchMatch.ttl) {
                     const replaced = regex
-                        ? parseInt(data[i].value.rr_set[0].ttl.toString().replaceAll(RegExp(search, "g"), replace))
-                        : parseInt(data[i].value.rr_set[0].ttl.toString().replaceAll(search, replace));
+                        ? parseInt(dData[i].value.rr_set[0].ttl.toString().replaceAll(RegExp(search, "g"), replace))
+                        : parseInt(dData[i].value.rr_set[0].ttl.toString().replaceAll(search, replace));
 
-                    if (!isNaN(replaced) && replaced >= 0) data[i].value.rr_set[0].ttl = replaced;
+                    if (!isNaN(replaced) && replaced >= 0) dData[i].value.rr_set[0].ttl = replaced;
                 }
                 if (m.searchMatch.value) {
-                    const type = data[i].value.rr_type;
-                    const value = data[i].value.rr_set[0].value[type];
+                    const type = dData[i].value.rr_type;
+                    const value = dData[i].value.rr_set[0].value[type];
                     if (typeof value === "string") {
                         const replaced = regex
                             ? value.replaceAll(RegExp(search, "g"), replace)
                             : value.replaceAll(search, replace);
-                        data[i].value.rr_set[0].value[type] = replaced;
+                        dData[i].value.rr_set[0].value[type] = replaced;
                     } else {
                         const smKeys = Object.keys(m.searchMatch.value[type]);
                         for (let ii = 0; ii < smKeys.length; ii++) {
@@ -334,14 +336,14 @@ class Domain extends Component<DomainProps, DomainState> {
                                     ? fieldValue.replaceAll(RegExp(search, "g"), replace)
                                     : fieldValue.replaceAll(search, replace);
                                 /*@ts-ignore*/
-                                data[i].value.rr_set[0].value[type][smKeys[ii]] = replaced;
+                                dData[i].value.rr_set[0].value[type][smKeys[ii]] = replaced;
                             }
                         }
                     }
                 }
             });
 
-            return { data };
+            return { dData };
         });
     };
 
@@ -517,11 +519,11 @@ class Domain extends Component<DomainProps, DomainState> {
                                     rowRenderer={props =>
                                         rowRenderer({
                                             ...props,
-                                            data: this.state.data[props.index],
+                                            data: this.state.dData[props.index],
                                             meta: this.state.meta[props.index]
                                         })
                                     }
-                                    rowCount={this.state.data.length}
+                                    rowCount={this.state.dData.length}
                                 />
                             </Fragment>
                         )}

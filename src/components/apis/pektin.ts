@@ -59,6 +59,7 @@ const request = async (config: t.Config, type: RequestType, body: RequestBody): 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...body, token })
     });
+
     return await res.json().catch(() => ({ error: true, message: res.statusText, data: {} }));
 };
 

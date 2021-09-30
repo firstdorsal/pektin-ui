@@ -52,7 +52,7 @@ export default class Base extends Component<BaseProps, BaseState> {
                         <span className="linkText">Configuration</span>
                     </NavLink>
                 </aside>
-                <main>{this.props.children ? React.cloneElement(this.props.children, { history: this.props.history }) : ""}</main>
+                <main>{this.props.children ? React.cloneElement(this.props.children, { ...this.props }) : ""}</main>
             </div>
         );
     };

@@ -19,7 +19,7 @@ export const getToken = async (auth: VaultAuthJSON): Promise<Object> => {
 
     if (loginCredRes.error) return loginCredRes;
 
-    return await loginCredRes.json();
+    return await loginCredRes.json().catch(() => {});
 };
 
 export const getValue = async ({ endpoint, token, key }: { endpoint: string; token: string; key: string }) => {
@@ -28,6 +28,6 @@ export const getValue = async ({ endpoint, token, key }: { endpoint: string; tok
             "X-Vault-Token": token
         }
     });
-    const resJson = await res.json();
+    const resJson = await res.json().catch(() => {});
     return resJson?.data?.data;
 };

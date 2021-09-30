@@ -26,16 +26,17 @@ interface DomainState {
     readonly anySelected: boolean;
 }
 
-interface DomainRouterProps {
-    readonly domainName: string; // This one is coming from the router
+interface RouteParams {
+    readonly domainName: string;
 }
 
-interface DomainProps extends RouteComponentProps<DomainRouterProps> {
+interface DomainProps extends RouteComponentProps<RouteParams> {
     readonly config: t.Config;
     readonly g: t.Glob;
     readonly variant?: "import";
     readonly records?: t.DisplayRecord[];
     readonly style?: any;
+    readonly computedMatch?: any;
 }
 
 interface ColumnItem {
@@ -53,7 +54,7 @@ const columnItems: ColumnItem[] = [
 ];
 const defaultSearchMatch = { name: false, type: false, ttl: false, value: {} };
 
-class RecordList extends Component<DomainProps, DomainState> {
+class Domain extends Component<DomainProps, DomainState> {
     state: DomainState = {
         dData: [],
         ogData: [],
@@ -103,9 +104,10 @@ class RecordList extends Component<DomainProps, DomainState> {
         return dData;
     };
 
-    handleChange = (e: any, mode: string = "default") => {
-        let fullName = mode === "default" ? e?.target?.name : e.name;
-        let v = mode === "default" ? e?.target?.value : e.value;
+    handleChange = (e: any) => {
+        const fullName = e?.target?.name;
+        const v = e?.target?.value;
+
         if (!fullName || !v === undefined) return;
         const [i, fieldName, fieldChildName] = fullName.split(":");
 
@@ -137,6 +139,10 @@ class RecordList extends Component<DomainProps, DomainState> {
     componentDidMount = async () => {
         if (this.props.records) {
             this.initData(this.props.records);
+        } else {
+            console.log(this.props.computedMatch.params.domainName);
+
+            //await l.getRecords(this.props.config, );
         }
         //const d: t.RedisEntry[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
         //this.initData(d);
@@ -201,7 +207,10 @@ class RecordList extends Component<DomainProps, DomainState> {
 
     cmClick = (target: any, action: string, value: string | number) => {
         if (action === "paste") {
-            this.handleChange({ name: target.name, value }, action);
+            if (["search", "replace"].includes(target.name)) {
+                return this.handleSearchAndReplaceChange({ target: { name: target.name, value } });
+            }
+            return this.handleChange({ target: { name: target.name, value } });
         }
     };
 
@@ -326,7 +335,7 @@ class RecordList extends Component<DomainProps, DomainState> {
                             if (m.searchMatch.value[type][smKeys[ii]]) {
                                 /*@ts-ignore*/
                                 const fieldValue = value[smKeys[ii]];
-                                if (!fieldValue) break;
+                                if (!fieldValue || typeof fieldValue !== "string") break;
 
                                 const replaced = regex
                                     ? fieldValue.replaceAll(RegExp(search, "g"), replace)
@@ -465,7 +474,7 @@ class RecordList extends Component<DomainProps, DomainState> {
         };
 
         return (
-            <div style={{ ...this.props.style }}>
+            <div style={{ height: "100%", ...this.props.style }}>
                 <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
 
                 <div
@@ -493,7 +502,7 @@ class RecordList extends Component<DomainProps, DomainState> {
 
                 <div
                     style={{
-                        height: "calc(100% - 55px - 70px)",
+                        height: "calc(100% - 125px)",
                         width: "100%",
                         background: this.props.config.local.synesthesia ? "lightgrey" : ""
                     }}
@@ -530,4 +539,4 @@ class RecordList extends Component<DomainProps, DomainState> {
     };
 }
 
-export default withRouter(RecordList);
+export default withRouter(Domain);

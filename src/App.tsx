@@ -5,7 +5,7 @@ import "@fontsource/inter/400.css";
 import Base from "./components/Base";
 import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
 import AddDomain from "./components/AddDomain";
-import RecordList from "./components/RecordList";
+import Domain from "./components/Domain";
 import * as t from "./components/types";
 import * as l from "./components/lib";
 import * as vaultApi from "./components/apis/vault";
@@ -83,8 +83,10 @@ export default class App extends Component<AppProps, AppState> {
     };
 
     loadDomains = async () => {
-        const domains = await l.getDomains(this.state.config);
-        this.setState({ domains });
+        try {
+            const domains = await l.getDomains(this.state.config);
+            this.setState({ domains });
+        } catch (error) {}
     };
 
     componentDidMount = async () => {
@@ -110,6 +112,7 @@ export default class App extends Component<AppProps, AppState> {
         sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
         this.loadAuth();
         await this.loadPektinConfig();
+        await this.loadDomains();
     };
 
     handleContextMenuOffClick = (e: any) => {
@@ -165,7 +168,7 @@ export default class App extends Component<AppProps, AppState> {
                     </PrivateRoute>
                     <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
                         <Base domains={this.state.domains} config={this.state.config}>
-                            <RecordList g={this.state.g} config={this.state.config} />
+                            <Domain computedMatch g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/config/">
@@ -184,8 +187,8 @@ export default class App extends Component<AppProps, AppState> {
 }
 interface PrivateRouteProps {
     readonly config: t.Config;
-    readonly [propName: string]: any;
     readonly children: any;
+    readonly [propName: string]: any;
 }
 interface PrivateRouteState {}
 class PrivateRoute extends Component<PrivateRouteProps, PrivateRouteState> {
@@ -193,9 +196,9 @@ class PrivateRoute extends Component<PrivateRouteProps, PrivateRouteState> {
         return (
             <Route
                 {...this.props.rest}
-                render={routeProps =>
+                render={(routeProps: any) =>
                     this.props.config.vaultAuth.token.length ? (
-                        React.cloneElement(this.props.children, { ...routeProps })
+                        React.cloneElement(this.props.children, { ...routeProps, computedMatch: this.props.computedMatch })
                     ) : (
                         <Redirect
                             to={{

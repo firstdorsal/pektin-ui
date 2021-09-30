@@ -25,6 +25,10 @@ export const getDomains = (config: t.Config) => {
     return pektinApi.getDomains(config);
 };
 
+export const getRecords = (config: t.Config, domainName: string) => {
+    return pektinApi.getRecords(config, domainName);
+};
+
 export const addDomain = (config: t.Config, dData: t.DisplayRecord, format = "pektin") => {
     if (format === "something") {
         return pektinApi.addDomain(config, [pektinApi.toRealRecord(dData)]);

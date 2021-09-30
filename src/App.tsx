@@ -5,7 +5,7 @@ import "@fontsource/inter/400.css";
 import Base from "./components/Base";
 import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
 import AddDomain from "./components/AddDomain";
-import Domain from "./components/Domain";
+import RecordList from "./components/RecordList";
 import * as t from "./components/types";
 import * as l from "./components/lib";
 import * as vaultApi from "./components/apis/vault";
@@ -19,6 +19,7 @@ interface AppState {
     readonly db: l.PektinUiDb;
     readonly configLoaded: boolean;
     readonly g: t.Glob;
+    readonly domains: string[];
 }
 interface AppProps {}
 
@@ -27,7 +28,8 @@ export default class App extends Component<AppProps, AppState> {
         config: l.defaulConfig,
         db: new l.PektinUiDb(),
         configLoaded: false,
-        g: { contextMenu: false, changeContextMenu: false, cmAction: "", updateLocalConfig: false }
+        g: { contextMenu: false, changeContextMenu: false, cmAction: "", updateLocalConfig: false },
+        domains: []
     };
 
     initDb = async () => {
@@ -80,12 +82,18 @@ export default class App extends Component<AppProps, AppState> {
         }
     };
 
+    loadDomains = async () => {
+        const domains = await l.getDomains(this.state.config);
+        this.setState({ domains });
+    };
+
     componentDidMount = async () => {
         // handle config
         await this.initDb();
         await this.loadLocalConfig();
         this.loadAuth();
         await this.loadPektinConfig();
+        await this.loadDomains();
 
         // handle custom right click menu
         this.setState(({ g }) => ({
@@ -143,31 +151,31 @@ export default class App extends Component<AppProps, AppState> {
                     />
 
                     <PrivateRoute config={this.state.config} exact path="/">
-                        <Base config={this.state.config}></Base>
+                        <Base domains={this.state.domains} config={this.state.config}></Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
-                        <Base config={this.state.config}>
-                            <AddDomain g={this.state.g} config={this.state.config} />
+                        <Base domains={this.state.domains} config={this.state.config}>
+                            <AddDomain loadDomains={this.loadDomains} g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/import">
-                        <Base config={this.state.config}>
+                        <Base domains={this.state.domains} config={this.state.config}>
                             <ImportDomain g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
-                        <Base config={this.state.config}>
-                            <Domain g={this.state.g} config={this.state.config} />
+                        <Base domains={this.state.domains} config={this.state.config}>
+                            <RecordList g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/config/">
-                        <Base config={this.state.config}>
+                        <Base domains={this.state.domains} config={this.state.config}>
                             <ConfigView g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
 
                     <PrivateRoute config={this.state.config} path="*">
-                        <Base config={this.state.config}></Base>
+                        <Base domains={this.state.domains} config={this.state.config}></Base>
                     </PrivateRoute>
                 </Switch>
             </Router>

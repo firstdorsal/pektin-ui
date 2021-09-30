@@ -1,6 +1,6 @@
 import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
 import React, { Component } from "react";
-import Domain from "./Domain";
+import RecordList from "./RecordList";
 import * as t from "./types";
 
 interface ImportDomainProps {
@@ -68,13 +68,13 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
         };
         const step2 = () => {
             return (
-                <Domain
+                <RecordList
                     variant="import"
                     g={this.props.g}
                     style={{ height: "calc(100% - 70px)" }}
                     records={this.state.records}
                     config={this.props.config}
-                ></Domain>
+                ></RecordList>
             );
         };
 

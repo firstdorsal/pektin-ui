@@ -7,7 +7,7 @@ import isEqual from "lodash/isEqual";
 import cloneDeep from "lodash/cloneDeep";
 import sortBy from "lodash/sortBy";
 import { RouteComponentProps, withRouter } from "react-router-dom";
-import Row from "./DomainRow";
+import RecordRow from "./RecordRow";
 import { AutoSizer, List } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
 import { FaSortAlphaDownAlt, FaSortAlphaDown, FaSortNumericDownAlt, FaSortNumericDown } from "react-icons/fa";
@@ -53,7 +53,7 @@ const columnItems: ColumnItem[] = [
 ];
 const defaultSearchMatch = { name: false, type: false, ttl: false, value: {} };
 
-class Domain extends Component<DomainProps, DomainState> {
+class RecordList extends Component<DomainProps, DomainState> {
     state: DomainState = {
         dData: [],
         ogData: [],
@@ -350,7 +350,7 @@ class Domain extends Component<DomainProps, DomainState> {
             const { key, index, style } = r;
 
             return (
-                <Row
+                <RecordRow
                     style={style}
                     config={this.props.config}
                     handleChange={this.handleChange}
@@ -530,4 +530,4 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 }
 
-export default withRouter(Domain);
+export default withRouter(RecordList);

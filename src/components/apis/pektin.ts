@@ -13,7 +13,7 @@ export interface GetRequestBody {
     query: string;
 }
 export interface SearchRequestBody {
-    regex: string;
+    glob: string;
 }
 export interface SetRequestBody {
     records: t.RedisEntry[];
@@ -63,13 +63,13 @@ const request = async (config: t.Config, type: RequestType, body: RequestBody): 
 };
 
 export const getDomains = async (config: t.Config): Promise<string[]> => {
-    const res = await request(config, "search", { regex: ".*.:SOA" });
-    if (!res.data) return [];
-    return res.data;
+    const res = await request(config, "search", { glob: "*.:SOA" });
+    if (!res.data || !Array.isArray(res.data)) return [];
+    return res.data.map(e => e.split(":")[0].slice(0, -1));
 };
 
 export const getRecords = async (config: t.Config, domainName: string) => {
-    return await request(config, "search", { regex: `.*${l.absoluteName(domainName)}::*` });
+    return await request(config, "search", { glob: `*${l.absoluteName(domainName)}:*` });
 };
 
 export const addDomain = async (config: t.Config, records: t.RedisEntry[]) => {

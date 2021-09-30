@@ -33,7 +33,7 @@ interface RowState {
     //dnssec: boolean;
 }
 
-export default class Row extends Component<RowProps, RowState> {
+export default class RecordRow extends Component<RowProps, RowState> {
     advancedView = (dData: t.DisplayRecord) => {
         const p = this.props;
         const rr = dData.value;

@@ -21,6 +21,10 @@ export const simpleDnsRecordToDisplayRecord = (simple: t.RawDnsRecord): t.Displa
     };
 };
 
+export const getDomains = (config: t.Config) => {
+    return pektinApi.getDomains(config);
+};
+
 export const addDomain = (config: t.Config, dData: t.DisplayRecord, format = "pektin") => {
     if (format === "something") {
         return pektinApi.addDomain(config, [pektinApi.toRealRecord(dData)]);

@@ -6,6 +6,7 @@ import * as l from "./lib";
 import DataDisplay from "../components/DataDisplay";
 import { ContextMenu } from "./ContextMenu";
 import { cloneDeep } from "lodash";
+import { RouteComponentProps } from "react-router-dom";
 
 const defaultSOA: t.DisplayRecord = {
     name: "",
@@ -14,18 +15,21 @@ const defaultSOA: t.DisplayRecord = {
     value: l.rrTemplates.SOA.template
 };
 
-interface AddDomainProps {
+interface AddDomainProps extends Partial<RouteComponentProps> {
     readonly config: t.Config;
     readonly g: t.Glob;
+    readonly loadDomains: Function;
 }
 
 interface AddDomainState {
     readonly record: t.DisplayRecord;
+    readonly error: string;
 }
 
 export default class AddDomain extends Component<AddDomainProps, AddDomainState> {
     state: AddDomainState = {
-        record: defaultSOA
+        record: defaultSOA,
+        error: ""
     };
 
     handleChange = (e: any, mode: string = "default") => {
@@ -121,11 +125,17 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                     <Button
                                         color="primary"
                                         variant="contained"
-                                        onClick={() => l.addDomain(this.props.config, this.state.record)}
+                                        onClick={async () => {
+                                            const req = await l.addDomain(this.props.config, this.state.record);
+                                            if (req.error) this.setState({ error: req.message });
+                                            await this.props.loadDomains();
+                                            if (this.props.history) this.props.history.push(`/domain/${this.state.record.name}`);
+                                        }}
                                     >
                                         Add Domain
                                     </Button>
                                 </div>
+                                <div style={{ color: "var(--error)" }}></div>
                             </Container>
                         </Paper>
                     </Grid>

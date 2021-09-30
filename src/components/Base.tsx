@@ -1,23 +1,16 @@
+// @ts-nocheck
 import { Add, ImportExport, Settings, ShoppingCart } from "@material-ui/icons";
-import { Component } from "react";
-import { NavLink } from "react-router-dom";
-import * as pektinApi from "./apis/pektin";
+import React, { Component } from "react";
+import { NavLink, RouteComponentProps } from "react-router-dom";
 import * as t from "./types";
 
-interface BaseProps {
+interface BaseProps extends Partial<RouteComponentProps> {
     readonly config: t.Config;
-}
-interface BaseState {
     readonly domains: String[];
 }
+interface BaseState {}
 
 export default class Base extends Component<BaseProps, BaseState> {
-    state = { domains: [] };
-    componentDidMount = async () => {
-        const domains = await pektinApi.getDomains(this.props.config);
-        this.setState({ domains });
-    };
-
     render = () => {
         return (
             <div className="container">
@@ -45,8 +38,8 @@ export default class Base extends Component<BaseProps, BaseState> {
                     </NavLink>
                     <br />
                     <h2>Your Domains</h2>
-                    {this.state.domains.length
-                        ? this.state.domains.map((domain: string, i: number) => {
+                    {this.props.domains.length
+                        ? this.props.domains.map((domain: string, i: number) => {
                               return (
                                   <NavLink className="link" key={i} to={`/domain/${domain}`}>
                                       {domain}
@@ -59,7 +52,7 @@ export default class Base extends Component<BaseProps, BaseState> {
                         <span className="linkText">Configuration</span>
                     </NavLink>
                 </aside>
-                <main>{this.props.children}</main>
+                <main>{this.props.children ? React.cloneElement(this.props.children, { history: this.props.history }) : ""}</main>
             </div>
         );
     };

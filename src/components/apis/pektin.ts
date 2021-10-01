@@ -10,7 +10,7 @@ export interface PektinApiAuth {
     dev?: string | false;
 }
 export interface GetRequestBody {
-    query: string;
+    queries: string[];
 }
 export interface SearchRequestBody {
     glob: string;
@@ -70,7 +70,11 @@ export const getDomains = async (config: t.Config): Promise<string[]> => {
 };
 
 export const getRecords = async (config: t.Config, domainName: string) => {
-    return await request(config, "search", { glob: `*${l.absoluteName(domainName)}:*` });
+    const req = await request(config, "search", { glob: `*${l.absoluteName(domainName)}:*` });
+    const recordKeys = req.data;
+    if (!Array.isArray(recordKeys)) return [];
+
+    return (await request(config, "get", { queries: recordKeys })).data;
 };
 
 export const addDomain = async (config: t.Config, records: t.RedisEntry[]) => {

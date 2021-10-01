@@ -140,9 +140,8 @@ class Domain extends Component<DomainProps, DomainState> {
         if (this.props.records) {
             this.initData(this.props.records);
         } else {
-            console.log(this.props.computedMatch.params.domainName);
-
-            //await l.getRecords(this.props.config, );
+            const records = await l.getRecords(this.props.config, this.props.computedMatch.params.domainName);
+            console.log(records);
         }
         //const d: t.RedisEntry[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
         //this.initData(d);

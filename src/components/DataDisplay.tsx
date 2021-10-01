@@ -112,7 +112,7 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
         this.setState({ auth: await pektinApi.getAuthFromConfig(this.props.config) });
     };
     curl = (auth: any, data: t.DisplayRecord, multiline: boolean) => {
-        const body = { token: auth.dev ? auth.token : "API_TOKEN", records: l.toRealRecord(data) };
+        const body = { token: auth.dev ? auth.token : "API_TOKEN", records: [l.toRealRecord(data)] };
 
         if (multiline)
             return `curl -v ${auth.endpoint}/set -H "Content-Type: application/json" -d '<< EOF

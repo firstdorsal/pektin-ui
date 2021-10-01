@@ -204,6 +204,85 @@ export const help: any = {
 
 export const supportedRecords = ["A", "AAAA", "NS", "CNAME", "PTR", "SOA", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"];
 
+export const SPF1QualifierNames = ["Pass", "Fail", "SoftFail", "Neutral"];
+
+type Domain = string;
+type PrefixLength = number;
+type IP6Adress = string;
+type IP4Adress = string;
+
+type SPF1_M_ip4 = `ip4:${IP4Adress}` | `ip4:${IP4Adress}/${PrefixLength}`;
+type SPF1_M_ip6 = `ip6:${IP6Adress}` | `ip6:${IP6Adress}/${PrefixLength}`;
+type SPF1_M_a = "a" | `a/${PrefixLength}` | `a:${Domain}` | `a:${Domain}/${PrefixLength}`;
+type SPF1_M_mx = "mx" | `mx/${PrefixLength}` | `mx:${Domain}` | `mx:${Domain}/${PrefixLength}`;
+type SPF1_M_ptr = "ptr" | `ptr:${Domain}`;
+type SPF1_M_exists = `exists:${Domain}`;
+type SPF1_M_include = `include:${Domain}`;
+
+interface SPF1Mechanism {
+    qualifier?: "+" | "-" | "~" | "?"; // Pass Fail SoftFail Neutral; defaults to "+"/Pass if nothing is set
+    mechanism: "all" | SPF1_M_ip4 | SPF1_M_ip6 | SPF1_M_a | SPF1_M_mx | SPF1_M_ptr | SPF1_M_exists | SPF1_M_include;
+}
+interface ParsedSPF1 {
+    mechanisms?: Array<SPF1Mechanism | TxtRecordsParseError>;
+    modifier?: "redirect" | "exp";
+    modifierDomain?: string;
+}
+interface TxtRecordsParseError {
+    error: true;
+    message: string;
+}
+
+export const txtRecords = {
+    SPF1: {
+        identifier: "v=spf1",
+        parse: (v: string): ParsedSPF1 | TxtRecordsParseError => {
+            const split = v.split(" ");
+            if (split[0] !== "v=spf1") return { error: true, message: "invalid spf1 record identifier" };
+            if (split.length === 1 || split[1] === "") return { error: true, message: "spf1 record is empty" };
+            const parsed: ParsedSPF1 = {};
+            split.shift();
+            if (["redirect=", "exp="].includes(split[-1])) {
+                /*@ts-ignore*/
+                const [modifier, modifierDomain]: ["redirect" | "exp", string] = split[1].split("=");
+                parsed.modifier = modifier;
+                parsed.modifierDomain = modifierDomain;
+                split.pop();
+            }
+            if (!split.length) return parsed;
+            const parseMechanism = (e: string): SPF1Mechanism | TxtRecordsParseError => {
+                if (e.length < 2) return { error: true, message: "invalid spf1 mechanism" };
+                const mechanism: any = {};
+                if (["+", "-", "~", "?"].includes(e.charAt(0))) {
+                    mechanism.qualifier = e.charAt(0);
+                    e = e.substring(1);
+                } else {
+                    mechanism.qualifier = "+";
+                }
+                if (["ip4:", "ip6:", "a", "mx", "ptr", "exists:", "include:"].includes(e)) {
+                    mechanism.mechanism = e;
+                } else {
+                    return { error: true, message: "invalid spf1 mechanism" };
+                }
+                return mechanism;
+            };
+            parsed.mechanisms = Array(split.length);
+            split.forEach((e: string, i: number) => {
+                if (parsed.mechanisms) {
+                    parsed.mechanisms[i] = parseMechanism(e);
+                }
+            });
+            return parsed;
+        }
+    },
+    DKIM1: {
+        identifier: "v=DKIM1"
+    },
+    DMARC1: {
+        identifier: "v=DMARC1"
+    }
+};
+
 export const rrTemplates: any = {
     A: {
         template: {

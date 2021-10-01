@@ -90,6 +90,28 @@ export default class App extends Component<AppProps, AppState> {
     };
 
     componentDidMount = async () => {
+        const a = [
+            "v=spf1 ip6:1080::8:800:200C:417A/96 -all",
+            "v=spf1 ip6:1080::8:800:68.0.3.1/96 -all",
+            "v=spf1 a -all",
+            "v=spf1 a:example.com -all",
+            "v=spf1 a:mailers.example.com -all",
+            "v=spf1 a/24 a:offsite.example.com/24 -all",
+            "v=spf1 mx mx:deferrals.domain.com -all",
+            "v=spf1 mx/24 mx:offsite.domain.com/24 -all",
+            "v=spf1 ptr -all",
+            "v=spf1 ptr:otherdomain.com -all",
+            "v=spf1 exists:example.com -all",
+            "v=spf1 include:example.com -all",
+            "v=spf1 ?include:example.com -all",
+            "v=spf1 redirect=example.com",
+            "v=spf1 redirect=example.com",
+            "x=spf1 redirect=example.com",
+            "v=spf1 ptr:otherdomain.com -all redirect=example.com",
+            "v=spf1 ptr:otherdomain.com redirect=example.com -all"
+        ].map(l.txtRecords.SPF1.parse);
+        console.log(a);
+
         // handle config
         await this.initDb();
         await this.loadLocalConfig();

@@ -82,18 +82,12 @@ export interface DisplayRecord {
 
 export interface RedisEntry {
     name: string;
-    value: RedisValue;
-}
-
-export interface RedisValue {
-    //dnssec?: boolean;
-    rr_type: RRTypes;
     rr_set: RRset;
 }
 
 export type RRset = Array<ResourceRecord>;
 
-// a resource recprd with a ttl and the rr value
+// a resource record with a ttl and the rr value
 export interface ResourceRecord {
     ttl: number;
     value: ResourceRecordValue;

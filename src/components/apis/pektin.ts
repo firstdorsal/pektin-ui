@@ -74,12 +74,11 @@ export const getRecords = async (config: t.Config, domainName: string) => {
     const recordKeys = req.data;
     if (!Array.isArray(recordKeys)) return [];
 
-    const recordValues = [(await request(config, "get", { queries: recordKeys })).data];
+    const recordValues = (await request(config, "get", { queries: recordKeys })).data;
     const records: t.RedisEntry[] = [];
     recordKeys.forEach((e, i) => {
-        records[i] = { name: e, value: recordValues[i] };
+        records[i] = { name: e, ...recordValues[i] };
     });
-    console.log(records);
 
     return records.map(toDisplayRecord);
 };
@@ -90,12 +89,13 @@ export const addDomain = async (config: t.Config, records: t.RedisEntry[]) => {
 
 export const toDisplayRecord = (record: t.RedisEntry): t.DisplayRecord => {
     const [name, type] = record.name.split(":");
+    console.debug(record);
     return {
         name,
         /*@ts-ignore*/
         type,
-        ttl: record.value.rr_set[0].ttl,
-        value: record.value.rr_set[0].value
+        ttl: record.rr_set[0].ttl,
+        value: record.rr_set[0].value
     };
 };
 
@@ -127,9 +127,6 @@ export const toRealRecord = (record: t.DisplayRecord): t.RedisEntry => {
     }
     return {
         name: `${l.absoluteName(record.name)}:${record.type}`,
-        value: {
-            rr_set,
-            rr_type: record.type
-        }
+        rr_set
     };
 };

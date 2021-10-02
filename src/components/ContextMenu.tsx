@@ -31,14 +31,17 @@ export class ContextMenu extends Component<ContextMenuProps, ContextMenuState> {
             const cm = this.state.contextMenu;
             const target = cm.target;
             const variables = this.props.config.local.variables;
-
+            if (target.type === "checkbox") return <div></div>;
             const renderVariables = () => {
                 return variables.length ? (
                     variables.map((e: any, i: number) => {
-                        const disabled = target.type === "number" && isNaN(parseInt(e.value)) ? true : false;
+                        let disabled = target.type === "number" && isNaN(parseInt(e.value)) ? "nan" : false;
+                        if (target.disabled) disabled = "disabled";
 
                         const style = disabled ? { color: "var(--b1)" } : { cursor: "pointer" };
-                        const title = disabled ? `"${e.value}" can't be used here as it cannot be casted into a number` : e.value;
+                        let title =
+                            disabled === "nan" ? `"${e.value}" can't be used here as it cannot be casted into a number` : e.value;
+                        if (disabled === "disabled") title = "This field is disabled";
                         return (
                             <div
                                 className="contextMenu"
@@ -76,7 +79,14 @@ export class ContextMenu extends Component<ContextMenuProps, ContextMenuState> {
                     onContextMenu={e => e.preventDefault()}
                     elevation={3}
                     className="contextMenu"
-                    style={{ position: "fixed", left: this.state.contextMenu.clientX, top: cm.clientY, background: "var(--b)", zIndex: 10, padding: "10px" }}
+                    style={{
+                        position: "fixed",
+                        left: this.state.contextMenu.clientX,
+                        top: cm.clientY,
+                        background: "var(--b)",
+                        zIndex: 10,
+                        padding: "10px"
+                    }}
                 >
                     {this.props.g.cmAction === "paste" ? renderVariables() : ""}
                     {this.props.g.cmAction === "code" ? renderCodeStyle() : ""}

@@ -15,7 +15,7 @@ export default class Base extends Component<BaseProps, BaseState> {
         return (
             <div className="container">
                 <aside>
-                    <h1>Pektin</h1>
+                    <h1>Pektin-ui</h1>
                     <br />
                     <br />
 

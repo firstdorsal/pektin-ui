@@ -346,9 +346,9 @@ class Domain extends Component<DomainProps, DomainState> {
                         }
                     }
                 }
+                meta[i].changed = !isEqual(records[i], this.state.ogData[i]);
             });
-
-            return { records };
+            return { records, meta };
         });
     };
 

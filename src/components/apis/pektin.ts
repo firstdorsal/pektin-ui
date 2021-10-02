@@ -74,7 +74,14 @@ export const getRecords = async (config: t.Config, domainName: string) => {
     const recordKeys = req.data;
     if (!Array.isArray(recordKeys)) return [];
 
-    return (await request(config, "get", { queries: recordKeys })).data;
+    const recordValues = [(await request(config, "get", { queries: recordKeys })).data];
+    const records: t.RedisEntry[] = [];
+    recordKeys.forEach((e, i) => {
+        records[i] = { name: e, value: recordValues[i] };
+    });
+    console.log(records);
+
+    return records.map(toDisplayRecord);
 };
 
 export const addDomain = async (config: t.Config, records: t.RedisEntry[]) => {

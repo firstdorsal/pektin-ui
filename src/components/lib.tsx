@@ -243,6 +243,7 @@ interface TxtRecordsParseError {
 }
 
 // https://www.ietf.org/rfc/rfc6376.txt
+// eslint-disable-next-line
 interface ParsedDKIM1 {
     g: any; // granularity
     h: any; // hash; a list of mechanisms that can be used to produce a digest of message data
@@ -256,6 +257,7 @@ interface ParsedDKIM1 {
 }
 
 // https://datatracker.ietf.org/doc/html/rfc7489#section-6.3
+// eslint-disable-next-line
 interface ParsedDMARC1 {
     p: "none" | "quarantine" | "reject"; // policy
     adkim?: "r" | "s"; // dkim alignment: relaxed or strict mode

@@ -15,7 +15,7 @@ import { ContextMenu } from "./ContextMenu";
 import { VscReplaceAll } from "react-icons/vsc";
 
 interface DomainState {
-    readonly dData: t.DisplayRecord[];
+    readonly records: t.DisplayRecord[];
     readonly meta: Array<t.DomainMeta>;
     readonly ogData: t.DisplayRecord[];
     readonly selectAll: boolean;
@@ -56,7 +56,7 @@ const defaultSearchMatch = { name: false, type: false, ttl: false, value: {} };
 
 class Domain extends Component<DomainProps, DomainState> {
     state: DomainState = {
-        dData: [],
+        records: [],
         ogData: [],
         meta: [],
         selectAll: false,
@@ -84,24 +84,24 @@ class Domain extends Component<DomainProps, DomainState> {
         });
     };
 
-    handleDDataChange = (dData: t.DisplayRecord, fieldName: string, fieldChildName: string, v: any) => {
-        dData = cloneDeep(dData);
+    handleRecordChange = (record: t.DisplayRecord, fieldName: string, fieldChildName: string, v: any) => {
+        record = cloneDeep(record);
         if (fieldName === "name") {
-            dData.name = v;
+            record.name = v;
         } else if (fieldName === "ttl") {
-            dData.ttl = v;
+            record.ttl = v;
         } else if (fieldName === "type") {
-            dData.type = v;
-            dData.value = l.rrTemplates[v].template;
+            record.type = v;
+            record.value = l.rrTemplates[v].template;
         } else if (fieldName === "rrField") {
-            if (typeof dData.value[dData.type] === "string") {
-                dData.value[dData.type] = v;
+            if (typeof record.value[record.type] === "string") {
+                record.value[record.type] = v;
             } else {
                 /*@ts-ignore*/
-                dData.value[dData.type][fieldChildName] = v;
+                record.value[record.type][fieldChildName] = v;
             }
         }
-        return dData;
+        return record;
     };
 
     handleChange = (e: any) => {
@@ -111,18 +111,18 @@ class Domain extends Component<DomainProps, DomainState> {
         if (!fullName || !v === undefined) return;
         const [i, fieldName, fieldChildName] = fullName.split(":");
 
-        this.setState(({ dData, meta }) => {
+        this.setState(({ records, meta }) => {
             //rData[i] = this.handleRDataChange(rData[i], fieldName, fieldChildName, v);
-            dData[i] = this.handleDDataChange(dData[i], fieldName, fieldChildName, v);
+            records[i] = this.handleRecordChange(records[i], fieldName, fieldChildName, v);
             meta[i] = cloneDeep(meta[i]);
 
-            meta[i].changed = !isEqual(dData[i], this.state.ogData[i]);
-            return { meta, dData };
+            meta[i].changed = !isEqual(records[i], this.state.ogData[i]);
+            return { meta, records };
         });
     };
 
-    initData = (d: t.DisplayRecord[]) => {
-        const meta = d.map(() => {
+    initData = (records: t.DisplayRecord[]) => {
+        const meta = records.map(() => {
             return {
                 selected: false,
                 expanded: false,
@@ -132,8 +132,8 @@ class Domain extends Component<DomainProps, DomainState> {
             };
         });
 
-        const defaultOrder = d.map((e, i) => i);
-        this.setState({ dData: d, ogData: cloneDeep(d), meta, defaultOrder });
+        const defaultOrder = records.map((e, i) => i);
+        this.setState({ records, ogData: cloneDeep(records), meta, defaultOrder });
     };
 
     componentDidMount = async () => {
@@ -141,16 +141,17 @@ class Domain extends Component<DomainProps, DomainState> {
             this.initData(this.props.records);
         } else {
             const records = await l.getRecords(this.props.config, this.props.computedMatch.params.domainName);
-            console.log(records);
+            this.initData(records);
         }
-        //const d: t.RedisEntry[] = await l.getRecords({ domainName: this.props.match.params.domainName, pektinApiAuth: this.props.config.pektinApiAuth });
-        //this.initData(d);
     };
-    /*
-    componentDidUpdate = e => {
+
+    componentDidUpdate = async (e: DomainProps) => {
         // replace the current state when the components props change to a new domain page
-        if (this.props.router.query?.name !== e.router.query.name) this.initData();
-    };*/
+        if (this.props.computedMatch.params.domainName !== e.computedMatch.params.domainName) {
+            const records = await l.getRecords(this.props.config, this.props.computedMatch.params.domainName);
+            this.initData(records);
+        }
+    };
 
     selectAll = () => {
         this.setState(({ selectAll, meta }) => {
@@ -164,9 +165,9 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     sortColumns = (name: string) => {
-        this.setState(({ dData, meta, columnItems, defaultOrder }) => {
-            let combine: [t.DisplayRecord, t.DomainMeta, number][] = dData.map((e, i) => {
-                return [dData[i], meta[i], defaultOrder[i]];
+        this.setState(({ records, meta, columnItems, defaultOrder }) => {
+            let combine: [t.DisplayRecord, t.DomainMeta, number][] = records.map((e, i) => {
+                return [records[i], meta[i], defaultOrder[i]];
             });
 
             let currentSortDirection = 0;
@@ -195,12 +196,12 @@ class Domain extends Component<DomainProps, DomainState> {
             if (currentSortDirection === 2) combine.reverse();
 
             combine.forEach((e, i) => {
-                dData[i] = combine[i][0];
+                records[i] = combine[i][0];
                 meta[i] = combine[i][1];
                 defaultOrder[i] = combine[i][2];
             });
             this.list.recomputeRowHeights();
-            return { dData, meta, columnItems };
+            return { records, meta, columnItems };
         });
     };
 
@@ -216,10 +217,10 @@ class Domain extends Component<DomainProps, DomainState> {
     handleSearchAndReplaceChange = (e: any) => {
         if (e.target.name === "search") {
             const v = e.target.value;
-            this.setState(({ dData, meta, defaultOrder }) => {
+            this.setState(({ records, meta, defaultOrder }) => {
                 meta = cloneDeep(meta);
 
-                dData.forEach((rec, i) => {
+                records.forEach((rec, i) => {
                     // reset all
                     meta[i].anySearchMatch = false;
                     meta[i].searchMatch = cloneDeep(defaultSearchMatch);
@@ -269,8 +270,8 @@ class Domain extends Component<DomainProps, DomainState> {
                     }
                 });
 
-                let combine: [t.DisplayRecord, t.DomainMeta, number][] = dData.map((e, i) => {
-                    return [dData[i], meta[i], defaultOrder[i]];
+                let combine: [t.DisplayRecord, t.DomainMeta, number][] = records.map((e, i) => {
+                    return [records[i], meta[i], defaultOrder[i]];
                 });
                 combine = sortBy(combine, [
                     key => {
@@ -280,12 +281,12 @@ class Domain extends Component<DomainProps, DomainState> {
                 ]);
                 if (v.length) combine.reverse();
                 combine.forEach((e, i) => {
-                    dData[i] = combine[i][0];
+                    records[i] = combine[i][0];
                     meta[i] = combine[i][1];
                     defaultOrder[i] = combine[i][2];
                 });
                 this.list.recomputeRowHeights();
-                return { dData, meta, search: v };
+                return { records, meta, search: v };
             });
         } else {
             this.setState(prevState => ({ ...prevState, [e.target.name]: e.target.value.toString() }));
@@ -293,41 +294,41 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     handleReplaceClick = () => {
-        this.setState(({ meta, search, replace, dData }) => {
-            dData = cloneDeep(dData);
+        this.setState(({ meta, search, replace, records }) => {
+            records = cloneDeep(records);
             const regex = true;
             meta.forEach((m, i) => {
                 if (!m.anySearchMatch) return;
                 if (m.searchMatch.name) {
                     const replaced = regex
-                        ? dData[i].name.replaceAll(RegExp(search, "g"), replace)
-                        : dData[i].name.replaceAll(search, replace);
+                        ? records[i].name.replaceAll(RegExp(search, "g"), replace)
+                        : records[i].name.replaceAll(search, replace);
 
-                    dData[i].name = replaced;
+                    records[i].name = replaced;
                 }
                 if (m.searchMatch.type) {
                     const replaced = regex
-                        ? (dData[i].type.replaceAll(RegExp(search, "g"), replace) as t.RRTypes)
-                        : (dData[i].type.replaceAll(search, replace) as t.RRTypes);
+                        ? (records[i].type.replaceAll(RegExp(search, "g"), replace) as t.RRTypes)
+                        : (records[i].type.replaceAll(search, replace) as t.RRTypes);
 
-                    dData[i].type = replaced;
-                    dData[i].value = l.rrTemplates[replaced].template;
+                    records[i].type = replaced;
+                    records[i].value = l.rrTemplates[replaced].template;
                 }
                 if (m.searchMatch.ttl) {
                     const replaced = regex
-                        ? parseInt(dData[i].ttl.toString().replaceAll(RegExp(search, "g"), replace))
-                        : parseInt(dData[i].ttl.toString().replaceAll(search, replace));
+                        ? parseInt(records[i].ttl.toString().replaceAll(RegExp(search, "g"), replace))
+                        : parseInt(records[i].ttl.toString().replaceAll(search, replace));
 
-                    if (!isNaN(replaced) && replaced >= 0) dData[i].ttl = replaced;
+                    if (!isNaN(replaced) && replaced >= 0) records[i].ttl = replaced;
                 }
                 if (m.searchMatch.value) {
-                    const type = dData[i].type;
-                    const value = dData[i].value[type];
+                    const type = records[i].type;
+                    const value = records[i].value[type];
                     if (typeof value === "string") {
                         const replaced = regex
                             ? value.replaceAll(RegExp(search, "g"), replace)
                             : value.replaceAll(search, replace);
-                        dData[i].value[type] = replaced;
+                        records[i].value[type] = replaced;
                     } else {
                         const smKeys = Object.keys(m.searchMatch.value[type]);
                         for (let ii = 0; ii < smKeys.length; ii++) {
@@ -340,21 +341,21 @@ class Domain extends Component<DomainProps, DomainState> {
                                     ? fieldValue.replaceAll(RegExp(search, "g"), replace)
                                     : fieldValue.replaceAll(search, replace);
                                 /*@ts-ignore*/
-                                dData[i].value[type][smKeys[ii]] = replaced;
+                                records[i].value[type][smKeys[ii]] = replaced;
                             }
                         }
                     }
                 }
             });
 
-            return { dData };
+            return { records };
         });
     };
 
     handleDeleteClick = () => {};
 
     render = () => {
-        const rowRenderer = (r: { key: any; index: number; style: any; dData: t.DisplayRecord; meta: t.DomainMeta }) => {
+        const rowRenderer = (r: { key: any; index: number; style: any; record: t.DisplayRecord; meta: t.DomainMeta }) => {
             const { key, index, style } = r;
 
             return (
@@ -367,7 +368,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     search={this.state.search}
                     key={key}
                     index={index}
-                    dData={r.dData}
+                    record={r.record}
                     meta={r.meta}
                 />
             );
@@ -523,11 +524,11 @@ class Domain extends Component<DomainProps, DomainState> {
                                     rowRenderer={props =>
                                         rowRenderer({
                                             ...props,
-                                            dData: this.state.dData[props.index],
+                                            record: this.state.records[props.index],
                                             meta: this.state.meta[props.index]
                                         })
                                     }
-                                    rowCount={this.state.dData.length}
+                                    rowCount={this.state.records.length}
                                 />
                             </Fragment>
                         )}

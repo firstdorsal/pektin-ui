@@ -23,7 +23,7 @@ interface RowProps {
     readonly saveRecord: any;
     readonly changeMeta: Function;
     readonly index: number;
-    readonly dData: t.DisplayRecord;
+    readonly record: t.DisplayRecord;
     readonly meta: t.DomainMeta;
     readonly config: t.Config;
     readonly style: any;
@@ -34,11 +34,11 @@ interface RowState {
 }
 
 export default class RecordRow extends Component<RowProps, RowState> {
-    advancedView = (dData: t.DisplayRecord) => {
+    advancedView = (record: t.DisplayRecord) => {
         const p = this.props;
-        const rr = dData.value;
+        const rr = record.value;
 
-        if (dData.type === "SOA") {
+        if (record.type === "SOA") {
             const v = rr["SOA"] as t.SOAValue;
             return (
                 <Fragment>
@@ -67,10 +67,10 @@ export default class RecordRow extends Component<RowProps, RowState> {
             );
         }
     };
-    simpleView = (dData: t.DisplayRecord) => {
+    simpleView = (record: t.DisplayRecord) => {
         const p = this.props;
-        const rr = dData.value;
-        const type = dData.type;
+        const rr = record.value;
+        const type = record.type;
         const v: any = rr[type];
         const fields = l.rrTemplates[type]?.fields;
         if (!fields) return;
@@ -113,9 +113,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
 
     render = () => {
         const p = this.props;
-        const { dData } = p;
-        const editable = dData.type === "SOA" ? false : true;
-        const color = JSON.stringify(l.rrTemplates[dData.type]?.color).replace("[", "").replace("]", "") || "0 0 0";
+        const { record } = p;
+        const editable = record.type === "SOA" ? false : true;
+        const color = JSON.stringify(l.rrTemplates[record.type]?.color).replace("[", "").replace("]", "") || "0 0 0";
 
         const backgroundColor = this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "";
         const borderBottom = this.props.config.local.synesthesia ? "" : "1px solid lightgrey";
@@ -154,7 +154,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             type="text"
                             disabled={!editable}
                             style={{ width: "100%" }}
-                            value={dData.name}
+                            value={record.name}
                         />
                     </span>
                     <span
@@ -165,14 +165,14 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         }}
                         className={this.props.meta.searchMatch.type ? "searchMatch" : ""}
                     >
-                        {dData.type === "SOA" ? (
-                            <Input disabled={!editable} value={dData.type} />
+                        {record.type === "SOA" ? (
+                            <Input disabled={!editable} value={record.type} />
                         ) : (
                             <Select
                                 style={{ width: "100%" }}
                                 name={`${p.index}:type:`}
                                 disabled={!editable}
-                                value={dData.type}
+                                value={record.type}
                                 onChange={e => this.props.handleChange(e)}
                             >
                                 {["A", "AAAA", "NS", "CNAME", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(e => (
@@ -195,10 +195,10 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             onInput={e => this.props.handleChange(e)}
                             name={`${p.index}:ttl:`}
                             type="number"
-                            value={dData.ttl}
+                            value={record.ttl}
                         />
                     </span>
-                    <span style={{ right: "100px", left: "580px", top: "5px" }}>{this.simpleView(dData)}</span>
+                    <span style={{ right: "100px", left: "580px", top: "5px" }}>{this.simpleView(record)}</span>
 
                     <span style={{ width: "50px", position: "absolute", right: "40px", top: "17px" }}>
                         <IconButton size="small" onClick={e => this.props.changeMeta(e, p.index, "expanded")}>
@@ -237,7 +237,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                                     <Ballot />
                                                     <span className="caps label">data</span>
                                                 </div>
-                                                {this.advancedView(dData)}
+                                                {this.advancedView(record)}
                                             </Container>
                                         </Paper>
                                     </Grid>
@@ -248,13 +248,17 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                                     <Info />
                                                     <span className="caps label">info</span>
                                                 </div>
-                                                <div>{l.rrTemplates[dData.type]?.info}</div>
+                                                <div>{l.rrTemplates[record.type]?.info}</div>
                                             </Container>
                                         </Paper>
                                     </Grid>
                                 </Grid>
 
-                                <DataDisplay style={{ maxHeight: "600px" }} config={this.props.config} data={dData}></DataDisplay>
+                                <DataDisplay
+                                    style={{ maxHeight: "600px" }}
+                                    config={this.props.config}
+                                    data={record}
+                                ></DataDisplay>
                             </Grid>
                         </Collapse>
                     </div>

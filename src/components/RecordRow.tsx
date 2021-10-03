@@ -96,6 +96,10 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 InputLabelProps={{
                                     shrink: true
                                 }}
+                                inputProps={{
+                                    min: field.min,
+                                    max: field.max
+                                }}
                                 label={field.name}
                                 name={`${p.index}:rrField:${field.name}`}
                                 value={fields.length > 1 ? v[field.name] + "" : v + ""}
@@ -175,7 +179,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 value={record.type}
                                 onChange={e => this.props.handleChange(e)}
                             >
-                                {["A", "AAAA", "NS", "CNAME", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(e => (
+                                {["A", "AAAA", "NS", "CNAME", "PTR", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(e => (
                                     <MenuItem key={e} value={e}>
                                         {e}
                                     </MenuItem>

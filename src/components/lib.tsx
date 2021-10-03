@@ -7,8 +7,6 @@ import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
 import * as pektinApi from "./apis/pektin";
 
-const defaultApiEndpoint = "http://127.0.0.1:3001";
-
 export const defaultSearchMatch = { name: false, type: false, ttl: false, value: {} };
 
 export const defaultMeta = {
@@ -19,10 +17,16 @@ export const defaultMeta = {
     anySearchMatch: false
 };
 
+export type RealData = pektinApi.RedisEntry;
+
 const regex = {
     IPv6: /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/,
     IPv4: /(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/,
     domainName: /(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/
+};
+
+export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
+    return pektinApi.jsTemp(config, records);
 };
 
 export const isSupportedRecord = (record: t.DisplayRecord) => {
@@ -55,7 +59,7 @@ export const addDomain = (config: t.Config, record: t.DisplayRecord, format = "p
     return pektinApi.addDomain(config, [record]);
 };
 
-export const toRealRecord = (dData: t.DisplayRecord, format = "pektin"): t.RealData => {
+export const toRealRecord = (dData: t.DisplayRecord, format = "pektin"): RealData => {
     if (format === "something") {
         return pektinApi.toRealRecord(dData);
     } else {
@@ -63,7 +67,7 @@ export const toRealRecord = (dData: t.DisplayRecord, format = "pektin"): t.RealD
     }
 };
 
-export const toDisplayRecord = (rData: t.RealData, format = "pektin"): t.DisplayRecord => {
+export const toDisplayRecord = (rData: RealData, format = "pektin"): t.DisplayRecord => {
     if (format === "something") {
         return pektinApi.toDisplayRecord(rData);
     } else {
@@ -93,16 +97,6 @@ export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRe
                     exchange: t[1]
                 }
             };
-        case "DNSKEY":
-            return {
-                DNSKEY: {
-                    flags: parseInt(t[0]),
-                    protocol: parseInt(t[1]),
-                    algorithm: parseInt(t[2]),
-                    key_data: t[3]
-                }
-            };
-
         case "SRV":
             return {
                 SRV: {
@@ -135,24 +129,6 @@ export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRe
         default:
             return { [recordType]: text };
     }
-};
-
-export const jsTemp = (endpoint: string, data: t.RedisEntry[]) => {
-    if (!endpoint) endpoint = defaultApiEndpoint;
-    return `const token = process.env.PEKTIN_API_TOKEN;
-const endpoint="${endpoint}";
-const res = await fetch(endpoint + "/set", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-        token,
-        records: 
-                ${JSON.stringify(data, null, "    ")}
-    })
-}).catch(e => {
-    console.log(e);
-});
-console.log(res);`;
 };
 
 interface DbConfig {
@@ -504,11 +480,13 @@ export const rrTemplates: any = {
         fields: [
             {
                 name: "name",
-                placeholder: "",
+                placeholder: "example.com.",
                 inputType: "text",
-                width: 12
+                width: 12,
+                absolute: true
             }
         ],
+        color: [255, 122, 0],
         complex: false
     },
     SOA: {
@@ -562,7 +540,8 @@ export const rrTemplates: any = {
                 name: "preference",
                 placeholder: "10",
                 inputType: "number",
-                width: 3
+                width: 3,
+                min: 0
             },
             { name: "exchange", placeholder: "mx.example.com.", inputType: "text", width: 9, absolute: true }
         ],
@@ -589,14 +568,14 @@ export const rrTemplates: any = {
             SRV: {
                 priority: 1,
                 weight: 1,
-                port: "",
+                port: 443,
                 target: ""
             }
         },
         fields: [
-            { name: "priority", placeholder: 1, inputType: "text", width: 2 },
-            { name: "weight", placeholder: 1, inputType: "text", width: 2 },
-            { name: "port", placeholder: 443, inputType: "text", width: 2 },
+            { name: "priority", placeholder: 1, inputType: "number", width: 2, min: 0 },
+            { name: "weight", placeholder: 1, inputType: "number", width: 2, min: 0 },
+            { name: "port", placeholder: 443, inputType: "number", width: 2, min: 0, max: 65535 },
             { name: "target", placeholder: "mx.example.com.", inputType: "text", width: 6, absolute: true }
         ],
         color: [149, 61, 196],
@@ -640,9 +619,9 @@ export const rrTemplates: any = {
             }
         },
         fields: [
-            { name: "usage", placeholder: 3, inputType: "number", width: 2 },
-            { name: "selector", placeholder: 1, inputType: "number", width: 2 },
-            { name: "matching_type", placeholder: 1, inputType: "number", width: 2 },
+            { name: "usage", placeholder: 3, inputType: "number", width: 2, min: 1, max: 4 },
+            { name: "selector", placeholder: 1, inputType: "number", width: 2, min: 1, max: 2 },
+            { name: "matching_type", placeholder: 1, inputType: "number", width: 2, min: 1, max: 3 },
             { name: "data", placeholder: "50c1ab1e11feb0a75", inputType: "text", width: 6 }
         ],
         color: [255, 217, 0],

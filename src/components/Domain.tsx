@@ -120,8 +120,10 @@ class Domain extends Component<DomainProps, DomainState> {
             if (typeof record.value[record.type] === "string") {
                 record.value[record.type] = v;
             } else {
+                const isNumber = typeof l.rrTemplates[record.type].template[record.type][fieldChildName] === "number";
+
                 /*@ts-ignore*/
-                record.value[record.type][fieldChildName] = v;
+                record.value[record.type][fieldChildName] = isNumber ? parseInt(v) : v;
             }
         }
         return record;

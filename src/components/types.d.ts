@@ -149,7 +149,10 @@ export interface MXValue {
     exchange: string;
 }
 export interface TXT {
-    [TXT: string]: string;
+    [TXT: string]: TXTValue;
+}
+export interface TXTValue {
+    txt_data: any;
 }
 
 export interface DNSKEY {

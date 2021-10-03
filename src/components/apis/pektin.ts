@@ -2,6 +2,7 @@ import * as t from "../types";
 import * as l from "../lib";
 
 import * as vaultApi from "./vault";
+import { cloneDeep } from "lodash";
 const f = fetch;
 
 export interface PektinApiAuth {
@@ -100,6 +101,12 @@ export const addDomain = async (config: t.Config, records: t.DisplayRecord[]) =>
 
 export const toDisplayRecord = (record: t.RedisEntry): t.DisplayRecord => {
     const [name, type] = record.name.split(":");
+    if (type === "TXT") {
+        /*@ts-ignore*/
+        const a = new Uint8Array(record.rr_set[0].value.TXT.txt_data[0]);
+        const txt = Buffer.from(a).toString();
+        record.rr_set[0].value.TXT = txt;
+    }
     return {
         name,
         /*@ts-ignore*/
@@ -110,6 +117,7 @@ export const toDisplayRecord = (record: t.RedisEntry): t.DisplayRecord => {
 };
 
 export const toRealRecord = (record: t.DisplayRecord): t.RedisEntry => {
+    record = cloneDeep(record);
     let rr_set = [{ value: record.value, ttl: record.ttl }];
 
     if (
@@ -121,6 +129,12 @@ export const toRealRecord = (record: t.DisplayRecord): t.RedisEntry => {
             if (typeof value === "string" && record.type === "NS") value = l.absoluteName(value);
             return { value: { [record.type]: value }, ttl: record.ttl };
         });
+    }
+    if (record.type === "TXT") {
+        /*@ts-ignore*/
+        const buff = Buffer.from(rr_set[0].value.TXT, "utf-8");
+
+        rr_set[0].value.TXT = { txt_data: [buff.toJSON().data] };
     }
 
     if (l.rrTemplates[record.type].complex) {

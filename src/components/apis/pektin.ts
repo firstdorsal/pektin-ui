@@ -100,12 +100,30 @@ export const addDomain = async (config: t.Config, records: t.DisplayRecord[]) =>
 };
 
 export const toDisplayRecord = (record: t.RedisEntry): t.DisplayRecord => {
-    const [name, type] = record.name.split(":");
+    /*@ts-ignore*/
+    const [name, type]: [string, t.RRTypes] = record.name.split(":");
     if (type === "TXT") {
         /*@ts-ignore*/
         const a = new Uint8Array(record.rr_set[0].value.TXT.txt_data[0]);
-        const txt = Buffer.from(a).toString();
-        record.rr_set[0].value.TXT = txt;
+        record.rr_set[0].value.TXT = Buffer.from(a).toString();
+    } else if (type === "CAA") {
+        /*@ts-ignore*/
+        record.rr_set[0].value.CAA.value = record.rr_set[0].value.CAA.value.url;
+    } else if (type === "OPENPGPKEY") {
+        /*@ts-ignore*/
+        const a = new Uint8Array(record.rr_set[0].value.OPENPGPKEY.public_key);
+        record.rr_set[0].value.OPENPGPKEY = Buffer.from(a).toString();
+    } else if (type === "TLSA") {
+        /*@ts-ignore*/
+        const a = new Uint8Array(record.rr_set[0].value.TLSA.cert_data);
+        /*@ts-ignore*/
+        record.rr_set[0].value.TLSA.cert_data = Buffer.from(a).toString();
+    } else if ((type === "A" || type === "AAAA" || type === "NS") && record.rr_set.length > 1) {
+        console.log(record);
+
+        record.rr_set.forEach((e, i) => {
+            if (i > 0) record.rr_set[0].value[type] += " " + record.rr_set[i].value[type];
+        });
     }
     return {
         name,
@@ -129,12 +147,19 @@ export const toRealRecord = (record: t.DisplayRecord): t.RedisEntry => {
             if (typeof value === "string" && record.type === "NS") value = l.absoluteName(value);
             return { value: { [record.type]: value }, ttl: record.ttl };
         });
-    }
-    if (record.type === "TXT") {
+    } else if (record.type === "TXT") {
         /*@ts-ignore*/
         const buff = Buffer.from(rr_set[0].value.TXT, "utf-8");
 
         rr_set[0].value.TXT = { txt_data: [buff.toJSON().data] };
+    } else if (record.type === "CAA") {
+        /*@ts-ignore*/
+        rr_set[0].value.CAA.value = { Issuer: rr_set[0].value.CAA.value };
+    } else if (record.type === "OPENPGPKEY") {
+        /*@ts-ignore*/
+        const buff = Buffer.from(rr_set[0].value.OPENPGPKEY, "utf-8");
+
+        rr_set[0].value.OPENPGPKEY = { public_key: buff.toJSON().data };
     }
 
     if (l.rrTemplates[record.type].complex) {

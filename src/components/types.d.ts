@@ -152,7 +152,7 @@ export interface TXT {
     [TXT: string]: TXTValue;
 }
 export interface TXTValue {
-    txt_data: any;
+    txt_data: Array<Array<number>>;
 }
 
 export interface DNSKEY {
@@ -181,13 +181,16 @@ export interface CAA {
 }
 export interface CAAValue {
     flag: number; //0;
-    tag: string; //"issue" | "issuewild" | "iodef" | "contactemail" | "contactphone";
+    tag: "Issue" | "IssueWild" | "Iodef" | "Unknown"; //"issue" | "issuewild" | "iodef" | "contactemail" | "contactphone";
     value: string;
 }
 export interface OPENPGPKEY {
-    [OPENPGPKEY: string]: string;
+    [OPENPGPKEY: string]: OPENPGPKEYValue;
 }
 
+export interface OPENPGPKEYValue {
+    [public_key: string]: Array<number>;
+}
 export interface TLSA {
     [TLSA: string]: TLSAValue;
 }

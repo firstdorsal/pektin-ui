@@ -117,7 +117,7 @@ export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRe
             return {
                 CAA: {
                     flag: parseInt(t[0]),
-                    tag: t[1],
+                    tag: t[1] as "Issue" | "IssueWild" | "Iodef" | "Unknown",
                     value: t[2]
                 }
             };
@@ -606,14 +606,14 @@ export const rrTemplates: any = {
         template: {
             CAA: {
                 flag: 0,
-                tag: "issue",
+                tag: "Issue",
                 value: "letsencrypt.org"
             }
         },
         fields: [
             {
                 name: "tag",
-                placeholder: "issue",
+                placeholder: "Issue",
                 inputType: "text",
                 width: 6
             },

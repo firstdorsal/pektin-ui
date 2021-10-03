@@ -17,7 +17,7 @@ import { VscReplaceAll } from "react-icons/vsc";
 interface DomainState {
     readonly records: t.DisplayRecord[];
     readonly meta: Array<t.DomainMeta>;
-    readonly ogData: t.DisplayRecord[];
+    readonly ogRecords: t.DisplayRecord[];
     readonly selectAll: boolean;
     readonly columnItems: ColumnItem[];
     readonly defaultOrder: number[];
@@ -56,7 +56,7 @@ const columnItems: ColumnItem[] = [
 class Domain extends Component<DomainProps, DomainState> {
     state: DomainState = {
         records: [],
-        ogData: [],
+        ogRecords: [],
         meta: [],
         selectAll: false,
         columnItems,
@@ -66,7 +66,33 @@ class Domain extends Component<DomainProps, DomainState> {
         anySelected: false
     };
     list: any;
-    saveRecord = () => {};
+    saveRecord = async (i: number) => {
+        const successState = () => {
+            this.setState(({ meta, ogRecords, records }) => {
+                ogRecords = cloneDeep(ogRecords);
+                meta = cloneDeep(meta);
+                ogRecords[i] = records[i];
+                meta[i].changed = false;
+                return { meta, ogRecords };
+            });
+        };
+        if (
+            (this.state.ogRecords[i].name !== this.state.records[i].name ||
+                this.state.ogRecords[i].type !== this.state.records[i].type) &&
+            this.state.ogRecords[i].type !== "NEW"
+        ) {
+            // delete the key with the old name and or type and create one with the new name
+
+            const setRes = await l.setRecords(this.props.config, [this.state.records[i]]);
+            if (setRes && setRes.error !== undefined && setRes.error === false) {
+                l.deleteRecords(this.props.config, [this.state.ogRecords[i]]);
+                successState();
+            }
+        } else {
+            const res = await l.setRecords(this.props.config, [this.state.records[i]]);
+            if (res && res.error !== undefined && res.error === false) successState();
+        }
+    };
 
     changeMeta = (e: any, index: number, fieldName: string) => {
         this.setState(({ meta }) => {
@@ -86,7 +112,7 @@ class Domain extends Component<DomainProps, DomainState> {
         if (fieldName === "name") {
             record.name = v;
         } else if (fieldName === "ttl") {
-            record.ttl = v;
+            record.ttl = parseInt(v);
         } else if (fieldName === "type") {
             record.type = v;
             record.value = l.rrTemplates[v].template;
@@ -113,7 +139,7 @@ class Domain extends Component<DomainProps, DomainState> {
             records[i] = this.handleRecordChange(records[i], fieldName, fieldChildName, v);
             meta[i] = cloneDeep(meta[i]);
 
-            meta[i].changed = !isEqual(records[i], this.state.ogData[i]);
+            meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
             return { meta, records };
         });
     };
@@ -124,7 +150,7 @@ class Domain extends Component<DomainProps, DomainState> {
         });
 
         const defaultOrder = records.map((e, i) => i);
-        this.setState({ records, ogData: cloneDeep(records), meta, defaultOrder });
+        this.setState({ records, ogRecords: cloneDeep(records), meta, defaultOrder });
     };
 
     componentDidMount = async () => {
@@ -337,24 +363,28 @@ class Domain extends Component<DomainProps, DomainState> {
                         }
                     }
                 }
-                meta[i].changed = !isEqual(records[i], this.state.ogData[i]);
+                meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
             });
             return { records, meta };
         });
     };
 
-    handleDeleteClick = () => {
-        this.setState(({ records, meta, ogData, defaultOrder }) => {
-            records = records.filter((e, i) => !meta[i].selected);
-            ogData = ogData.filter((e, i) => !meta[i].selected);
-            defaultOrder = defaultOrder.filter((e, i) => !meta[i].selected);
-            meta = meta.filter((e, i) => !meta[i].selected);
+    handleDeleteClick = async () => {
+        const toBeDeleted = this.state.records.filter((e, i) => this.state.meta[i].selected);
+        const delRes = await l.deleteRecords(this.props.config, toBeDeleted);
+        if (delRes && delRes.error !== undefined && delRes.error === false) {
+            this.setState(({ records, meta, ogRecords: ogData, defaultOrder }) => {
+                records = records.filter((e, i) => !meta[i].selected);
+                ogData = ogData.filter((e, i) => !meta[i].selected);
+                defaultOrder = defaultOrder.filter((e, i) => !meta[i].selected);
+                meta = meta.filter((e, i) => !meta[i].selected);
 
-            return { records, meta, ogData, defaultOrder };
-        });
+                return { records, meta, ogRecords: ogData, defaultOrder };
+            });
+        }
     };
     handleAddClick = () => {
-        this.setState(({ records, meta, ogData, defaultOrder }) => {
+        this.setState(({ records, meta, ogRecords: ogData, defaultOrder }) => {
             //records = cloneDeep(records);
             //meta = cloneDeep(meta);
             let defaultName = this.props?.computedMatch?.params?.domainName;
@@ -378,7 +408,7 @@ class Domain extends Component<DomainProps, DomainState> {
             return {
                 records: [newRecord, ...records],
                 meta: [newMeta, ...meta],
-                ogData: [newOgData, ...ogData],
+                ogRecords: [newOgData, ...ogData],
                 defaultOrder: [newDefaultOrder, ...defaultOrder]
             };
         });

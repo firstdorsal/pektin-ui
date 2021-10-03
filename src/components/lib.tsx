@@ -37,20 +37,22 @@ export const simpleDnsRecordToDisplayRecord = (simple: t.RawDnsRecord): t.Displa
     };
 };
 
-export const getDomains = (config: t.Config) => {
+export const getDomains = (config: t.Config, format = "pektin") => {
     return pektinApi.getDomains(config);
 };
 
-export const getRecords = (config: t.Config, domainName: string) => {
+export const getRecords = (config: t.Config, domainName: string, format = "pektin") => {
     return pektinApi.getRecords(config, domainName);
 };
+export const setRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {
+    return pektinApi.setRecords(config, records);
+};
+export const deleteRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {
+    return pektinApi.deleteRecords(config, records);
+};
 
-export const addDomain = (config: t.Config, dData: t.DisplayRecord, format = "pektin") => {
-    if (format === "something") {
-        return pektinApi.addDomain(config, [pektinApi.toRealRecord(dData)]);
-    } else {
-        return pektinApi.addDomain(config, [pektinApi.toRealRecord(dData)]);
-    }
+export const addDomain = (config: t.Config, record: t.DisplayRecord, format = "pektin") => {
+    return pektinApi.addDomain(config, [record]);
 };
 
 export const toRealRecord = (dData: t.DisplayRecord, format = "pektin"): t.RealData => {

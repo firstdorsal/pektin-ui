@@ -210,7 +210,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         </IconButton>
                     </span>
                     <span style={{ width: "50px", position: "absolute", right: "0px", top: "13px" }}>
-                        <Fab onClick={this.props.saveRecord} disabled={!this.props.meta?.changed} color="secondary" size="small">
+                        <Fab
+                            onClick={() => this.props.saveRecord(p.index)}
+                            disabled={!this.props.meta?.changed}
+                            color="secondary"
+                            size="small"
+                        >
                             <Check />
                         </Fab>
                     </span>

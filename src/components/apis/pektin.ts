@@ -18,10 +18,13 @@ export interface SearchRequestBody {
 export interface SetRequestBody {
     records: t.RedisEntry[];
 }
+export interface DeleteRequestBody {
+    keys: string[];
+}
 
-type RequestBody = SetRequestBody | GetRequestBody | SearchRequestBody;
+type RequestBody = SetRequestBody | GetRequestBody | SearchRequestBody | DeleteRequestBody;
 
-type RequestType = "set" | "get" | "search";
+type RequestType = "set" | "get" | "search" | "delete";
 
 interface PektinResponse {
     error: boolean;
@@ -83,8 +86,16 @@ export const getRecords = async (config: t.Config, domainName: string) => {
     return records.map(toDisplayRecord);
 };
 
-export const addDomain = async (config: t.Config, records: t.RedisEntry[]) => {
-    return await request(config, "set", { records });
+export const setRecords = async (config: t.Config, records: t.DisplayRecord[]) => {
+    return await request(config, "set", { records: records.map(toRealRecord) });
+};
+
+export const deleteRecords = async (config: t.Config, records: t.DisplayRecord[]) => {
+    return await request(config, "delete", { keys: records.map(toRealRecord).map(e => e.name) });
+};
+
+export const addDomain = async (config: t.Config, records: t.DisplayRecord[]) => {
+    return await request(config, "set", { records: records.map(toRealRecord) });
 };
 
 export const toDisplayRecord = (record: t.RedisEntry): t.DisplayRecord => {
@@ -108,7 +119,7 @@ export const toRealRecord = (record: t.DisplayRecord): t.RedisEntry => {
         /*@ts-ignore*/
         rr_set = record.value[record.type].split(" ").map((value: string) => {
             if (typeof value === "string" && record.type === "NS") value = l.absoluteName(value);
-            return { value, ttl: record.ttl };
+            return { value: { [record.type]: value }, ttl: record.ttl };
         });
     }
 

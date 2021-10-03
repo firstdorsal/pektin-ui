@@ -52,7 +52,6 @@ const columnItems: ColumnItem[] = [
     { name: "ttl", left: "465px", type: "number", direction: 0 },
     { name: "value", left: "580px", type: "string", direction: 0 }
 ];
-const defaultSearchMatch = { name: false, type: false, ttl: false, value: {} };
 
 class Domain extends Component<DomainProps, DomainState> {
     state: DomainState = {
@@ -72,14 +71,12 @@ class Domain extends Component<DomainProps, DomainState> {
     changeMeta = (e: any, index: number, fieldName: string) => {
         this.setState(({ meta }) => {
             meta = cloneDeep(meta);
-            const m = meta[index];
             if (fieldName === "selected") {
-                m.selected = !meta[index].selected;
+                meta[index].selected = !meta[index].selected;
             } else if (fieldName === "expanded") {
-                m.expanded = !meta[index].expanded;
+                meta[index].expanded = !meta[index].expanded;
                 this.list.recomputeRowHeights();
             }
-
             return { meta };
         });
     };
@@ -123,13 +120,7 @@ class Domain extends Component<DomainProps, DomainState> {
 
     initData = (records: t.DisplayRecord[]) => {
         const meta = records.map(() => {
-            return {
-                selected: false,
-                expanded: false,
-                changed: false,
-                searchMatch: defaultSearchMatch,
-                anySearchMatch: false
-            };
+            return cloneDeep(l.defaultMeta);
         });
 
         const defaultOrder = records.map((e, i) => i);
@@ -223,7 +214,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 records.forEach((rec, i) => {
                     // reset all
                     meta[i].anySearchMatch = false;
-                    meta[i].searchMatch = cloneDeep(defaultSearchMatch);
+                    meta[i].searchMatch = cloneDeep(l.defaultSearchMatch);
                     // handle first three columns
                     if (v.length) {
                         {
@@ -352,7 +343,46 @@ class Domain extends Component<DomainProps, DomainState> {
         });
     };
 
-    handleDeleteClick = () => {};
+    handleDeleteClick = () => {
+        this.setState(({ records, meta, ogData, defaultOrder }) => {
+            records = records.filter((e, i) => !meta[i].selected);
+            ogData = ogData.filter((e, i) => !meta[i].selected);
+            defaultOrder = defaultOrder.filter((e, i) => !meta[i].selected);
+            meta = meta.filter((e, i) => !meta[i].selected);
+
+            return { records, meta, ogData, defaultOrder };
+        });
+    };
+    handleAddClick = () => {
+        this.setState(({ records, meta, ogData, defaultOrder }) => {
+            //records = cloneDeep(records);
+            //meta = cloneDeep(meta);
+            let defaultName = this.props?.computedMatch?.params?.domainName;
+            defaultName = defaultName ? defaultName : "";
+            const newRecord: t.DisplayRecord = {
+                name: l.absoluteName(defaultName),
+                type: "AAAA",
+                ttl: 3600,
+                value: cloneDeep(l.rrTemplates.AAAA.template)
+            };
+            const newMeta: t.DomainMeta = cloneDeep(l.defaultMeta);
+            newMeta.changed = true;
+            const newOgData: t.DisplayRecord = {
+                name: "",
+                type: "NEW",
+                ttl: 3600,
+                value: cloneDeep(l.rrTemplates.AAAA.template)
+            };
+            const newDefaultOrder = defaultOrder.length;
+
+            return {
+                records: [newRecord, ...records],
+                meta: [newMeta, ...meta],
+                ogData: [newOgData, ...ogData],
+                defaultOrder: [newDefaultOrder, ...defaultOrder]
+            };
+        });
+    };
 
     render = () => {
         const rowRenderer = (r: { key: any; index: number; style: any; record: t.DisplayRecord; meta: t.DomainMeta }) => {
@@ -388,7 +418,6 @@ class Domain extends Component<DomainProps, DomainState> {
                 return <FaSortNumericDownAlt style={style} />;
             }
         };
-
         const tableHead = () => {
             return (
                 <div
@@ -431,7 +460,6 @@ class Domain extends Component<DomainProps, DomainState> {
                 </div>
             );
         };
-
         const searchAndReplace = () => {
             return (
                 <span
@@ -486,8 +514,8 @@ class Domain extends Component<DomainProps, DomainState> {
                         position: "relative"
                     }}
                 >
-                    <IconButton>{<AddCircle />}</IconButton>
-                    <IconButton>{<Delete />}</IconButton>
+                    <IconButton onClick={this.handleAddClick}>{<AddCircle />}</IconButton>
+                    <IconButton onClick={this.handleDeleteClick}>{<Delete />}</IconButton>
                     {this.props.variant !== "import" ? (
                         <Fragment>
                             <IconButton>{<Flare />}</IconButton>
@@ -519,7 +547,7 @@ class Domain extends Component<DomainProps, DomainState> {
                                     width={width}
                                     estimatedRowSize={70}
                                     rowHeight={({ index }) => {
-                                        return this.state.meta[index].expanded ? 670 : 70;
+                                        return this.state.meta[index]?.expanded ? 670 : 70;
                                     }}
                                     rowRenderer={props =>
                                         rowRenderer({

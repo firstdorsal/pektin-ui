@@ -94,6 +94,7 @@ export interface ResourceRecord {
 }
 
 export type RRTypes =
+    | "NEW"
     | "A"
     | "AAAA"
     | "NS"

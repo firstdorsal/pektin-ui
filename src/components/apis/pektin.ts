@@ -89,7 +89,6 @@ export const addDomain = async (config: t.Config, records: t.RedisEntry[]) => {
 
 export const toDisplayRecord = (record: t.RedisEntry): t.DisplayRecord => {
     const [name, type] = record.name.split(":");
-    console.debug(record);
     return {
         name,
         /*@ts-ignore*/

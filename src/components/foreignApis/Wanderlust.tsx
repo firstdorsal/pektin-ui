@@ -62,8 +62,14 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
         this.setState(state => ({ ...state, [e.target.name]: e.target.value }));
     };
     import = async () => {
-        const records = await this.walk(this.state.domainName, this.state.providerName, this.state.limit);
-        this.props.import(records.map(l.simpleDnsRecordToDisplayRecord).filter(l.isSupportedRecord));
+        const records = await this.walk(
+            this.state.domainName,
+            this.state.providerName,
+            this.state.limit
+        );
+        this.props.import(
+            records.map(l.simpleDnsRecordToDisplayRecord).filter(l.isSupportedRecord)
+        );
     };
 
     render = () => {
@@ -103,7 +109,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
                     InputLabelProps={{
                         shrink: true
                     }}
-                    helperText="Maximum of steps to walk"
+                    helperText="Maximum of steps to take"
                     placeholder="100"
                     value={this.state.limit}
                     onChange={this.handleChange}

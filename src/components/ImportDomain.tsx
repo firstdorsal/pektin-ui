@@ -13,7 +13,7 @@ interface ImportDomainState {
     readonly records: t.DisplayRecord[];
 }
 
-const stepNames = ["How?", "Which ones?", "Approve import?"];
+const stepNames = ["How?", "Which ones?"];
 
 export default class ImportDomain extends Component<ImportDomainProps, ImportDomainState> {
     state: ImportDomainState = {
@@ -40,7 +40,9 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                 <Container>
                     <Paper elevation={3} style={{ padding: "30px 20px" }}>
                         <Container>
-                            <h2 style={{ display: "inline-block", paddingRight: "10px" }}>Method</h2>
+                            <h2 style={{ display: "inline-block", paddingRight: "10px" }}>
+                                Method
+                            </h2>
                             <Select
                                 name="apiPicker"
                                 onChange={e => this.handleChange(e)}

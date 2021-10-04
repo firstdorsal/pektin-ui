@@ -482,7 +482,7 @@ export const txtRecords = {
 };
 
 export const verifyDomain = (input: string): t.ValidationResult => {
-    if (!input || !input.match(regex.domainName)) {
+    if (input === undefined || !input.match(regex.domainName)) {
         return { type: "error", message: "Invalid domain" };
     }
     const domains = input.split(" ");
@@ -509,25 +509,26 @@ export const verifyDomain = (input: string): t.ValidationResult => {
 
 export const verifyIp = (input: string, type?: "legacy"): t.ValidationResult => {
     if (type === "legacy") {
-        if (!input || !input.match(regex.legacyIp)) {
+        if (input === undefined || !input.match(regex.legacyIp)) {
             return {
                 type: "error",
                 message: "Invalid legacy/V4 IP adress"
             };
         }
+    } else if (input === undefined || !input.match(regex.ip)) {
+        return { type: "error", message: "Invalid IP" };
     }
-    if (!input || !input.match(regex.ip)) return { type: "error", message: "Invalid IP" };
     return { type: "ok" };
 };
 
 export const verifyDomains = (input: string): t.ValidationResult => {
     const domains = input.split(" ");
+    if (domains.length === 1) return verifyDomain(input);
     if (domains[domains.length - 1] !== undefined && domains[domains.length - 1].length === 0) {
         return {
             type: "ok"
         };
     }
-    if (domains.length === 1) return verifyDomain(domains[0]);
     for (let i = 0; i < domains.length; i++) {
         const v = verifyDomain(domains[i]);
         if (v.type !== "ok") {
@@ -540,7 +541,7 @@ export const verifyDomains = (input: string): t.ValidationResult => {
 
 export const verifyIps = (input: string, type?: "legacy"): t.ValidationResult => {
     const ips = input.split(" ");
-    if (ips.length === 1) return verifyIp(ips[0]);
+    if (ips.length === 1) return verifyIp(input, type);
     if (ips[ips.length - 1] !== undefined && ips[ips.length - 1].length === 0) {
         return {
             type: "ok"
@@ -563,7 +564,7 @@ export const rrTemplates: any = {
         },
         fields: [
             {
-                name: "addr",
+                name: "ip_addr",
                 placeholder: "1:see:bad:c0de",
                 inputType: "text",
                 width: 12,
@@ -579,7 +580,7 @@ export const rrTemplates: any = {
         },
         fields: [
             {
-                name: "addr",
+                name: "legacy_addr",
                 placeholder: "127.0.0.1",
                 inputType: "text",
                 width: 12,

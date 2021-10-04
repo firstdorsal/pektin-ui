@@ -29,6 +29,7 @@ interface RowProps {
     readonly style: any;
     readonly search: string;
     readonly domainName: string;
+    readonly variant?: string;
 }
 interface RowState {
     //dnssec: boolean;
@@ -139,9 +140,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
             JSON.stringify(l.rrTemplates[record.type]?.color).replace("[", "").replace("]", "") ||
             "0 0 0";
 
-        const backgroundColor = this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "";
-        const borderBottom = this.props.config.local.synesthesia ? "" : "1px solid lightgrey";
-        const opacity = this.props.meta.anySearchMatch || this.props.search.length === 0 ? 1 : 1;
+        const backgroundColor = this.props.config.local?.synesthesia ? `rgba(${color},0.2)` : "";
+        const borderBottom = this.props.config.local?.synesthesia ? "" : "1px solid lightgrey";
+        const opacity = this.props.meta?.anySearchMatch || this.props.search?.length === 0 ? 1 : 1;
         return (
             <div
                 className="rowWrapper"
@@ -164,12 +165,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
 
                     <span
                         style={{
-                            width: "250px",
+                            width: "310px",
                             left: "70px",
                             top: "18px"
                         }}
                         className={(() => {
-                            let c = this.props.meta.searchMatch.name ? "searchMatch" : "";
+                            let c = this.props.meta?.searchMatch.name ? "searchMatch" : "";
                             const d = l.verifyDomain(record.name);
                             c += " " + d.type;
                             return c;
@@ -188,11 +189,11 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     </span>
                     <span
                         style={{
-                            width: "100px",
-                            left: "340px",
+                            width: "90px",
+                            left: "390px",
                             top: "18px"
                         }}
-                        className={this.props.meta.searchMatch.type ? "searchMatch" : ""}
+                        className={this.props.meta?.searchMatch?.type ? "searchMatch" : ""}
                     >
                         {record.type === "SOA" ? (
                             <Input disabled={!editable} value={record.type} />
@@ -226,8 +227,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     </span>
                     <span
                         style={{
-                            width: "100px",
-                            left: "460px",
+                            width: "75px",
+                            left: "490px",
                             top: "18px"
                         }}
                         className={this.props.meta.searchMatch.ttl ? "searchMatch" : ""}
@@ -244,7 +245,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     </span>
 
                     <span
-                        style={{ width: "50px", position: "absolute", right: "40px", top: "17px" }}
+                        style={{
+                            width: "50px",
+                            position: "absolute",
+                            right: this.props.variant === "import" ? "0px" : "40px",
+                            top: "17px"
+                        }}
                     >
                         <IconButton
                             size="small"
@@ -257,17 +263,26 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             )}
                         </IconButton>
                     </span>
-                    <span
-                        style={{ width: "50px", position: "absolute", right: "0px", top: "13px" }}
-                    >
-                        <Fab
-                            onClick={() => this.props.saveRecord(p.index)}
-                            disabled={!this.props.meta?.changed}
-                            size="small"
+                    {this.props.variant === "import" ? (
+                        ""
+                    ) : (
+                        <span
+                            style={{
+                                width: "50px",
+                                position: "absolute",
+                                right: "0px",
+                                top: "13px"
+                            }}
                         >
-                            <Check />
-                        </Fab>
-                    </span>
+                            <Fab
+                                onClick={() => this.props.saveRecord(p.index)}
+                                disabled={!this.props.meta?.changed}
+                                size="small"
+                            >
+                                <Check />
+                            </Fab>
+                        </span>
+                    )}
                 </div>
                 <div
                     className="advancedRow"

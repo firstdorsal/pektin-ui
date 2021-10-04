@@ -1,7 +1,7 @@
 import { Component, Fragment } from "react";
-import { Checkbox, IconButton, TextField } from "@material-ui/core";
+import { Checkbox, Fab, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
-import { AddCircle, Delete, Flare, Map } from "@material-ui/icons";
+import { AddCircle, Check, Delete, Flare, Map } from "@material-ui/icons";
 import * as l from "./lib";
 import isEqual from "lodash/isEqual";
 import cloneDeep from "lodash/cloneDeep";
@@ -10,7 +10,12 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import RecordRow from "./RecordRow";
 import { AutoSizer, List } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
-import { FaSortAlphaDownAlt, FaSortAlphaDown, FaSortNumericDownAlt, FaSortNumericDown } from "react-icons/fa";
+import {
+    FaSortAlphaDownAlt,
+    FaSortAlphaDown,
+    FaSortNumericDownAlt,
+    FaSortNumericDown
+} from "react-icons/fa";
 import { ContextMenu } from "./ContextMenu";
 import { VscReplaceAll } from "react-icons/vsc";
 
@@ -25,6 +30,7 @@ interface DomainState {
     readonly replace: string;
     readonly anySelected: boolean;
     readonly domainName: string;
+    readonly changedRecords: number;
 }
 
 interface RouteParams {
@@ -49,8 +55,8 @@ interface ColumnItem {
 
 const columnItems: ColumnItem[] = [
     { name: "name", left: "70px", type: "string", direction: 0 },
-    { name: "type", left: "350px", type: "string", direction: 0 },
-    { name: "ttl", left: "465px", type: "number", direction: 0 },
+    { name: "type", left: "405px", type: "string", direction: 0 },
+    { name: "ttl", left: "490px", type: "number", direction: 0 },
     { name: "value", left: "580px", type: "string", direction: 0 }
 ];
 
@@ -59,13 +65,14 @@ class Domain extends Component<DomainProps, DomainState> {
         records: [],
         ogRecords: [],
         meta: [],
-        selectAll: false,
+        selectAll: this.props.variant === "import",
         columnItems,
         defaultOrder: [],
         search: "",
         replace: "",
         anySelected: false,
-        domainName: "example.com"
+        domainName: "",
+        changedRecords: 0
     };
     list: any;
     saveRecord = async (i: number) => {
@@ -95,21 +102,37 @@ class Domain extends Component<DomainProps, DomainState> {
             if (res && res.error !== undefined && res.error === false) successState();
         }
     };
+    saveAllChangedRecords = async () => {
+        if (this.props.variant === "import") {
+            const toBeAdded: t.DisplayRecord[] = [];
+            this.state.records.forEach((record, i) => {
+                if (this.state.meta[i].selected) toBeAdded.push(record);
+            });
+            const res = await l.setRecords(this.props.config, toBeAdded);
+            if (res) this.props.history.push({ pathname: `/domain/${this.state.domainName}` });
+        }
+    };
 
     changeMeta = (e: any, index: number, fieldName: string) => {
-        this.setState(({ meta }) => {
+        this.setState(({ meta, selectAll }) => {
             meta = cloneDeep(meta);
             if (fieldName === "selected") {
+                if (selectAll) selectAll = !selectAll;
                 meta[index].selected = !meta[index].selected;
             } else if (fieldName === "expanded") {
                 meta[index].expanded = !meta[index].expanded;
                 this.list.recomputeRowHeights();
             }
-            return { meta };
+            return { meta, selectAll };
         });
     };
 
-    handleRecordChange = (record: t.DisplayRecord, fieldName: string, fieldChildName: string, v: any) => {
+    handleRecordChange = (
+        record: t.DisplayRecord,
+        fieldName: string,
+        fieldChildName: string,
+        v: any
+    ) => {
         record = cloneDeep(record);
         if (fieldName === "name") {
             record.name = v;
@@ -122,7 +145,9 @@ class Domain extends Component<DomainProps, DomainState> {
             if (typeof record.value[record.type] === "string") {
                 record.value[record.type] = v;
             } else {
-                const isNumber = typeof l.rrTemplates[record.type].template[record.type][fieldChildName] === "number";
+                const isNumber =
+                    typeof l.rrTemplates[record.type].template[record.type][fieldChildName] ===
+                    "number";
 
                 /*@ts-ignore*/
                 record.value[record.type][fieldChildName] = isNumber ? parseInt(v) : v;
@@ -150,27 +175,50 @@ class Domain extends Component<DomainProps, DomainState> {
 
     initData = (records: t.DisplayRecord[]) => {
         const meta = records.map(() => {
-            return cloneDeep(l.defaultMeta);
+            const m = cloneDeep(l.defaultMeta);
+            if (this.props.variant === "import") {
+                m.selected = true;
+                return m;
+            }
+            return m;
         });
-
         const defaultOrder = records.map((e, i) => i);
         this.setState({ records, ogRecords: cloneDeep(records), meta, defaultOrder });
     };
 
     componentDidMount = async () => {
-        if (this.props.records) {
+        if (this.props.variant === "import") {
+            if (!this.props.records) {
+                return console.error(
+                    `domain component is set to variant "import" but has no records`
+                );
+            }
+            for (let i = 0; i < this.props.records.length; i++) {
+                const record = this.props.records[i];
+                if (record.type === "SOA") {
+                    this.setState({ domainName: record.name });
+                    break;
+                }
+            }
+
             this.initData(this.props.records);
         } else {
             this.setState({ domainName: this.props.computedMatch.params.domainName });
-            const records = await l.getRecords(this.props.config, this.props.computedMatch.params.domainName);
+            const records = await l.getRecords(
+                this.props.config,
+                this.props.computedMatch.params.domainName
+            );
             this.initData(records);
         }
     };
 
     componentDidUpdate = async (e: DomainProps) => {
         // replace the current state when the components props change to a new domain page
-        if (this.props.computedMatch.params.domainName !== e.computedMatch.params.domainName) {
-            const records = await l.getRecords(this.props.config, this.props.computedMatch.params.domainName);
+        if (this.props.computedMatch?.params?.domainName !== e.computedMatch?.params?.domainName) {
+            const records = await l.getRecords(
+                this.props.config,
+                this.props.computedMatch.params.domainName
+            );
             this.initData(records);
         }
     };
@@ -311,7 +359,10 @@ class Domain extends Component<DomainProps, DomainState> {
                 return { records, meta, search: v };
             });
         } else {
-            this.setState(prevState => ({ ...prevState, [e.target.name]: e.target.value.toString() }));
+            this.setState(prevState => ({
+                ...prevState,
+                [e.target.name]: e.target.value.toString()
+            }));
         }
     };
 
@@ -338,7 +389,9 @@ class Domain extends Component<DomainProps, DomainState> {
                 }
                 if (m.searchMatch.ttl) {
                     const replaced = regex
-                        ? parseInt(records[i].ttl.toString().replaceAll(RegExp(search, "g"), replace))
+                        ? parseInt(
+                              records[i].ttl.toString().replaceAll(RegExp(search, "g"), replace)
+                          )
                         : parseInt(records[i].ttl.toString().replaceAll(search, replace));
 
                     if (!isNaN(replaced) && replaced >= 0) records[i].ttl = replaced;
@@ -420,7 +473,13 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     render = () => {
-        const rowRenderer = (r: { key: any; index: number; style: any; record: t.DisplayRecord; meta: t.DomainMeta }) => {
+        const rowRenderer = (r: {
+            key: any;
+            index: number;
+            style: any;
+            record: t.DisplayRecord;
+            meta: t.DomainMeta;
+        }) => {
             const { key, index, style } = r;
 
             return (
@@ -436,6 +495,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     record={r.record}
                     meta={r.meta}
                     domainName={this.state.domainName}
+                    variant={this.props.variant}
                 />
             );
         };
@@ -486,13 +546,33 @@ class Domain extends Component<DomainProps, DomainState> {
                                 }}
                                 className="caps"
                                 key={item.name}
-                                onClick={() => (item.name !== "value" ? this.sortColumns(item.name) : "")}
+                                onClick={() =>
+                                    item.name !== "value" ? this.sortColumns(item.name) : ""
+                                }
                             >
                                 <span>{item.name}</span>
                                 <span> {sortDirectionIcon(this.state.columnItems[i])}</span>
                             </span>
                         );
                     })}
+                    <span
+                        style={{
+                            width: "50px",
+                            position: "absolute",
+                            right: "0px",
+                            top: "13px"
+                        }}
+                    >
+                        <Fab
+                            onClick={() => this.saveAllChangedRecords()}
+                            disabled={
+                                this.state.changedRecords === 0 && this.props.variant !== "import"
+                            }
+                            size="small"
+                        >
+                            <Check />
+                        </Fab>
+                    </span>
                 </div>
             );
         };
@@ -550,15 +630,15 @@ class Domain extends Component<DomainProps, DomainState> {
                         position: "relative"
                     }}
                 >
-                    <IconButton onClick={this.handleAddClick}>{<AddCircle />}</IconButton>
-                    <IconButton onClick={this.handleDeleteClick}>{<Delete />}</IconButton>
-                    {this.props.variant !== "import" ? (
+                    {this.props.variant === "import" ? (
+                        ""
+                    ) : (
                         <Fragment>
+                            <IconButton onClick={this.handleAddClick}>{<AddCircle />}</IconButton>
+                            <IconButton onClick={this.handleDeleteClick}>{<Delete />}</IconButton>
                             <IconButton>{<Flare />}</IconButton>
                             <IconButton>{<Map />}</IconButton>
                         </Fragment>
-                    ) : (
-                        ""
                     )}
 
                     {searchAndReplace()}

@@ -33,7 +33,9 @@ export default class App extends Component<AppProps, AppState> {
     };
 
     initDb = async () => {
-        await this.state.db.config.add({ key: "localConfig", value: this.state.config.local }).catch(() => {});
+        await this.state.db.config
+            .add({ key: "localConfig", value: this.state.config.local })
+            .catch(() => {});
     };
 
     loadLocalConfig = async () => {
@@ -52,10 +54,14 @@ export default class App extends Component<AppProps, AppState> {
         const db = this.state.db;
         this.setState(({ config }) => {
             config = cloneDeep(config);
-            if (type === "codeStyle") config.local = { ...config.local, [e.target.name]: e.target.value };
+            if (type === "codeStyle")
+                config.local = { ...config.local, [e.target.name]: e.target.value };
             if (type === "newVariable") config.local.variables = [e, ...config.local.variables];
-            /*@ts-ignore*/
-            if (type === "updateVariable") config.local.variables[i][e.target.name] = e.target.value;
+
+            if (type === "updateVariable") {
+                /*@ts-ignore*/
+                config.local.variables[i][e.target.name] = e.target.value;
+            }
             if (type === "removeVariable") config.local.variables.splice(e, 1);
 
             db.config.put({ key: "localConfig", value: config.local });
@@ -100,7 +106,11 @@ export default class App extends Component<AppProps, AppState> {
         // handle custom right click menu
         this.setState(({ g }) => ({
             configLoaded: true,
-            g: { ...g, changeContextMenu: this.changeContextMenu, updateLocalConfig: this.updateLocalConfig }
+            g: {
+                ...g,
+                changeContextMenu: this.changeContextMenu,
+                updateLocalConfig: this.updateLocalConfig
+            }
         }));
         document.addEventListener("contextmenu", this.handleContextMenu);
     };
@@ -121,7 +131,8 @@ export default class App extends Component<AppProps, AppState> {
     };
 
     handleContextMenu = (e: any) => {
-        if (e.ctrlKey || e.shiftKey || e.altKey) return this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
+        if (e.ctrlKey || e.shiftKey || e.altKey)
+            return this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
         const target = e.target;
         let action = "";
         if (target.tagName === "INPUT") action = "paste";
@@ -130,7 +141,8 @@ export default class App extends Component<AppProps, AppState> {
         e.preventDefault();
         this.setState(({ g }) => ({ g: { ...g, contextMenu: e, cmAction: action } }));
     };
-    changeContextMenu = (value: any) => this.setState(({ g }) => ({ g: { ...g, contextMenu: value } }));
+    changeContextMenu = (value: any) =>
+        this.setState(({ g }) => ({ g: { ...g, contextMenu: value } }));
 
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
@@ -150,7 +162,13 @@ export default class App extends Component<AppProps, AppState> {
                     <Route
                         exact
                         path="/auth"
-                        render={routeProps => <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />}
+                        render={routeProps => (
+                            <Auth
+                                config={this.state.config}
+                                saveAuth={this.saveAuth}
+                                {...routeProps}
+                            />
+                        )}
                     />
 
                     <PrivateRoute config={this.state.config} exact path="/">
@@ -158,7 +176,11 @@ export default class App extends Component<AppProps, AppState> {
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
                         <Base domains={this.state.domains} config={this.state.config}>
-                            <AddDomain loadDomains={this.loadDomains} g={this.state.g} config={this.state.config} />
+                            <AddDomain
+                                loadDomains={this.loadDomains}
+                                g={this.state.g}
+                                config={this.state.config}
+                            />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/import">
@@ -198,7 +220,10 @@ class PrivateRoute extends Component<PrivateRouteProps, PrivateRouteState> {
                 {...this.props.rest}
                 render={(routeProps: any) =>
                     this.props.config.vaultAuth.token.length ? (
-                        React.cloneElement(this.props.children, { ...routeProps, computedMatch: this.props.computedMatch })
+                        React.cloneElement(this.props.children, {
+                            ...routeProps,
+                            computedMatch: this.props.computedMatch
+                        })
                     ) : (
                         <Redirect
                             to={{

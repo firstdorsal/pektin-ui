@@ -49,7 +49,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         <div className="tfHelper">{l.rrTemplates["SOA"].fields[0].helperText}</div>
                         <TextField
                             onChange={e => this.props.handleChange(e)}
-                            helperText={l.rrTemplates["SOA"]?.fields[0]?.verify(v.mname)?.message || " "}
+                            helperText={
+                                l.rrTemplates["SOA"]?.fields[0]?.verify(v.mname)?.message || " "
+                            }
                             placeholder="ns1.example.com"
                             name={`${p.index}:rrField:mname`}
                             value={v.mname + ""}
@@ -60,7 +62,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         <div className="tfHelper">{l.rrTemplates["SOA"].fields[1].helperText}</div>
                         <TextField
                             onChange={e => this.props.handleChange(e)}
-                            helperText={l.rrTemplates["SOA"].fields[1].verify(v.rname)?.message || " "}
+                            helperText={
+                                l.rrTemplates["SOA"].fields[1].verify(v.rname)?.message || " "
+                            }
                             placeholder="hostmaster.example.com"
                             name={`${p.index}:rrField:rname`}
                             value={v.rname + ""}
@@ -85,7 +89,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
             <Grid spacing={2} container>
                 {fields.map((field: any) => {
                     const fieldValue = fields.length > 1 ? v[field.name] + "" : v + "";
-                    const isSearchMatch = fields.length > 1 ? currentSearchField[field.name] : currentSearchField;
+                    const isSearchMatch =
+                        fields.length > 1 ? currentSearchField[field.name] : currentSearchField;
 
                     return (
                         <Grid key={field.name} xs={field.width} item>
@@ -130,7 +135,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
         const p = this.props;
         const { record } = p;
         const editable = record.type === "SOA" ? false : true;
-        const color = JSON.stringify(l.rrTemplates[record.type]?.color).replace("[", "").replace("]", "") || "0 0 0";
+        const color =
+            JSON.stringify(l.rrTemplates[record.type]?.color).replace("[", "").replace("]", "") ||
+            "0 0 0";
 
         const backgroundColor = this.props.config.local.synesthesia ? `rgba(${color},0.2)` : "";
         const borderBottom = this.props.config.local.synesthesia ? "" : "1px solid lightgrey";
@@ -197,7 +204,19 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 value={record.type}
                                 onChange={e => this.props.handleChange(e)}
                             >
-                                {["A", "AAAA", "NS", "CNAME", "PTR", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(e => (
+                                {[
+                                    "A",
+                                    "AAAA",
+                                    "NS",
+                                    "CNAME",
+                                    "PTR",
+                                    "MX",
+                                    "TXT",
+                                    "SRV",
+                                    "CAA",
+                                    "OPENPGPKEY",
+                                    "TLSA"
+                                ].map(e => (
                                     <MenuItem key={e} value={e}>
                                         {e}
                                     </MenuItem>
@@ -220,10 +239,17 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             value={record.ttl}
                         />
                     </span>
-                    <span style={{ right: "100px", left: "580px", top: "5px" }}>{this.simpleView(record)}</span>
+                    <span style={{ right: "100px", left: "580px", top: "5px" }}>
+                        {this.simpleView(record)}
+                    </span>
 
-                    <span style={{ width: "50px", position: "absolute", right: "40px", top: "17px" }}>
-                        <IconButton size="small" onClick={e => this.props.changeMeta(e, p.index, "expanded")}>
+                    <span
+                        style={{ width: "50px", position: "absolute", right: "40px", top: "17px" }}
+                    >
+                        <IconButton
+                            size="small"
+                            onClick={e => this.props.changeMeta(e, p.index, "expanded")}
+                        >
                             {this.props.meta?.expanded ? (
                                 <KeyboardArrowUp name="expanded" />
                             ) : (
@@ -231,8 +257,14 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             )}
                         </IconButton>
                     </span>
-                    <span style={{ width: "50px", position: "absolute", right: "0px", top: "13px" }}>
-                        <Fab onClick={() => this.props.saveRecord(p.index)} disabled={!this.props.meta?.changed} size="small">
+                    <span
+                        style={{ width: "50px", position: "absolute", right: "0px", top: "13px" }}
+                    >
+                        <Fab
+                            onClick={() => this.props.saveRecord(p.index)}
+                            disabled={!this.props.meta?.changed}
+                            size="small"
+                        >
                             <Check />
                         </Fab>
                     </span>
@@ -250,7 +282,11 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             timeout={{ appear: 0, enter: 0, exit: 0 }}
                             unmountOnExit
                         >
-                            <Grid container spacing={3} style={{ maxWidth: "100%", margin: "20px 0px" }}>
+                            <Grid
+                                container
+                                spacing={3}
+                                style={{ maxWidth: "100%", margin: "20px 0px" }}
+                            >
                                 <Grid item xs={4}>
                                     <Grid item xs={12} style={{ marginBottom: "20px" }}>
                                         <Paper>
@@ -289,4 +325,3 @@ export default class RecordRow extends Component<RowProps, RowState> {
         );
     };
 }
-// {rec0ToBind(rec0, rec0.name, true)}

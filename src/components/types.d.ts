@@ -107,7 +107,19 @@ export type RRTypes =
     | "TLSA";
 
 // the resource record value
-export type ResourceRecordValue = A | AAAA | NS | CNAME | PTR | SOA | MX | TXT | SRV | CAA | OPENPGPKEY | TLSA;
+export type ResourceRecordValue =
+    | A
+    | AAAA
+    | NS
+    | CNAME
+    | PTR
+    | SOA
+    | MX
+    | TXT
+    | SRV
+    | CAA
+    | OPENPGPKEY
+    | TLSA;
 
 export interface A {
     [A: string]: string;

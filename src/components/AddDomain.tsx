@@ -66,59 +66,101 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                     <Ballot />
                                     <span className="caps label">data</span>
                                 </div>
-                                <div>
+                                <div className={l.verifyDomain(this.state.record.name)?.type}>
+                                    <br />
+                                    <div className="tfName">name</div>
+                                    <div className="tfHelper">
+                                        Name of the domain you want to add
+                                    </div>
                                     <TextField
-                                        className="cm"
                                         variant="standard"
-                                        required
-                                        name="name"
-                                        label="name"
                                         onChange={this.handleChange}
                                         value={this.state.record.name}
-                                        helperText="Name of the domain you want to add"
+                                        helperText={
+                                            l.verifyDomain(this.state.record.name)?.message || " "
+                                        }
+                                        InputLabelProps={{
+                                            shrink: true
+                                        }}
+                                        placeholder="example.com"
                                     />
                                 </div>
 
-                                <div>
+                                <div
+                                    className={
+                                        /*@ts-ignore*/
+                                        l.rrTemplates["SOA"]?.fields[0]?.verify(
+                                            /*@ts-ignore*/
+                                            this.state.record.value.SOA.mname
+                                        )?.type
+                                    }
+                                >
+                                    <div className="tfName">mname</div>
+                                    <div className="tfHelper">
+                                        {l.rrTemplates["SOA"]?.fields[0].helperText}
+                                    </div>
                                     <TextField
-                                        className="cm"
                                         variant="standard"
                                         onChange={this.handleChange}
                                         name="mname"
-                                        required
-                                        label="mname"
                                         placeholder="ns1.example.com"
                                         /*@ts-ignore*/
                                         value={this.state.record.value.SOA.mname}
-                                        helperText="Address of the primary name server"
+                                        helperText={
+                                            l.rrTemplates["SOA"]?.fields[0]?.verify(
+                                                /*@ts-ignore*/
+                                                this.state.record.value.SOA.mname
+                                            )?.message || " "
+                                        }
+                                        InputLabelProps={{
+                                            shrink: true
+                                        }}
                                     />
                                 </div>
 
-                                <div>
+                                <div
+                                    className={
+                                        /*@ts-ignore*/
+                                        l.rrTemplates["SOA"]?.fields[1]?.verify(
+                                            /*@ts-ignore*/
+                                            this.state.record.value.SOA.rname
+                                        )?.type
+                                    }
+                                >
+                                    <div className="tfName">rname</div>
+                                    <div className="tfHelper">
+                                        {l.rrTemplates["SOA"]?.fields[1].helperText}
+                                    </div>
                                     <TextField
-                                        className="cm"
                                         variant="standard"
                                         onChange={this.handleChange}
                                         name="rname"
-                                        required
-                                        label="rname"
                                         placeholder="hostmaster.example.com"
                                         /*@ts-ignore*/
                                         value={this.state.record.value.SOA.rname}
-                                        helperText="Contact of the domain admin"
+                                        helperText={
+                                            l.rrTemplates["SOA"]?.fields[1]?.verify(
+                                                /*@ts-ignore*/
+                                                this.state.record.value.SOA.rname
+                                            )?.message || " "
+                                        }
+                                        InputLabelProps={{
+                                            shrink: true
+                                        }}
                                     />
                                 </div>
                                 <div>
                                     <TextField
-                                        className="cm"
                                         variant="standard"
                                         type="number"
                                         onChange={this.handleChange}
                                         name="ttl"
                                         value={this.state.record.ttl}
-                                        required
                                         label="ttl"
                                         helperText="Time to cache the dns response"
+                                        inputProps={{
+                                            min: 0
+                                        }}
                                     />
                                 </div>
                                 <div>
@@ -126,10 +168,16 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         color="primary"
                                         variant="contained"
                                         onClick={async () => {
-                                            const req = await l.addDomain(this.props.config, this.state.record);
+                                            const req = await l.addDomain(
+                                                this.props.config,
+                                                this.state.record
+                                            );
                                             if (req.error) this.setState({ error: req.message });
                                             await this.props.loadDomains();
-                                            if (this.props.history) this.props.history.push(`/domain/${this.state.record.name}`);
+                                            if (this.props.history)
+                                                this.props.history.push(
+                                                    `/domain/${this.state.record.name}`
+                                                );
                                         }}
                                     >
                                         Add Domain
@@ -139,7 +187,11 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                             </Container>
                         </Paper>
                     </Grid>
-                    <DataDisplay style={{ marginTop: "15px" }} config={this.props.config} data={this.state.record}></DataDisplay>
+                    <DataDisplay
+                        style={{ marginTop: "15px" }}
+                        config={this.props.config}
+                        data={this.state.record}
+                    ></DataDisplay>
                 </Grid>
             </Container>
         );

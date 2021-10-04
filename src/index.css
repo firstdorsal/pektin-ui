@@ -240,14 +240,15 @@ input[value*="tick"] {
     font-size: 13px;
 }
 .tfName {
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .error .MuiInput-underline:before {
-    border-bottom: 2px solid var(--error);
+    border-bottom: 2px solid var(--error) !important;
 }
 
-.error .MuiFormHelperText-root {
+.error .MuiFormHelperText-root,
+.error label {
     color: var(--error) !important;
 }
 .error .MuiInput-underline:after {
@@ -255,9 +256,10 @@ input[value*="tick"] {
 }
 
 .warning .MuiInput-underline:before {
-    border-bottom: 2px solid var(--warn);
+    border-bottom: 2px solid var(--warn) !important;
 }
-.warning .MuiFormHelperText-root {
+.warning .MuiFormHelperText-root,
+.warning label {
     color: var(--warn) !important;
 }
 .warning .MuiInput-underline:after {

@@ -7,7 +7,12 @@ import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
 import * as pektinApi from "./apis/pektin";
 
-export const defaultSearchMatch = { name: false, type: false, ttl: false, value: {} };
+export const defaultSearchMatch = {
+    name: false,
+    type: false,
+    ttl: false,
+    value: {}
+};
 
 export const defaultMeta = {
     selected: false,
@@ -20,8 +25,9 @@ export const defaultMeta = {
 export type RealData = pektinApi.RedisEntry;
 
 const regex = {
-    IPv6: /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/,
-    IPv4: /(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/,
+    ip: /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/,
+    legacyIp:
+        /(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/,
     domainName: /(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/
 };
 
@@ -182,14 +188,17 @@ export const absoluteName = (name: string) => {
 
 export const isAbsolute = (name: string): boolean => name[name.length - 1] === ".";
 
-export const displayRecordToBind = (rec0: t.DisplayRecord, onlyValues: boolean = false): ReactNode => {
+export const displayRecordToBind = (
+    rec0: t.DisplayRecord,
+    onlyValues: boolean = false
+): ReactNode => {
     if (!rec0 || !rec0.value) return "";
     if (rec0.type === "SOA") {
         const soa = rec0.value.SOA as t.SOAValue;
         if (onlyValues) return `${soa.mname} ${soa.rname}`;
-        return `${absoluteName(rec0.name)} ${rec0.ttl ? rec0.ttl : ""} IN ${rec0.type} ${soa.mname} ${soa.rname} ${soa.serial} ${
-            soa.refresh
-        } ${soa.retry} ${soa.expire} ${soa.minimum}`;
+        return `${absoluteName(rec0.name)} ${rec0.ttl ? rec0.ttl : ""} IN ${rec0.type} ${
+            soa.mname
+        } ${soa.rname} ${soa.serial} ${soa.refresh} ${soa.retry} ${soa.expire} ${soa.minimum}`;
     }
     return "Not Implemented for this record";
 };
@@ -198,7 +207,20 @@ export const help: any = {
     auth: <div>helper text for auth</div>
 };
 
-export const supportedRecords = ["A", "AAAA", "NS", "CNAME", "PTR", "SOA", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"];
+export const supportedRecords = [
+    "A",
+    "AAAA",
+    "NS",
+    "CNAME",
+    "PTR",
+    "SOA",
+    "MX",
+    "TXT",
+    "SRV",
+    "CAA",
+    "OPENPGPKEY",
+    "TLSA"
+];
 
 export const SPF1QualifierNames = ["Pass", "Fail", "SoftFail", "Neutral"];
 
@@ -277,15 +299,23 @@ const checkPrefixLength = (input: string, type: 6 | 4 | 0 = 0): boolean => {
 };
 
 const splitFirstAndRest = (string: string, seperator: string) => {
-    return [string.substr(0, string.indexOf(seperator)), string.substr(string.indexOf(seperator) + 1)];
+    return [
+        string.substr(0, string.indexOf(seperator)),
+        string.substr(string.indexOf(seperator) + 1)
+    ];
 };
 export const txtRecords = {
     SPF1: {
         identifier: "v=spf1",
         parse: (v: string): ParsedSPF1 | TxtRecordsParseError => {
             const split = v.split(" ");
-            if (split[0] !== "v=spf1") return { error: true, message: "invalid spf1 record identifier" };
-            if (split.length === 1 || !split[1]) return { error: true, message: "spf1 record is empty" };
+            if (split[0] !== "v=spf1")
+                return {
+                    error: true,
+                    message: "invalid spf1 record identifier"
+                };
+            if (split.length === 1 || !split[1])
+                return { error: true, message: "spf1 record is empty" };
             const parsed: ParsedSPF1 = {};
             split.shift();
             const parseMechanism = (e: string): SPF1Mechanism | TxtRecordsParseError => {
@@ -300,7 +330,12 @@ export const txtRecords = {
 
                 if (e === "all" || e === "mx" || e === "a" || e === "ptr") {
                     mechanism.type = e;
-                } else if (anyInArrayStartsWith(["ip4:", "ip6:", "a:", "mx:", "ptr:", "exists:", "include:"], e)) {
+                } else if (
+                    anyInArrayStartsWith(
+                        ["ip4:", "ip6:", "a:", "mx:", "ptr:", "exists:", "include:"],
+                        e
+                    )
+                ) {
                     const [type, ...r] = splitFirstAndRest(e, ":");
                     const rest = r.toString();
 
@@ -309,7 +344,10 @@ export const txtRecords = {
                             mechanism.type = type;
                             mechanism.domain = rest;
                         } else {
-                            return { error: true, message: `invalid domain: ${rest}` };
+                            return {
+                                error: true,
+                                message: `invalid domain: ${rest}`
+                            };
                         }
                     } else if (type === "mx" || type === "a") {
                         if (rest.indexOf("/") <= -1) {
@@ -317,7 +355,10 @@ export const txtRecords = {
                                 mechanism.type = type;
                                 mechanism.domain = rest;
                             } else {
-                                return { error: true, message: `invalid domain: ${rest}` };
+                                return {
+                                    error: true,
+                                    message: `invalid domain: ${rest}`
+                                };
                             }
                         } else {
                             const [domain, prefixLength] = splitFirstAndRest(rest, "/");
@@ -327,47 +368,65 @@ export const txtRecords = {
                                     mechanism.domain = domain;
                                     mechanism.prefixLength = parseInt(prefixLength);
                                 } else {
-                                    return { error: true, message: `invalid prefix-length: ${prefixLength}` };
+                                    return {
+                                        error: true,
+                                        message: `invalid prefix-length: ${prefixLength}`
+                                    };
                                 }
                             } else {
-                                return { error: true, message: `invalid domain: ${domain}` };
+                                return {
+                                    error: true,
+                                    message: `invalid domain: ${domain}`
+                                };
                             }
                         }
                     } else if (type === "ip6") {
                         const [ip6, prefixLength] = splitFirstAndRest(rest, "/");
-                        if (ip6.match(regex.IPv6)) {
+                        if (ip6.match(regex.ip)) {
                             if (prefixLength) {
                                 if (checkPrefixLength(prefixLength)) {
                                     mechanism.type = type;
                                     mechanism.ip6 = ip6;
                                     mechanism.prefixLength = parseInt(prefixLength);
                                 } else {
-                                    return { error: true, message: `invalid ipv6 prefix-length: ${prefixLength}` };
+                                    return {
+                                        error: true,
+                                        message: `invalid ipv6 prefix-length: ${prefixLength}`
+                                    };
                                 }
                             } else {
                                 mechanism.type = type;
                                 mechanism.ip6 = ip6;
                             }
                         } else {
-                            return { error: true, message: `invalid ipv6 address: ${ip6}` };
+                            return {
+                                error: true,
+                                message: `invalid ipv6 address: ${ip6}`
+                            };
                         }
                     } else if (type === "ip4") {
                         const [ip4, prefixLength] = splitFirstAndRest(rest, "/");
-                        if (ip4.match(regex.IPv4)) {
+                        if (ip4.match(regex.legacyIp)) {
                             if (prefixLength) {
                                 if (checkPrefixLength(prefixLength, 4)) {
                                     mechanism.type = type;
                                     mechanism.ip4 = ip4;
                                     mechanism.prefixLength = parseInt(prefixLength);
                                 } else {
-                                    return { error: true, message: `invalid ipv4 prefix-length: ${prefixLength}` };
+                                    return {
+                                        error: true,
+                                        message: `invalid ipv4 prefix-length: ${prefixLength}`
+                                    };
                                 }
                             } else {
                                 mechanism.type = type;
                                 mechanism.ip4 = ip4;
                             }
                         } else {
-                            return { error: true, message: `invalid ipv4 address: ${ip4}` };
+                            return {
+                                error: true,
+                                message: `invalid ipv4 address: ${ip4}`
+                            };
                         }
                     }
                 } else if (anyInArrayStartsWith(["a/", "mx/"], e)) {
@@ -376,10 +435,16 @@ export const txtRecords = {
                         mechanism.type = type as "a" | "mx";
                         mechanism.prefixLength = parseInt(prefixLength);
                     } else {
-                        return { error: true, message: `invalid prefix-length: ${prefixLength}` };
+                        return {
+                            error: true,
+                            message: `invalid prefix-length: ${prefixLength}`
+                        };
                     }
                 } else {
-                    return { error: true, message: "invalid spf1 mechanism: no valid prefix matched" };
+                    return {
+                        error: true,
+                        message: "invalid spf1 mechanism: no valid prefix matched"
+                    };
                 }
                 return mechanism;
             };
@@ -387,12 +452,16 @@ export const txtRecords = {
             split.forEach((e: string, i: number) => {
                 if (e.indexOf("exp=") > -1 || e.indexOf("redirect=") > -1) {
                     /*@ts-ignore*/
-                    const [modifier, modifierDomain]: ["redirect" | "exp", string] = splitFirstAndRest(e, "=");
+                    const [modifier, modifierDomain]: ["redirect" | "exp", string] =
+                        splitFirstAndRest(e, "=");
                     if (modifierDomain.match(regex.domainName)) {
                         parsed.modifier = modifier;
                         parsed.modifierDomain = modifierDomain;
                     } else {
-                        return { error: true, message: `invalid spf1 modifier: invalid domain: ${modifierDomain}` };
+                        return {
+                            error: true,
+                            message: `invalid spf1 modifier: invalid domain: ${modifierDomain}`
+                        };
                     }
                 } else if (parsed.mechanisms) {
                     parsed.mechanisms[i] = parseMechanism(e);
@@ -413,16 +482,52 @@ export const txtRecords = {
 };
 
 export const verifyDomain = (input: string): t.ValidationResult => {
-    if (!input.match(regex.domainName)) return { type: "error", message: "Invalid domain" };
-    if (input.indexOf(" ") > -1)
-        return { type: "error", message: "Spaces indicate a list of domains, but only one is supported here" };
-    if (!isAbsolute(input)) return { type: "warning", message: "Domains should be absolute (end with a dot)" };
-    if (input.toLowerCase() !== input) return { type: "warning", message: "Domains should only contain lower case chars" };
+    if (!input || !input.match(regex.domainName)) {
+        return { type: "error", message: "Invalid domain" };
+    }
+    const domains = input.split(" ");
+    if (domains[1] !== undefined && domains[domains.length - 1].length !== 0) {
+        return {
+            type: "error",
+            message: "Spaces indicate a list of domains, but only one is supported here"
+        };
+    }
+    if (!isAbsolute(input.replaceAll(" ", ""))) {
+        return {
+            type: "warning",
+            message: "Domains should be absolute (end with a dot)"
+        };
+    }
+    if (input.toLowerCase() !== input) {
+        return {
+            type: "warning",
+            message: "Domains should only contain lower case chars"
+        };
+    }
+    return { type: "ok" };
+};
+
+export const verifyIp = (input: string, type?: "legacy"): t.ValidationResult => {
+    if (type === "legacy") {
+        if (!input || !input.match(regex.legacyIp)) {
+            return {
+                type: "error",
+                message: "Invalid legacy/V4 IP adress"
+            };
+        }
+    }
+    if (!input || !input.match(regex.ip)) return { type: "error", message: "Invalid IP" };
     return { type: "ok" };
 };
 
 export const verifyDomains = (input: string): t.ValidationResult => {
     const domains = input.split(" ");
+    if (domains[domains.length - 1] !== undefined && domains[domains.length - 1].length === 0) {
+        return {
+            type: "ok"
+        };
+    }
+    if (domains.length === 1) return verifyDomain(domains[0]);
     for (let i = 0; i < domains.length; i++) {
         const v = verifyDomain(domains[i]);
         if (v.type !== "ok") {
@@ -433,22 +538,25 @@ export const verifyDomains = (input: string): t.ValidationResult => {
     return { type: "ok" };
 };
 
+export const verifyIps = (input: string, type?: "legacy"): t.ValidationResult => {
+    const ips = input.split(" ");
+    if (ips.length === 1) return verifyIp(ips[0]);
+    if (ips[ips.length - 1] !== undefined && ips[ips.length - 1].length === 0) {
+        return {
+            type: "ok"
+        };
+    }
+    for (let i = 0; i < ips.length; i++) {
+        const v = verifyIp(ips[i], type);
+        if (v.type !== "ok") {
+            v.message = `IP ${i + 1}: ${v.message}`;
+            return v;
+        }
+    }
+    return { type: "ok" };
+};
+
 export const rrTemplates: any = {
-    A: {
-        template: {
-            A: ""
-        },
-        fields: [
-            {
-                name: "addr",
-                placeholder: "127.0.0.1",
-                inputType: "text",
-                width: 12
-            }
-        ],
-        color: [82, 51, 18],
-        complex: false
-    },
     AAAA: {
         template: {
             AAAA: ""
@@ -458,10 +566,27 @@ export const rrTemplates: any = {
                 name: "addr",
                 placeholder: "1:see:bad:c0de",
                 inputType: "text",
-                width: 12
+                width: 12,
+                verify: (field: string): t.ValidationResult => verifyIps(field)
             }
         ],
         color: [43, 255, 0],
+        complex: false
+    },
+    A: {
+        template: {
+            A: ""
+        },
+        fields: [
+            {
+                name: "addr",
+                placeholder: "127.0.0.1",
+                inputType: "text",
+                width: 12,
+                verify: (field: string): t.ValidationResult => verifyIps(field, "legacy")
+            }
+        ],
+        color: [82, 51, 18],
         complex: false
     },
     NS: {
@@ -548,7 +673,10 @@ export const rrTemplates: any = {
                     const dv = verifyDomain(field);
                     if (dv.type !== "ok") return dv;
                     if (field.indexOf("@") > -1)
-                        return { type: "warning", message: "The @ symbol should be replaced with a dot" };
+                        return {
+                            type: "warning",
+                            message: "The @ symbol should be replaced with a dot"
+                        };
                     return { type: "ok" };
                 }
             }
@@ -557,11 +685,15 @@ export const rrTemplates: any = {
         info: (
             <div>
                 <h2>SOA Record</h2>
-                <p>The "Start Of Authority" record is the most important one, as it defines the existence of the zone.</p>
+                <p>
+                    The "Start Of Authority" record is the most important one, as it defines the
+                    existence of the zone.
+                </p>
                 <br />
                 <p>
-                    The numbers like "serial", "expire" etc. are omitted because they are only used for sync between main and
-                    subordinate DNS servers. Pektin does not use these mechanisms, as it's data is synced using Redis replication.
+                    The numbers like "serial", "expire" etc. are omitted because they are only used
+                    for sync between main and subordinate DNS servers. Pektin does not use these
+                    mechanisms, as it's data is synced using Redis replication.
                 </p>
             </div>
         ),
@@ -582,7 +714,13 @@ export const rrTemplates: any = {
                 width: 3,
                 min: 0
             },
-            { name: "exchange", placeholder: "mx.example.com.", inputType: "text", width: 9, absolute: true }
+            {
+                name: "exchange",
+                placeholder: "mx.example.com.",
+                inputType: "text",
+                width: 9,
+                absolute: true
+            }
         ],
         color: [29, 94, 224],
         complex: true
@@ -612,10 +750,35 @@ export const rrTemplates: any = {
             }
         },
         fields: [
-            { name: "priority", placeholder: 1, inputType: "number", width: 2, min: 0 },
-            { name: "weight", placeholder: 1, inputType: "number", width: 2, min: 0 },
-            { name: "port", placeholder: 443, inputType: "number", width: 2, min: 0, max: 65535 },
-            { name: "target", placeholder: "mx.example.com.", inputType: "text", width: 6, absolute: true }
+            {
+                name: "priority",
+                placeholder: 1,
+                inputType: "number",
+                width: 2,
+                min: 0
+            },
+            {
+                name: "weight",
+                placeholder: 1,
+                inputType: "number",
+                width: 2,
+                min: 0
+            },
+            {
+                name: "port",
+                placeholder: 443,
+                inputType: "number",
+                width: 2,
+                min: 0,
+                max: 65535
+            },
+            {
+                name: "target",
+                placeholder: "mx.example.com.",
+                inputType: "text",
+                width: 6,
+                absolute: true
+            }
         ],
         color: [149, 61, 196],
         complex: true
@@ -635,7 +798,12 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 6
             },
-            { name: "value", placeholder: "letsencrypt.org", inputType: "text", width: 6 }
+            {
+                name: "value",
+                placeholder: "letsencrypt.org",
+                inputType: "text",
+                width: 6
+            }
         ],
         color: [212, 11, 165],
         complex: true
@@ -658,10 +826,36 @@ export const rrTemplates: any = {
             }
         },
         fields: [
-            { name: "usage", placeholder: 3, inputType: "number", width: 2, min: 1, max: 4 },
-            { name: "selector", placeholder: 1, inputType: "number", width: 2, min: 1, max: 2 },
-            { name: "matching_type", placeholder: 1, inputType: "number", width: 2, min: 1, max: 3 },
-            { name: "data", placeholder: "50c1ab1e11feb0a75", inputType: "text", width: 6 }
+            {
+                name: "usage",
+                placeholder: 3,
+                inputType: "number",
+                width: 2,
+                min: 1,
+                max: 4
+            },
+            {
+                name: "selector",
+                placeholder: 1,
+                inputType: "number",
+                width: 2,
+                min: 1,
+                max: 2
+            },
+            {
+                name: "matching_type",
+                placeholder: 1,
+                inputType: "number",
+                width: 2,
+                min: 1,
+                max: 3
+            },
+            {
+                name: "data",
+                placeholder: "50c1ab1e11feb0a75",
+                inputType: "text",
+                width: 6
+            }
         ],
         color: [255, 217, 0],
         complex: true

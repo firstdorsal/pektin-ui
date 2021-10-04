@@ -28,6 +28,7 @@ interface RowProps {
     readonly config: t.Config;
     readonly style: any;
     readonly search: string;
+    readonly domainName: string;
 }
 interface RowState {
     //dnssec: boolean;
@@ -42,24 +43,26 @@ export default class RecordRow extends Component<RowProps, RowState> {
             const v = rr["SOA"] as t.SOAValue;
             return (
                 <Fragment>
-                    <div>
+                    <div className={l.rrTemplates["SOA"]?.fields[0]?.verify(v.mname)?.type}>
+                        <br />
+                        <div className="tfName">mname</div>
+                        <div className="tfHelper">{l.rrTemplates["SOA"].fields[0].helperText}</div>
                         <TextField
                             onChange={e => this.props.handleChange(e)}
-                            helperText={l.rrTemplates["SOA"].fields[0].helperText}
+                            helperText={l.rrTemplates["SOA"]?.fields[0]?.verify(v.mname)?.message || " "}
                             placeholder="ns1.example.com"
                             name={`${p.index}:rrField:mname`}
-                            label="mname"
                             value={v.mname + ""}
                         />
                     </div>
-                    <br />
-                    <div>
+                    <div className={l.rrTemplates["SOA"]?.fields[1]?.verify(v.rname)?.type}>
+                        <div className="tfName">rname</div>
+                        <div className="tfHelper">{l.rrTemplates["SOA"].fields[1].helperText}</div>
                         <TextField
                             onChange={e => this.props.handleChange(e)}
-                            helperText={l.rrTemplates["SOA"].fields[1].helperText}
+                            helperText={l.rrTemplates["SOA"].fields[1].verify(v.rname)?.message || " "}
                             placeholder="hostmaster.example.com"
                             name={`${p.index}:rrField:rname`}
-                            label="rname"
                             value={v.rname + ""}
                         />
                     </div>
@@ -71,7 +74,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
         const p = this.props;
         const rr = record.value;
         const type = record.type;
-        const v: any = rr[type];
+        let v: any = rr[type];
+
         const fields = l.rrTemplates[type]?.fields;
         if (!fields) return;
 
@@ -80,6 +84,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
         return (
             <Grid spacing={2} container>
                 {fields.map((field: any) => {
+                    const fieldValue = fields.length > 1 ? v[field.name] + "" : v + "";
                     const isSearchMatch = fields.length > 1 ? currentSearchField[field.name] : currentSearchField;
 
                     return (
@@ -90,9 +95,15 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 style={{
                                     width: "100%"
                                 }}
-                                className={isSearchMatch ? "searchMatch" : ""}
+                                className={(() => {
+                                    let c = isSearchMatch ? "searchMatch" : "";
+                                    const d = field.verify ? field.verify(fieldValue) : "";
+                                    c += " " + d.type;
+                                    return c;
+                                })()}
                                 onChange={e => this.props.handleChange(e)}
                                 placeholder={field.placeholder.toString()}
+                                title={field.verify ? field.verify(fieldValue).message : ""}
                                 InputLabelProps={{
                                     shrink: true
                                 }}
@@ -102,7 +113,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 }}
                                 label={field.name}
                                 name={`${p.index}:rrField:${field.name}`}
-                                value={fields.length > 1 ? v[field.name] + "" : v + ""}
+                                value={fieldValue}
                             />
                         </Grid>
                     );
@@ -150,15 +161,22 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             left: "70px",
                             top: "18px"
                         }}
-                        className={this.props.meta.searchMatch.name ? "searchMatch" : ""}
+                        className={(() => {
+                            let c = this.props.meta.searchMatch.name ? "searchMatch" : "";
+                            const d = l.verifyDomain(record.name);
+                            c += " " + d.type;
+                            return c;
+                        })()}
                     >
-                        <Input
+                        <TextField
                             onInput={e => this.props.handleChange(e)}
                             name={`${p.index}:name:`}
                             type="text"
                             disabled={!editable}
                             style={{ width: "100%" }}
                             value={record.name}
+                            placeholder={this.props.domainName}
+                            title={l.verifyDomain(record.name).message}
                         />
                     </span>
                     <span
@@ -214,12 +232,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         </IconButton>
                     </span>
                     <span style={{ width: "50px", position: "absolute", right: "0px", top: "13px" }}>
-                        <Fab
-                            onClick={() => this.props.saveRecord(p.index)}
-                            disabled={!this.props.meta?.changed}
-                            color="secondary"
-                            size="small"
-                        >
+                        <Fab onClick={() => this.props.saveRecord(p.index)} disabled={!this.props.meta?.changed} size="small">
                             <Check />
                         </Fab>
                     </span>

@@ -4,9 +4,10 @@
     --a1: #1b1c20;
     --a1-light: #282a31;
     --a1-lighter: #444a5f;
-    --a2: darkorange;
-    --a2-light: orange;
-    --a2-lighter: yellow;
+    --a2: #00ffc8;
+    --a2-light: #6ddab5;
+    --a2-lighter: #dcfff5;
+    --a2-darker: #00d4a6;
     --f1: white;
     --f2: black;
     --error: #f44336;
@@ -178,6 +179,8 @@ main {
 h2 {
     font-size: 18px;
     font-weight: 500;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .link {
@@ -231,3 +234,32 @@ input[value*="tick"] {
     color: red;
 }
 */
+
+.tfName,
+.tfHelper {
+    font-size: 13px;
+}
+.tfName {
+    font-weight: bold;
+}
+
+.error .MuiInput-underline:before {
+    border-bottom: 2px solid var(--error);
+}
+
+.error .MuiFormHelperText-root {
+    color: var(--error) !important;
+}
+.error .MuiInput-underline:after {
+    border-bottom-color: var(--error);
+}
+
+.warning .MuiInput-underline:before {
+    border-bottom: 2px solid var(--warn);
+}
+.warning .MuiFormHelperText-root {
+    color: var(--warn) !important;
+}
+.warning .MuiInput-underline:after {
+    border-bottom-color: var(--warn);
+}

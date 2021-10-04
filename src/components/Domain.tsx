@@ -24,6 +24,7 @@ interface DomainState {
     readonly search: string;
     readonly replace: string;
     readonly anySelected: boolean;
+    readonly domainName: string;
 }
 
 interface RouteParams {
@@ -63,7 +64,8 @@ class Domain extends Component<DomainProps, DomainState> {
         defaultOrder: [],
         search: "",
         replace: "",
-        anySelected: false
+        anySelected: false,
+        domainName: "example.com"
     };
     list: any;
     saveRecord = async (i: number) => {
@@ -159,6 +161,7 @@ class Domain extends Component<DomainProps, DomainState> {
         if (this.props.records) {
             this.initData(this.props.records);
         } else {
+            this.setState({ domainName: this.props.computedMatch.params.domainName });
             const records = await l.getRecords(this.props.config, this.props.computedMatch.params.domainName);
             this.initData(records);
         }
@@ -432,6 +435,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     index={index}
                     record={r.record}
                     meta={r.meta}
+                    domainName={this.state.domainName}
                 />
             );
         };

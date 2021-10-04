@@ -229,7 +229,7 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
         });
     }
     return {
-        name: `${l.absoluteName(record.name)}:${record.type}`,
+        name: `${l.absoluteName(record.name).toLowerCase()}:${record.type}`,
         rr_set
     };
 };

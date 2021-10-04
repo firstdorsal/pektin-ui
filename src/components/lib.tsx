@@ -180,6 +180,8 @@ export const absoluteName = (name: string) => {
     return name;
 };
 
+export const isAbsolute = (name: string): boolean => name[name.length - 1] === ".";
+
 export const displayRecordToBind = (rec0: t.DisplayRecord, onlyValues: boolean = false): ReactNode => {
     if (!rec0 || !rec0.value) return "";
     if (rec0.type === "SOA") {
@@ -410,6 +412,27 @@ export const txtRecords = {
     }
 };
 
+export const verifyDomain = (input: string): t.ValidationResult => {
+    if (!input.match(regex.domainName)) return { type: "error", message: "Invalid domain" };
+    if (input.indexOf(" ") > -1)
+        return { type: "error", message: "Spaces indicate a list of domains, but only one is supported here" };
+    if (!isAbsolute(input)) return { type: "warning", message: "Domains should be absolute (end with a dot)" };
+    if (input.toLowerCase() !== input) return { type: "warning", message: "Domains should only contain lower case chars" };
+    return { type: "ok" };
+};
+
+export const verifyDomains = (input: string): t.ValidationResult => {
+    const domains = input.split(" ");
+    for (let i = 0; i < domains.length; i++) {
+        const v = verifyDomain(domains[i]);
+        if (v.type !== "ok") {
+            v.message = `Domain ${i + 1}: ${v.message}`;
+            return v;
+        }
+    }
+    return { type: "ok" };
+};
+
 export const rrTemplates: any = {
     A: {
         template: {
@@ -451,7 +474,8 @@ export const rrTemplates: any = {
                 placeholder: "ns1.example.com.",
                 inputType: "text",
                 width: 12,
-                absolute: true
+                absolute: true,
+                verify: (field: string): t.ValidationResult => verifyDomains(field)
             }
         ],
         color: [29, 117, 0],
@@ -467,7 +491,8 @@ export const rrTemplates: any = {
                 placeholder: "example.com.",
                 inputType: "text",
                 width: 12,
-                absolute: true
+                absolute: true,
+                verify: (field: string): t.ValidationResult => verifyDomains(field)
             }
         ],
         color: [255, 0, 0],
@@ -483,7 +508,8 @@ export const rrTemplates: any = {
                 placeholder: "example.com.",
                 inputType: "text",
                 width: 12,
-                absolute: true
+                absolute: true,
+                verify: (field: string): t.ValidationResult => verifyDomains(field)
             }
         ],
         color: [255, 122, 0],
@@ -508,15 +534,23 @@ export const rrTemplates: any = {
                 helperText: "The domain's primary name server",
                 inputType: "text",
                 width: 6,
-                absolute: true
+                absolute: true,
+                verify: (field: string): t.ValidationResult => verifyDomain(field)
             },
             {
                 name: "rname",
                 placeholder: "hostmaster.example.com.",
-                helperText: "Hostmaster email, the @ is replaced with a dot",
+                helperText: "The hostmaster's email, the @ is replaced with a dot",
                 inputType: "text",
                 width: 6,
-                absolute: true
+                absolute: true,
+                verify: (field: string): t.ValidationResult => {
+                    const dv = verifyDomain(field);
+                    if (dv.type !== "ok") return dv;
+                    if (field.indexOf("@") > -1)
+                        return { type: "warning", message: "The @ symbol should be replaced with a dot" };
+                    return { type: "ok" };
+                }
             }
         ],
         color: [255, 145, 0],
@@ -524,6 +558,11 @@ export const rrTemplates: any = {
             <div>
                 <h2>SOA Record</h2>
                 <p>The "Start Of Authority" record is the most important one, as it defines the existence of the zone.</p>
+                <br />
+                <p>
+                    The numbers like "serial", "expire" etc. are omitted because they are only used for sync between main and
+                    subordinate DNS servers. Pektin does not use these mechanisms, as it's data is synced using Redis replication.
+                </p>
             </div>
         ),
         complex: true

@@ -1,3 +1,8 @@
+export interface ValidationResult {
+    type: "error" | "warning" | "ok";
+    message?: string;
+}
+
 export interface Glob {
     contextMenu: any;
     changeContextMenu: any;

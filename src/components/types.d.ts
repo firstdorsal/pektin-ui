@@ -7,10 +7,11 @@ export interface FieldValidity {
 }
 
 export interface Glob {
-    contextMenu: any;
-    changeContextMenu: any;
+    contextMenu: boolean;
+    changeContextMenu: Function;
     cmAction: string;
-    updateLocalConfig: any;
+    updateLocalConfig: Function;
+    loadDomains: Function;
 }
 export interface VaultAuth {
     endpoint: string;

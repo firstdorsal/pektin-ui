@@ -41,7 +41,12 @@ export default class Base extends Component<BaseProps, BaseState> {
                     {this.props.domains.length
                         ? this.props.domains.map((domain: string, i: number) => {
                               return (
-                                  <NavLink className="link" key={i} to={`/domain/${domain}`}>
+                                  <NavLink
+                                      activeClassName="navActive"
+                                      className="link"
+                                      key={i}
+                                      to={`/domain/${domain}`}
+                                  >
                                       {domain}
                                   </NavLink>
                               );
@@ -52,7 +57,11 @@ export default class Base extends Component<BaseProps, BaseState> {
                         <span className="linkText">Configuration</span>
                     </NavLink>
                 </aside>
-                <main>{this.props.children ? React.cloneElement(this.props.children, { ...this.props }) : ""}</main>
+                <main>
+                    {this.props.children
+                        ? React.cloneElement(this.props.children, { ...this.props })
+                        : ""}
+                </main>
             </div>
         );
     };

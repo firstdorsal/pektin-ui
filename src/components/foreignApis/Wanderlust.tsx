@@ -67,9 +67,8 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
             this.state.providerName,
             this.state.limit
         );
-        this.props.import(
-            records.map(l.simpleDnsRecordToDisplayRecord).filter(l.isSupportedRecord)
-        );
+        /*TODO: remove quotes for caa value*/
+        this.props.import(records.map(simpleDnsRecordToDisplayRecord).filter(l.isSupportedRecord));
     };
 
     render = () => {
@@ -146,6 +145,7 @@ const providers: { [provider: string]: getDnsRecord } = {
         answer.type = type;
         answer.value = answer.data;
         delete answer.data;
+
         return answer;
     },
     Cloudflare: async (name: string, type: string): Promise<any> => {
@@ -159,5 +159,67 @@ const providers: { [provider: string]: getDnsRecord } = {
         answer.typeId = answer.type;
         answer.type = type;
         return answer;
+    }
+};
+
+const simpleDnsRecordToDisplayRecord = (simple: t.RawDnsRecord): t.DisplayRecord => {
+    return {
+        ...simple,
+        value: textToRRValue(simple.type, simple.value)
+    };
+};
+const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRecordValue => {
+    const t = text.split(" ");
+    switch (recordType) {
+        case "SOA":
+            return {
+                SOA: {
+                    mname: t[0],
+                    rname: t[1],
+                    serial: parseInt(t[2]),
+                    refresh: parseInt(t[3]),
+                    retry: parseInt(t[4]),
+                    expire: parseInt(t[5]),
+                    minimum: parseInt(t[6])
+                }
+            };
+        case "MX":
+            return {
+                MX: {
+                    preference: parseInt(t[0]),
+                    exchange: t[1]
+                }
+            };
+        case "SRV":
+            return {
+                SRV: {
+                    priority: parseInt(t[0]),
+                    weight: parseInt(t[1]),
+                    port: parseInt(t[2]),
+                    target: t[3]
+                }
+            };
+
+        case "CAA":
+            return {
+                CAA: {
+                    flag: parseInt(t[0]),
+                    tag: t[1] as "Issue" | "IssueWild" | "Iodef",
+                    value: t[2].replaceAll('"', "")
+                }
+            };
+
+        case "TLSA":
+            return {
+                TLSA: {
+                    usage: parseInt(t[0]),
+                    selector: parseInt(t[1]),
+                    matching_type: parseInt(t[2]),
+                    data: t[3]
+                }
+            };
+
+        default:
+            return { [recordType]: text };
     }
 };

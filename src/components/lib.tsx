@@ -24,7 +24,7 @@ export const defaultMeta = {
 
 export type RealData = pektinApi.RedisEntry;
 
-const regex = {
+export const regex = {
     ip: /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/,
     legacyIp:
         /(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}/,
@@ -38,13 +38,6 @@ export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
 export const isSupportedRecord = (record: t.DisplayRecord) => {
     if (supportedRecords.indexOf(record.type) > -1) return true;
     return false;
-};
-
-export const simpleDnsRecordToDisplayRecord = (simple: t.RawDnsRecord): t.DisplayRecord => {
-    return {
-        ...simple,
-        value: textToRRValue(simple.type, simple.value)
-    };
 };
 
 export const getDomains = (config: t.Config, format = "pektin") => {
@@ -78,62 +71,6 @@ export const toDisplayRecord = (rData: RealData, format = "pektin"): t.DisplayRe
         return pektinApi.toDisplayRecord(rData);
     } else {
         return pektinApi.toDisplayRecord(rData);
-    }
-};
-
-export const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRecordValue => {
-    const t = text.split(" ");
-    switch (recordType) {
-        case "SOA":
-            return {
-                SOA: {
-                    mname: t[0],
-                    rname: t[1],
-                    serial: parseInt(t[2]),
-                    refresh: parseInt(t[3]),
-                    retry: parseInt(t[4]),
-                    expire: parseInt(t[5]),
-                    minimum: parseInt(t[6])
-                }
-            };
-        case "MX":
-            return {
-                MX: {
-                    preference: parseInt(t[0]),
-                    exchange: t[1]
-                }
-            };
-        case "SRV":
-            return {
-                SRV: {
-                    priority: parseInt(t[0]),
-                    weight: parseInt(t[1]),
-                    port: parseInt(t[2]),
-                    target: t[3]
-                }
-            };
-
-        case "CAA":
-            return {
-                CAA: {
-                    flag: parseInt(t[0]),
-                    tag: t[1] as "Issue" | "IssueWild" | "Iodef",
-                    value: t[2]
-                }
-            };
-
-        case "TLSA":
-            return {
-                TLSA: {
-                    usage: parseInt(t[0]),
-                    selector: parseInt(t[1]),
-                    matching_type: parseInt(t[2]),
-                    data: t[3]
-                }
-            };
-
-        default:
-            return { [recordType]: text };
     }
 };
 
@@ -222,266 +159,7 @@ export const supportedRecords = [
     "TLSA"
 ];
 
-export const SPF1QualifierNames = ["Pass", "Fail", "SoftFail", "Neutral"];
-
-//type Domain = string;
-//type PrefixLength = number;
-//type IP6Adress = string;
-//type IP4Adress = string;
-//type SPF1_M_ip4 = IP4Adress | `${IP4Adress}/${PrefixLength}`;
-//type SPF1_M_ip6 = IP6Adress | `${IP6Adress}/${PrefixLength}`;
-//type SPF1_M_a = `/${PrefixLength}` | Domain | `${Domain}/${PrefixLength}`;
-//type SPF1_M_mx = `/${PrefixLength}` | Domain | `${Domain}/${PrefixLength}`;
-//type SPF1_M_ptr = Domain;
-//type SPF1_M_exists = Domain;
-//type SPF1_M_include = Domain;
-
-interface SPF1Mechanism {
-    qualifier?: "+" | "-" | "~" | "?"; // Pass Fail SoftFail Neutral; defaults to "+"/Pass if nothing is set
-    type: "all" | "ip4" | "ip6" | "a" | "mx" | "ptr" | "exists" | "include";
-    domain?: string;
-    ip4?: string;
-    ip6?: string;
-    prefixLength?: number;
-}
-interface ParsedSPF1 {
-    mechanisms?: Array<SPF1Mechanism | TxtRecordsParseError>;
-    modifier?: "redirect" | "exp";
-    modifierDomain?: string;
-}
-interface TxtRecordsParseError {
-    error: true;
-    message: string;
-}
-
-// https://www.ietf.org/rfc/rfc6376.txt
-// eslint-disable-next-line
-interface ParsedDKIM1 {
-    g: any; // granularity
-    h: any; // hash; a list of mechanisms that can be used to produce a digest of message data
-    k: "rsa"; // key type; a list of mechanisms that can be used to decode a DKIM signature
-    n: string; // notes; notes for humans
-    p: string; //public-key; base64 encoded public key
-    s: string[]; // service types for example * or email
-    t: "y" | "s"; // list of flags to modify the selector
-    q: string; // query type for example "dns"
-    l: number; // size limit
-}
-
-// https://datatracker.ietf.org/doc/html/rfc7489#section-6.3
-// eslint-disable-next-line
-interface ParsedDMARC1 {
-    p: "none" | "quarantine" | "reject"; // policy
-    adkim?: "r" | "s"; // dkim alignment: relaxed or strict mode
-    aspf?: "r" | "s"; // spf alignment: relaxed or strict mode
-    fo?: 0 | 1 | "d" | "s"; // Failure reporting options: default is 0
-    pct?: number; //percent: number from 1-100
-    rf?: Array<"afrf" | "iodef">; // report format: Authentication Failure Reporting Format || incident object description exchange format
-    ri?: number; // report interval: number of seconds defaults to 86400 u32
-    rua?: string[]; // report aggregate address: comma seperated list
-    ruf?: string[]; // report failure address: comma seperated list
-    sp?: "none" | "quarantine" | "reject"; // subdomain policy
-}
-
-const anyInArrayStartsWith = (a: string[], start: string): boolean => {
-    for (let i = 0; i < a.length; i++) {
-        if (start.match(RegExp(`^${a[i]}.*`))) return true;
-    }
-    return false;
-};
-
-const checkPrefixLength = (input: string, type: 6 | 4 | 0 = 0): boolean => {
-    if (isNaN(parseInt(input))) return false;
-    const parsedInput = parseInt(input);
-    if (type === 4 && parsedInput <= 32 && parsedInput >= 0) return true;
-    if (parsedInput <= 128 && parsedInput >= 0) return true;
-    return false;
-};
-
-const splitFirstAndRest = (string: string, seperator: string) => {
-    return [
-        string.substr(0, string.indexOf(seperator)),
-        string.substr(string.indexOf(seperator) + 1)
-    ];
-};
-export const txtRecords = {
-    SPF1: {
-        identifier: "v=spf1",
-        parse: (v: string): ParsedSPF1 | TxtRecordsParseError => {
-            const split = v.split(" ");
-            if (split[0] !== "v=spf1")
-                return {
-                    error: true,
-                    message: "invalid spf1 record identifier"
-                };
-            if (split.length === 1 || !split[1])
-                return { error: true, message: "spf1 record is empty" };
-            const parsed: ParsedSPF1 = {};
-            split.shift();
-            const parseMechanism = (e: string): SPF1Mechanism | TxtRecordsParseError => {
-                if (!e.length) return { error: true, message: "invalid spf1 mechanism" };
-                const mechanism: SPF1Mechanism = {} as SPF1Mechanism;
-                if (["+", "-", "~", "?"].indexOf(e.charAt(0)) > -1) {
-                    mechanism.qualifier = e.charAt(0) as "+" | "-" | "~" | "?";
-                    e = e.substring(1);
-                } else {
-                    mechanism.qualifier = "+";
-                }
-
-                if (e === "all" || e === "mx" || e === "a" || e === "ptr") {
-                    mechanism.type = e;
-                } else if (
-                    anyInArrayStartsWith(
-                        ["ip4:", "ip6:", "a:", "mx:", "ptr:", "exists:", "include:"],
-                        e
-                    )
-                ) {
-                    const [type, ...r] = splitFirstAndRest(e, ":");
-                    const rest = r.toString();
-
-                    if (type === "exists" || type === "include" || type === "ptr") {
-                        if (rest.match(regex.domainName)) {
-                            mechanism.type = type;
-                            mechanism.domain = rest;
-                        } else {
-                            return {
-                                error: true,
-                                message: `invalid domain: ${rest}`
-                            };
-                        }
-                    } else if (type === "mx" || type === "a") {
-                        if (rest.indexOf("/") <= -1) {
-                            if (rest.match(regex.domainName)) {
-                                mechanism.type = type;
-                                mechanism.domain = rest;
-                            } else {
-                                return {
-                                    error: true,
-                                    message: `invalid domain: ${rest}`
-                                };
-                            }
-                        } else {
-                            const [domain, prefixLength] = splitFirstAndRest(rest, "/");
-                            if (domain.match(regex.domainName)) {
-                                if (checkPrefixLength(prefixLength)) {
-                                    mechanism.type = type;
-                                    mechanism.domain = domain;
-                                    mechanism.prefixLength = parseInt(prefixLength);
-                                } else {
-                                    return {
-                                        error: true,
-                                        message: `invalid prefix-length: ${prefixLength}`
-                                    };
-                                }
-                            } else {
-                                return {
-                                    error: true,
-                                    message: `invalid domain: ${domain}`
-                                };
-                            }
-                        }
-                    } else if (type === "ip6") {
-                        const [ip6, prefixLength] = splitFirstAndRest(rest, "/");
-                        if (ip6.match(regex.ip)) {
-                            if (prefixLength) {
-                                if (checkPrefixLength(prefixLength)) {
-                                    mechanism.type = type;
-                                    mechanism.ip6 = ip6;
-                                    mechanism.prefixLength = parseInt(prefixLength);
-                                } else {
-                                    return {
-                                        error: true,
-                                        message: `invalid ipv6 prefix-length: ${prefixLength}`
-                                    };
-                                }
-                            } else {
-                                mechanism.type = type;
-                                mechanism.ip6 = ip6;
-                            }
-                        } else {
-                            return {
-                                error: true,
-                                message: `invalid ipv6 address: ${ip6}`
-                            };
-                        }
-                    } else if (type === "ip4") {
-                        const [ip4, prefixLength] = splitFirstAndRest(rest, "/");
-                        if (ip4.match(regex.legacyIp)) {
-                            if (prefixLength) {
-                                if (checkPrefixLength(prefixLength, 4)) {
-                                    mechanism.type = type;
-                                    mechanism.ip4 = ip4;
-                                    mechanism.prefixLength = parseInt(prefixLength);
-                                } else {
-                                    return {
-                                        error: true,
-                                        message: `invalid ipv4 prefix-length: ${prefixLength}`
-                                    };
-                                }
-                            } else {
-                                mechanism.type = type;
-                                mechanism.ip4 = ip4;
-                            }
-                        } else {
-                            return {
-                                error: true,
-                                message: `invalid ipv4 address: ${ip4}`
-                            };
-                        }
-                    }
-                } else if (anyInArrayStartsWith(["a/", "mx/"], e)) {
-                    const [type, prefixLength] = splitFirstAndRest(e, "/");
-                    if (checkPrefixLength(prefixLength)) {
-                        mechanism.type = type as "a" | "mx";
-                        mechanism.prefixLength = parseInt(prefixLength);
-                    } else {
-                        return {
-                            error: true,
-                            message: `invalid prefix-length: ${prefixLength}`
-                        };
-                    }
-                } else {
-                    return {
-                        error: true,
-                        message: "invalid spf1 mechanism: no valid prefix matched"
-                    };
-                }
-                return mechanism;
-            };
-            parsed.mechanisms = [];
-            split.forEach((e: string, i: number) => {
-                if (e.indexOf("exp=") > -1 || e.indexOf("redirect=") > -1) {
-                    /*@ts-ignore*/
-                    const [modifier, modifierDomain]: ["redirect" | "exp", string] =
-                        splitFirstAndRest(e, "=");
-                    if (modifierDomain.match(regex.domainName)) {
-                        parsed.modifier = modifier;
-                        parsed.modifierDomain = modifierDomain;
-                    } else {
-                        return {
-                            error: true,
-                            message: `invalid spf1 modifier: invalid domain: ${modifierDomain}`
-                        };
-                    }
-                } else if (parsed.mechanisms) {
-                    parsed.mechanisms[i] = parseMechanism(e);
-                }
-            });
-            if (!parsed.mechanisms.length) delete parsed.mechanisms;
-            return parsed;
-        }
-    },
-    DKIM1: {
-        identifier: "v=DKIM1"
-        //parse: (v: string): ParsedDKIM1 | TxtRecordsParseError => {}
-    },
-    DMARC1: {
-        identifier: "v=DMARC1"
-        //parse: (v: string): ParsedDMARC1 | TxtRecordsParseError => {}
-    }
-};
-
-export const verifyDomain = (input: string): t.ValidationResult => {
+export const validateDomain = (input: string): t.ValidationResult => {
     if (input === undefined || !input.match(regex.domainName)) {
         return { type: "error", message: "Invalid domain" };
     }
@@ -523,14 +201,14 @@ export const verifyIp = (input: string, type?: "legacy"): t.ValidationResult => 
 
 export const verifyDomains = (input: string): t.ValidationResult => {
     const domains = input.split(" ");
-    if (domains.length === 1) return verifyDomain(input);
+    if (domains.length === 1) return validateDomain(input);
     if (domains[domains.length - 1] !== undefined && domains[domains.length - 1].length === 0) {
         return {
             type: "ok"
         };
     }
     for (let i = 0; i < domains.length; i++) {
-        const v = verifyDomain(domains[i]);
+        const v = validateDomain(domains[i]);
         if (v.type !== "ok") {
             v.message = `Domain ${i + 1}: ${v.message}`;
             return v;
@@ -539,7 +217,7 @@ export const verifyDomains = (input: string): t.ValidationResult => {
     return { type: "ok" };
 };
 
-export const verifyIps = (input: string, type?: "legacy"): t.ValidationResult => {
+export const validateIps = (input: string, type?: "legacy"): t.ValidationResult => {
     const ips = input.split(" ");
     if (ips.length === 1) return verifyIp(input, type);
     if (ips[ips.length - 1] !== undefined && ips[ips.length - 1].length === 0) {
@@ -567,7 +245,7 @@ export const rrTemplates: any = {
                 placeholder: "1:see:bad:c0de",
                 inputType: "text",
                 width: 12,
-                verify: (field: string): t.ValidationResult => verifyIps(field)
+                validate: (field: string): t.ValidationResult => validateIps(field)
             }
         },
         color: [43, 255, 0],
@@ -582,7 +260,7 @@ export const rrTemplates: any = {
                 placeholder: "127.0.0.1",
                 inputType: "text",
                 width: 12,
-                verify: (field: string): t.ValidationResult => verifyIps(field, "legacy")
+                validate: (field: string): t.ValidationResult => validateIps(field, "legacy")
             }
         },
         color: [82, 51, 18],
@@ -598,7 +276,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                verify: (field: string): t.ValidationResult => verifyDomains(field)
+                validate: (field: string): t.ValidationResult => verifyDomains(field)
             }
         },
         color: [29, 117, 0],
@@ -614,7 +292,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                verify: (field: string): t.ValidationResult => verifyDomains(field)
+                validate: (field: string): t.ValidationResult => verifyDomains(field)
             }
         },
         color: [255, 0, 0],
@@ -630,7 +308,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                verify: (field: string): t.ValidationResult => verifyDomains(field)
+                validate: (field: string): t.ValidationResult => verifyDomains(field)
             }
         },
         color: [255, 122, 0],
@@ -655,7 +333,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 6,
                 absolute: true,
-                verify: (field: string): t.ValidationResult => verifyDomain(field)
+                validate: (field: string): t.ValidationResult => validateDomain(field)
             },
             rname: {
                 placeholder: "hostmaster.example.com.",
@@ -663,8 +341,8 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 6,
                 absolute: true,
-                verify: (field: string): t.ValidationResult => {
-                    const dv = verifyDomain(field);
+                validate: (field: string): t.ValidationResult => {
+                    const dv = validateDomain(field);
                     if (dv.type !== "ok") return dv;
                     if (field.indexOf("@") > -1)
                         return {
@@ -792,6 +470,7 @@ export const rrTemplates: any = {
         },
         color: [212, 11, 165],
         complex: true
+        /* check for quotes in verification*/
     },
     OPENPGPKEY: {
         template: {

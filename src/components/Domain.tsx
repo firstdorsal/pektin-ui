@@ -109,7 +109,10 @@ class Domain extends Component<DomainProps, DomainState> {
                 if (this.state.meta[i].selected) toBeAdded.push(record);
             });
             const res = await l.setRecords(this.props.config, toBeAdded);
-            if (res) this.props.history.push({ pathname: `/domain/${this.state.domainName}` });
+            if (res && res.error !== undefined && res.error === false) {
+                this.props.g.loadDomains();
+                this.props.history.push({ pathname: `/domain/${this.state.domainName}` });
+            }
         }
     };
 
@@ -188,12 +191,12 @@ class Domain extends Component<DomainProps, DomainState> {
     };
     validateRecord = (record: t.DisplayRecord): t.FieldValidity => {
         const fieldValidity: t.FieldValidity = {
-            recordName: l.verifyDomain(record.name)
+            recordName: l.validateDomain(record.name)
         };
         if (typeof record.value[record.type] === "string") {
             const keys = Object.keys(l.rrTemplates[record.type]?.fields);
             if (l.rrTemplates[record.type]?.fields[keys[0]]?.verify) {
-                fieldValidity[keys[0]] = l.rrTemplates[record.type].fields[keys[0]].verify(
+                fieldValidity[keys[0]] = l.rrTemplates[record.type].fields[keys[0]].validate(
                     record.value[record.type]
                 );
             }
@@ -203,7 +206,7 @@ class Domain extends Component<DomainProps, DomainState> {
 
             keys.forEach((key, i) => {
                 if (l.rrTemplates[record.type]?.fields[key]?.verify) {
-                    fieldValidity[key] = l.rrTemplates[record.type].fields[key].verify(values[i]);
+                    fieldValidity[key] = l.rrTemplates[record.type].fields[key].validate(values[i]);
                 }
             });
         }

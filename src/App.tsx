@@ -28,7 +28,13 @@ export default class App extends Component<AppProps, AppState> {
         config: l.defaulConfig,
         db: new l.PektinUiDb(),
         configLoaded: false,
-        g: { contextMenu: false, changeContextMenu: false, cmAction: "", updateLocalConfig: false },
+        g: {
+            contextMenu: false,
+            changeContextMenu: () => {},
+            cmAction: "",
+            updateLocalConfig: () => {},
+            loadDomains: () => {}
+        },
         domains: []
     };
 
@@ -109,7 +115,8 @@ export default class App extends Component<AppProps, AppState> {
             g: {
                 ...g,
                 changeContextMenu: this.changeContextMenu,
-                updateLocalConfig: this.updateLocalConfig
+                updateLocalConfig: this.updateLocalConfig,
+                loadDomains: this.loadDomains
             }
         }));
         document.addEventListener("contextmenu", this.handleContextMenu);

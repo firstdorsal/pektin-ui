@@ -11,7 +11,7 @@
     --f1: white;
     --f2: black;
     --error: #f44336;
-    --warn: #ffa632;
+    --warning: #ffa632;
     --light: whitesmoke;
     --aside-padding: 15px;
     --aside-width: 270px;
@@ -254,14 +254,23 @@ input[value*="tick"] {
 .error .MuiInput-underline:after {
     border-bottom-color: var(--error);
 }
+button.error,
+button.error:hover {
+    background: var(--error);
+    cursor: default;
+}
 
 .warning .MuiInput-underline:before {
-    border-bottom: 2px solid var(--warn) !important;
+    border-bottom: 2px solid var(--warning) !important;
 }
 .warning .MuiFormHelperText-root,
 .warning label {
-    color: var(--warn) !important;
+    color: var(--warning) !important;
 }
 .warning .MuiInput-underline:after {
-    border-bottom-color: var(--warn);
+    border-bottom-color: var(--warning);
+}
+button.warning,
+button.warning:hover {
+    background: var(--warning);
 }

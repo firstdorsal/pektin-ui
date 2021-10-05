@@ -173,7 +173,6 @@ class Domain extends Component<DomainProps, DomainState> {
             if (records[i].type === "SOA" && fieldName === "name") {
                 domainName = records[i].name;
             }
-
             meta[i] = cloneDeep(meta[i]);
             meta[i].validity = this.validateRecord(records[i]);
             meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
@@ -194,24 +193,42 @@ class Domain extends Component<DomainProps, DomainState> {
         const defaultOrder = records.map((e, i) => i);
         this.setState({ records, ogRecords: cloneDeep(records), meta, defaultOrder });
     };
+
     validateRecord = (record: t.DisplayRecord): t.FieldValidity => {
+        const valName = l.validateDomain(record.name);
+        /*@ts-ignore*/
         const fieldValidity: t.FieldValidity = {
-            recordName: l.validateDomain(record.name)
+            recordName: valName,
+            totalValidity: valName.type
         };
         if (typeof record.value[record.type] === "string") {
             const keys = Object.keys(l.rrTemplates[record.type]?.fields);
-            if (l.rrTemplates[record.type]?.fields[keys[0]]?.verify) {
+
+            if (l.rrTemplates[record.type]?.fields[keys[0]]?.validate) {
                 fieldValidity[keys[0]] = l.rrTemplates[record.type].fields[keys[0]].validate(
                     record.value[record.type]
                 );
+                if (
+                    fieldValidity.totalValidity !== "error" &&
+                    fieldValidity[keys[0]].type !== "ok"
+                ) {
+                    fieldValidity.totalValidity = fieldValidity[keys[0]].type;
+                }
             }
         } else {
             const keys = Object.keys(record.value[record.type]);
             const values = Object.values(record.value[record.type]);
 
             keys.forEach((key, i) => {
-                if (l.rrTemplates[record.type]?.fields[key]?.verify) {
+                if (l.rrTemplates[record.type]?.fields[key]?.validate) {
                     fieldValidity[key] = l.rrTemplates[record.type].fields[key].validate(values[i]);
+
+                    if (
+                        fieldValidity.totalValidity !== "error" &&
+                        fieldValidity[key].type !== "ok"
+                    ) {
+                        fieldValidity.totalValidity = fieldValidity[keys[0]].type;
+                    }
                 }
             });
         }

@@ -15,7 +15,7 @@ import {
     Container
 } from "@material-ui/core";
 import DataDisplay from "./DataDisplay";
-import { Ballot, Check, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
+import { Ballot, Check, Clear, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
 import isEqual from "lodash/isEqual";
 
 interface RowProps {
@@ -42,6 +42,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
 
         if (record.type === "SOA") {
             const v = rr["SOA"] as t.SOAValue;
+
             return (
                 <Fragment>
                     <div className={this.props.meta.validity?.mname?.type}>
@@ -282,8 +283,20 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 onClick={() => this.props.saveRecord(p.index)}
                                 disabled={!this.props.meta?.changed}
                                 size="small"
+                                title={(() => {
+                                    const v = this.props.meta.validity?.totalValidity;
+                                    if (v === "ok") return "Apply changes";
+                                    if (v === "warning") return "Fix issues and apply changes";
+                                    if (v === "error") return "Can't apply changes";
+                                    return "";
+                                })()}
+                                className={this.props.meta.validity?.totalValidity}
                             >
-                                <Check />
+                                {this.props.meta.validity?.totalValidity === "error" ? (
+                                    <Clear />
+                                ) : (
+                                    <Check />
+                                )}
                             </Fab>
                         </span>
                     )}

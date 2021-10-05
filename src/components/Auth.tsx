@@ -1,4 +1,4 @@
-import { Container, Paper, TextField } from "@material-ui/core";
+import { Container, IconButton, Paper, TextField } from "@material-ui/core";
 import React, { Component, ReactElement } from "react";
 import * as t from "./types";
 import * as l from "./lib";
@@ -7,7 +7,9 @@ import { Refresh, Security } from "@material-ui/icons";
 import HelpPopper from "./HelpPopper";
 import { RouteComponentProps } from "react-router-dom";
 
-const defaultAuthHelper = <span>JSON blob containing the URL, username, and password for vault</span>;
+const defaultAuthHelper = (
+    <span>JSON blob containing the URL, username, and password for vault</span>
+);
 
 interface AuthProps extends RouteComponentProps {
     readonly config: t.Config;
@@ -36,8 +38,9 @@ export default class Auth extends Component<AuthProps, AuthState> {
         this.setState({ lastValue: value });
         let authError = false;
         let authHelper = defaultAuthHelper;
+        let parsed: any;
         try {
-            const parsed = JSON.parse(value);
+            parsed = JSON.parse(value);
             ["vaultEndpoint", "username", "password"].some(field => {
                 if (parsed[field] === undefined) {
                     authError = true;
@@ -50,38 +53,58 @@ export default class Auth extends Component<AuthProps, AuthState> {
                 }
                 return false;
             });
-            // send the config to vault and try to get a token
-            if (!authError) {
-                const r: any = await vaultApi.getToken(parsed);
-
-                if (r.error) {
-                    authHelper = r.error;
-                    authError = true;
-                } else if (r.errors) {
-                    if (r.errors[0] === "Vault is sealed") {
-                        authHelper = (
-                            <React.Fragment>
-                                {r.errors[0]}.{" "}
-                                <a href={`${parsed.vaultEndpoint}/ui/vault/unseal`} style={{ textDecoration: "underline" }}>
-                                    You can unseal it here
-                                </a>
-                            </React.Fragment>
-                        );
-                        authError = true;
-                    } else {
-                        authHelper = <span>{r.errors[0]}</span>;
-                        authError = true;
-                    }
-                } else {
-                    value = { endpoint: parsed.vaultEndpoint };
-                    value.token = r.auth?.client_token;
-                    authError = false;
-                    delete parsed.password;
-                }
-            }
         } catch (err) {
             authHelper = <span>Invalid JSON</span>;
             authError = true;
+        }
+
+        // send the config to vault and try to get a token
+        if (!authError) {
+            const r: any = await vaultApi.getToken(parsed);
+            console.log(r.error === "Failed to fetch");
+
+            if (r.error === "Failed to fetch") {
+                authHelper = (
+                    <React.Fragment>
+                        {r.error}. Is Vault Sealed?{" "}
+                        <a
+                            target="blank"
+                            rel="norefferer"
+                            href={`${parsed.vaultEndpoint}/ui/vault/unseal`}
+                            style={{ textDecoration: "underline" }}
+                        >
+                            You can unseal it here
+                        </a>
+                    </React.Fragment>
+                );
+                authError = true;
+            } else if (r.error) {
+                authHelper = r.error;
+                authError = true;
+            } else if (r.errors) {
+                if (r.errors[0] === "Vault is sealed") {
+                    authHelper = (
+                        <React.Fragment>
+                            {r.errors[0]}.{" "}
+                            <a
+                                href={`${parsed.vaultEndpoint}/ui/vault/unseal`}
+                                style={{ textDecoration: "underline" }}
+                            >
+                                You can unseal it here
+                            </a>
+                        </React.Fragment>
+                    );
+                    authError = true;
+                } else {
+                    authHelper = <span>{r.errors[0]}</span>;
+                    authError = true;
+                }
+            } else {
+                value = { endpoint: parsed.vaultEndpoint };
+                value.token = r.auth?.client_token;
+                authError = false;
+                delete parsed.password;
+            }
         }
 
         if (!authError) {
@@ -93,7 +116,10 @@ export default class Auth extends Component<AuthProps, AuthState> {
     render = () => {
         return (
             <Container maxWidth="sm" style={{ marginTop: "30vh" }}>
-                <Paper style={{ padding: "20px" }} elevation={3}>
+                <Paper
+                    style={{ padding: "20px", position: "relative", paddingBottom: "70px" }}
+                    elevation={3}
+                >
                     <div className="cardHead">
                         <Security />
                         <span className="caps label">Auth</span>
@@ -107,10 +133,20 @@ export default class Auth extends Component<AuthProps, AuthState> {
                         label="Pektin UI Connection Config"
                         helperText={this.state.authHelper}
                         onChange={this.authChange}
-                    ></TextField>
-                    <Refresh onClick={() => this.authChange(this.state.lastValue, true)} />
+                    />
+                    <IconButton
+                        onClick={() => this.authChange(this.state.lastValue, true)}
+                        style={{
+                            float: "right",
+                            marginTop: "10px"
+                        }}
+                    >
+                        <Refresh />
+                    </IconButton>
 
-                    <HelpPopper style={{ marginTop: "10px" }}>{l.help.auth}</HelpPopper>
+                    <HelpPopper style={{ top: "10px", right: "10px", position: "absolute" }}>
+                        {l.help.auth}
+                    </HelpPopper>
                     <br />
                     <br />
                 </Paper>

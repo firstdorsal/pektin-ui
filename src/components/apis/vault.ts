@@ -6,12 +6,15 @@ interface VaultAuthJSON {
 }
 
 export const getToken = async (auth: VaultAuthJSON): Promise<Object> => {
-    const loginCredRes: any = await f(`${auth.vaultEndpoint}/v1/auth/userpass/login/${auth.username}`, {
-        method: "POST",
-        body: JSON.stringify({
-            password: auth.password
-        })
-    }).catch(e => {
+    const loginCredRes: any = await f(
+        `${auth.vaultEndpoint}/v1/auth/userpass/login/${auth.username}`,
+        {
+            method: "POST",
+            body: JSON.stringify({
+                password: auth.password
+            })
+        }
+    ).catch(e => {
         e = e.toString();
         e = e.substring(e.indexOf(":") + 2);
         return { error: e };
@@ -22,12 +25,27 @@ export const getToken = async (auth: VaultAuthJSON): Promise<Object> => {
     return await loginCredRes.json().catch(() => {});
 };
 
-export const getValue = async ({ endpoint, token, key }: { endpoint: string; token: string; key: string }) => {
-    const res = await f(endpoint + `/v1/pektin-kv/data/${key}`, {
+export const getValue = async ({
+    endpoint,
+    token,
+    key
+}: {
+    endpoint: string;
+    token: string;
+    key: string;
+}) => {
+    const res: any = await f(endpoint + `/v1/pektin-kv/data/${key}`, {
         headers: {
             "X-Vault-Token": token
         }
+    }).catch(e => {
+        e = e.toString();
+        e = e.substring(e.indexOf(":") + 2);
+        return { error: e };
     });
+
+    if (res.error) return res;
+
     const resJson = await res.json().catch(() => {});
     return resJson?.data?.data;
 };

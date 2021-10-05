@@ -1,9 +1,12 @@
+export type ValidationType = "error" | "warning" | "ok";
 export interface ValidationResult {
-    type: "error" | "warning" | "ok";
+    type: ValidationType;
     message?: string;
 }
+
 export interface FieldValidity {
     [fieldName: string]: ValidationResult;
+    totalValidity: ValidationType;
 }
 
 export interface Glob {

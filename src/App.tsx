@@ -20,6 +20,7 @@ interface AppState {
     readonly configLoaded: boolean;
     readonly g: t.Glob;
     readonly domains: string[];
+    readonly configError: boolean;
 }
 interface AppProps {}
 
@@ -28,6 +29,7 @@ export default class App extends Component<AppProps, AppState> {
         config: l.defaulConfig,
         db: new l.PektinUiDb(),
         configLoaded: false,
+        configError: false,
         g: {
             contextMenu: false,
             changeContextMenu: () => {},
@@ -75,7 +77,7 @@ export default class App extends Component<AppProps, AppState> {
         });
     };
 
-    loadAuth = () => {
+    loadAuthFromSS = () => {
         const ssr = sessionStorage.getItem("vaultAuth");
         if (ssr) {
             return this.setState(({ config }) => {
@@ -89,15 +91,22 @@ export default class App extends Component<AppProps, AppState> {
     loadPektinConfig = async () => {
         const { endpoint, token } = this.state.config.vaultAuth;
         if (endpoint.length) {
-            const pektin = await vaultApi.getValue({ endpoint, token, key: "pektin-config" });
-            this.setState(({ config }) => ({ config: { ...config, pektin } }));
+            const pektinConfig = await vaultApi.getValue({ endpoint, token, key: "pektin-config" });
+            if (pektinConfig.error) sessionStorage.clear();
+
+            this.setState(({ config }) => ({
+                config: { ...config, pektin: pektinConfig },
+                configError: !!pektinConfig.error
+            }));
         }
     };
 
     loadDomains = async () => {
         try {
-            const domains = await l.getDomains(this.state.config);
-            this.setState({ domains });
+            if (this.state.configLoaded) {
+                const domains = await l.getDomains(this.state.config);
+                this.setState({ domains });
+            }
         } catch (error) {}
     };
 
@@ -105,7 +114,7 @@ export default class App extends Component<AppProps, AppState> {
         // handle config
         await this.initDb();
         await this.loadLocalConfig();
-        this.loadAuth();
+        this.loadAuthFromSS();
         await this.loadPektinConfig();
         await this.loadDomains();
 
@@ -127,7 +136,7 @@ export default class App extends Component<AppProps, AppState> {
 
     saveAuth = async (vaultAuth: t.VaultAuth) => {
         sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
-        this.loadAuth();
+        this.loadAuthFromSS();
         await this.loadPektinConfig();
         await this.loadDomains();
     };
@@ -153,9 +162,10 @@ export default class App extends Component<AppProps, AppState> {
 
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
-
         return (
             <Router>
+                {this.state.configError ? <Redirect to="/auth"></Redirect> : ""}
+
                 {this.state.g.contextMenu ? (
                     <div
                         onClick={this.handleContextMenuOffClick}

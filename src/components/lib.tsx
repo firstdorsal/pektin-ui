@@ -562,15 +562,14 @@ export const rrTemplates: any = {
         template: {
             AAAA: ""
         },
-        fields: [
-            {
-                name: "ip_addr",
+        fields: {
+            ip_addr: {
                 placeholder: "1:see:bad:c0de",
                 inputType: "text",
                 width: 12,
                 verify: (field: string): t.ValidationResult => verifyIps(field)
             }
-        ],
+        },
         color: [43, 255, 0],
         complex: false
     },
@@ -578,15 +577,14 @@ export const rrTemplates: any = {
         template: {
             A: ""
         },
-        fields: [
-            {
-                name: "legacy_addr",
+        fields: {
+            legacy_addr: {
                 placeholder: "127.0.0.1",
                 inputType: "text",
                 width: 12,
                 verify: (field: string): t.ValidationResult => verifyIps(field, "legacy")
             }
-        ],
+        },
         color: [82, 51, 18],
         complex: false
     },
@@ -594,16 +592,15 @@ export const rrTemplates: any = {
         template: {
             NS: ""
         },
-        fields: [
-            {
-                name: "name",
+        fields: {
+            name: {
                 placeholder: "ns1.example.com.",
                 inputType: "text",
                 width: 12,
                 absolute: true,
                 verify: (field: string): t.ValidationResult => verifyDomains(field)
             }
-        ],
+        },
         color: [29, 117, 0],
         complex: false
     },
@@ -611,16 +608,15 @@ export const rrTemplates: any = {
         template: {
             CNAME: ""
         },
-        fields: [
-            {
-                name: "name",
+        fields: {
+            name: {
                 placeholder: "example.com.",
                 inputType: "text",
                 width: 12,
                 absolute: true,
                 verify: (field: string): t.ValidationResult => verifyDomains(field)
             }
-        ],
+        },
         color: [255, 0, 0],
         complex: false
     },
@@ -628,16 +624,15 @@ export const rrTemplates: any = {
         template: {
             PTR: ""
         },
-        fields: [
-            {
-                name: "name",
+        fields: {
+            name: {
                 placeholder: "example.com.",
                 inputType: "text",
                 width: 12,
                 absolute: true,
                 verify: (field: string): t.ValidationResult => verifyDomains(field)
             }
-        ],
+        },
         color: [255, 122, 0],
         complex: false
     },
@@ -653,9 +648,8 @@ export const rrTemplates: any = {
                 minimum: 0
             }
         },
-        fields: [
-            {
-                name: "mname",
+        fields: {
+            mname: {
                 placeholder: "ns1.example.com.",
                 helperText: "The domain's primary name server",
                 inputType: "text",
@@ -663,8 +657,7 @@ export const rrTemplates: any = {
                 absolute: true,
                 verify: (field: string): t.ValidationResult => verifyDomain(field)
             },
-            {
-                name: "rname",
+            rname: {
                 placeholder: "hostmaster.example.com.",
                 helperText: "The hostmaster's email, the @ is replaced with a dot",
                 inputType: "text",
@@ -681,7 +674,7 @@ export const rrTemplates: any = {
                     return { type: "ok" };
                 }
             }
-        ],
+        },
         color: [255, 145, 0],
         info: (
             <div>
@@ -707,22 +700,20 @@ export const rrTemplates: any = {
                 exchange: ""
             }
         },
-        fields: [
-            {
-                name: "preference",
+        fields: {
+            preference: {
                 placeholder: "10",
                 inputType: "number",
                 width: 3,
                 min: 0
             },
-            {
-                name: "exchange",
+            exchange: {
                 placeholder: "mx.example.com.",
                 inputType: "text",
                 width: 9,
                 absolute: true
             }
-        ],
+        },
         color: [29, 94, 224],
         complex: true
     },
@@ -730,14 +721,13 @@ export const rrTemplates: any = {
         template: {
             TXT: ""
         },
-        fields: [
-            {
-                name: "text",
+        fields: {
+            text: {
                 placeholder: "this is some text",
                 inputType: "text",
                 width: 12
             }
-        ],
+        },
         color: [140, 140, 140],
         complex: false
     },
@@ -750,37 +740,33 @@ export const rrTemplates: any = {
                 target: ""
             }
         },
-        fields: [
-            {
-                name: "priority",
+        fields: {
+            priority: {
                 placeholder: 1,
                 inputType: "number",
                 width: 2,
                 min: 0
             },
-            {
-                name: "weight",
+            weight: {
                 placeholder: 1,
                 inputType: "number",
                 width: 2,
                 min: 0
             },
-            {
-                name: "port",
+            port: {
                 placeholder: 443,
                 inputType: "number",
                 width: 2,
                 min: 0,
                 max: 65535
             },
-            {
-                name: "target",
+            target: {
                 placeholder: "mx.example.com.",
                 inputType: "text",
                 width: 6,
                 absolute: true
             }
-        ],
+        },
         color: [149, 61, 196],
         complex: true
     },
@@ -792,20 +778,18 @@ export const rrTemplates: any = {
                 value: "letsencrypt.org"
             }
         },
-        fields: [
-            {
-                name: "tag",
+        fields: {
+            tag: {
                 placeholder: "issue",
                 inputType: "text",
                 width: 6
             },
-            {
-                name: "value",
+            value: {
                 placeholder: "letsencrypt.org",
                 inputType: "text",
                 width: 6
             }
-        ],
+        },
         color: [212, 11, 165],
         complex: true
     },
@@ -813,7 +797,7 @@ export const rrTemplates: any = {
         template: {
             OPENPGPKEY: ""
         },
-        fields: [{ name: "key", placeholder: "", inputType: "text", width: 12 }],
+        fields: { key: { placeholder: "", inputType: "text", width: 12 } },
         color: [145, 0, 7],
         complex: false
     },
@@ -826,38 +810,34 @@ export const rrTemplates: any = {
                 data: ""
             }
         },
-        fields: [
-            {
-                name: "usage",
+        fields: {
+            usage: {
                 placeholder: 3,
                 inputType: "number",
                 width: 2,
                 min: 1,
                 max: 4
             },
-            {
-                name: "selector",
+            selector: {
                 placeholder: 1,
                 inputType: "number",
                 width: 2,
                 min: 1,
                 max: 2
             },
-            {
-                name: "matching_type",
+            matching_type: {
                 placeholder: 1,
                 inputType: "number",
                 width: 2,
                 min: 1,
                 max: 3
             },
-            {
-                name: "data",
+            data: {
                 placeholder: "50c1ab1e11feb0a75",
                 inputType: "text",
                 width: 6
             }
-        ],
+        },
         color: [255, 217, 0],
         complex: true
     }

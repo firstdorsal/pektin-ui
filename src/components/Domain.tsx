@@ -167,23 +167,48 @@ class Domain extends Component<DomainProps, DomainState> {
             //rData[i] = this.handleRDataChange(rData[i], fieldName, fieldChildName, v);
             records[i] = this.handleRecordChange(records[i], fieldName, fieldChildName, v);
             meta[i] = cloneDeep(meta[i]);
-
+            meta[i].validity = this.validateRecord(records[i]);
             meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
             return { meta, records };
         });
     };
 
     initData = (records: t.DisplayRecord[]) => {
-        const meta = records.map(() => {
-            const m = cloneDeep(l.defaultMeta);
+        const meta = records.map(record => {
+            const m: t.DomainMeta = cloneDeep(l.defaultMeta);
             if (this.props.variant === "import") {
                 m.selected = true;
-                return m;
             }
+            m.validity = this.validateRecord(record);
+
             return m;
         });
         const defaultOrder = records.map((e, i) => i);
         this.setState({ records, ogRecords: cloneDeep(records), meta, defaultOrder });
+    };
+    validateRecord = (record: t.DisplayRecord): t.FieldValidity => {
+        const fieldValidity: t.FieldValidity = {
+            recordName: l.verifyDomain(record.name)
+        };
+        if (typeof record.value[record.type] === "string") {
+            const keys = Object.keys(l.rrTemplates[record.type]?.fields);
+            if (l.rrTemplates[record.type]?.fields[keys[0]]?.verify) {
+                fieldValidity[keys[0]] = l.rrTemplates[record.type].fields[keys[0]].verify(
+                    record.value[record.type]
+                );
+            }
+        } else {
+            const keys = Object.keys(record.value[record.type]);
+            const values = Object.values(record.value[record.type]);
+
+            keys.forEach((key, i) => {
+                if (l.rrTemplates[record.type]?.fields[key]?.verify) {
+                    fieldValidity[key] = l.rrTemplates[record.type].fields[key].verify(values[i]);
+                }
+            });
+        }
+
+        return fieldValidity;
     };
 
     componentDidMount = async () => {

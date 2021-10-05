@@ -44,28 +44,28 @@ export default class RecordRow extends Component<RowProps, RowState> {
             const v = rr["SOA"] as t.SOAValue;
             return (
                 <Fragment>
-                    <div className={l.rrTemplates["SOA"]?.fields[0]?.verify(v.mname)?.type}>
+                    <div className={this.props.meta.validity?.mname?.type}>
                         <br />
                         <div className="tfName">mname</div>
-                        <div className="tfHelper">{l.rrTemplates["SOA"].fields[0].helperText}</div>
+                        <div className="tfHelper">
+                            {l.rrTemplates["SOA"].fields.mname.helperText}
+                        </div>
                         <TextField
                             onChange={e => this.props.handleChange(e)}
-                            helperText={
-                                l.rrTemplates["SOA"]?.fields[0]?.verify(v.mname)?.message || " "
-                            }
+                            helperText={this.props.meta.validity?.mname?.message || " "}
                             placeholder="ns1.example.com"
                             name={`${p.index}:rrField:mname`}
                             value={v.mname + ""}
                         />
                     </div>
-                    <div className={l.rrTemplates["SOA"]?.fields[1]?.verify(v.rname)?.type}>
+                    <div className={this.props.meta.validity?.rname?.type}>
                         <div className="tfName">rname</div>
-                        <div className="tfHelper">{l.rrTemplates["SOA"].fields[1].helperText}</div>
+                        <div className="tfHelper">
+                            {l.rrTemplates["SOA"].fields.rname.helperText}
+                        </div>
                         <TextField
                             onChange={e => this.props.handleChange(e)}
-                            helperText={
-                                l.rrTemplates["SOA"].fields[1].verify(v.rname)?.message || " "
-                            }
+                            helperText={this.props.meta.validity?.rname?.message || " "}
                             placeholder="hostmaster.example.com"
                             name={`${p.index}:rrField:rname`}
                             value={v.rname + ""}
@@ -86,15 +86,20 @@ export default class RecordRow extends Component<RowProps, RowState> {
 
         const currentSearchField = this.props.meta.searchMatch.value[type] || false;
 
+        const fieldKeys = Object.keys(fields);
+        const fieldValues = Object.values(fields);
         return (
             <Grid spacing={2} container>
-                {fields.map((field: any) => {
-                    const fieldValue = fields.length > 1 ? v[field.name] + "" : v + "";
+                {fieldKeys.map((fieldName: any, i: number) => {
+                    const field: any = fieldValues[i];
+                    const fieldValue = fieldKeys.length > 1 ? v[fieldName] + "" : v + "";
                     const isSearchMatch =
-                        fields.length > 1 ? currentSearchField[field.name] : currentSearchField;
-
+                        fields.length > 1 ? currentSearchField[fieldName] : currentSearchField;
+                    const verify = this.props.meta.validity
+                        ? this.props.meta.validity[fieldName]
+                        : undefined;
                     return (
-                        <Grid key={field.name} xs={field.width} item>
+                        <Grid key={fieldName} xs={field.width} item>
                             <TextField
                                 size="small"
                                 type={field.inputType}
@@ -103,13 +108,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 }}
                                 className={(() => {
                                     let c = isSearchMatch ? "searchMatch" : "";
-                                    const d = field.verify ? field.verify(fieldValue) : "";
-                                    c += " " + d.type;
+                                    c += " " + verify !== undefined ? verify?.type : "";
                                     return c;
                                 })()}
                                 onChange={e => this.props.handleChange(e)}
                                 placeholder={field.placeholder.toString()}
-                                title={field.verify ? field.verify(fieldValue).message : ""}
+                                title={verify ? verify.message : ""}
                                 InputLabelProps={{
                                     shrink: true
                                 }}
@@ -117,8 +121,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                     min: field.min,
                                     max: field.max
                                 }}
-                                label={field.name}
-                                name={`${p.index}:rrField:${field.name}`}
+                                label={fieldName}
+                                name={`${p.index}:rrField:${fieldName}`}
                                 value={fieldValue}
                             />
                         </Grid>
@@ -171,8 +175,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         }}
                         className={(() => {
                             let c = this.props.meta?.searchMatch.name ? "searchMatch" : "";
-                            const d = l.verifyDomain(record.name);
-                            c += " " + d.type;
+                            const d = this.props.meta.validity?.recordName;
+                            c += " " + d?.type;
                             return c;
                         })()}
                     >
@@ -184,7 +188,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             style={{ width: "100%" }}
                             value={record.name}
                             placeholder={this.props.domainName}
-                            title={l.verifyDomain(record.name).message}
+                            title={this.props.meta.validity?.recordName?.message}
                         />
                     </span>
                     <span

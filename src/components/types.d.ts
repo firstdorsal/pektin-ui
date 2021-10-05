@@ -2,6 +2,9 @@ export interface ValidationResult {
     type: "error" | "warning" | "ok";
     message?: string;
 }
+export interface FieldValidity {
+    [fieldName: string]: ValidationResult;
+}
 
 export interface Glob {
     contextMenu: any;
@@ -67,6 +70,7 @@ export interface DomainMeta {
     changed: boolean;
     searchMatch: SearchMatch;
     anySearchMatch: boolean;
+    validity?: FieldValidity;
 }
 
 export interface RawDnsRecord {

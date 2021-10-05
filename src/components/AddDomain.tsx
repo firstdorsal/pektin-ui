@@ -76,6 +76,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         variant="standard"
                                         onChange={this.handleChange}
                                         value={this.state.record.name}
+                                        name="name"
                                         helperText={
                                             l.verifyDomain(this.state.record.name)?.message || " "
                                         }
@@ -89,7 +90,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                 <div
                                     className={
                                         /*@ts-ignore*/
-                                        l.rrTemplates["SOA"]?.fields[0]?.verify(
+                                        l.rrTemplates["SOA"]?.fields.mname?.verify(
                                             /*@ts-ignore*/
                                             this.state.record.value.SOA.mname
                                         )?.type
@@ -97,7 +98,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                 >
                                     <div className="tfName">mname</div>
                                     <div className="tfHelper">
-                                        {l.rrTemplates["SOA"]?.fields[0].helperText}
+                                        {l.rrTemplates["SOA"]?.fields.mname.helperText}
                                     </div>
                                     <TextField
                                         variant="standard"
@@ -107,7 +108,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         /*@ts-ignore*/
                                         value={this.state.record.value.SOA.mname}
                                         helperText={
-                                            l.rrTemplates["SOA"]?.fields[0]?.verify(
+                                            l.rrTemplates["SOA"]?.fields.mname?.verify(
                                                 /*@ts-ignore*/
                                                 this.state.record.value.SOA.mname
                                             )?.message || " "
@@ -121,7 +122,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                 <div
                                     className={
                                         /*@ts-ignore*/
-                                        l.rrTemplates["SOA"]?.fields[1]?.verify(
+                                        l.rrTemplates["SOA"]?.fields.rname?.verify(
                                             /*@ts-ignore*/
                                             this.state.record.value.SOA.rname
                                         )?.type
@@ -129,7 +130,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                 >
                                     <div className="tfName">rname</div>
                                     <div className="tfHelper">
-                                        {l.rrTemplates["SOA"]?.fields[1].helperText}
+                                        {l.rrTemplates["SOA"]?.fields.rname.helperText}
                                     </div>
                                     <TextField
                                         variant="standard"
@@ -139,7 +140,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         /*@ts-ignore*/
                                         value={this.state.record.value.SOA.rname}
                                         helperText={
-                                            l.rrTemplates["SOA"]?.fields[1]?.verify(
+                                            l.rrTemplates["SOA"]?.fields.rname?.verify(
                                                 /*@ts-ignore*/
                                                 this.state.record.value.SOA.rname
                                             )?.message || " "

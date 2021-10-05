@@ -230,14 +230,17 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
     }
 
     if (l.rrTemplates[record.type].complex) {
-        l.rrTemplates[record.type].fields.forEach((field: any) => {
+        const fieldNames = Object.keys(l.rrTemplates[record.type].fields);
+        const fieldValues = Object.keys(l.rrTemplates[record.type].fields);
+        fieldNames.forEach((fieldName: any, i) => {
+            const field = fieldValues[i];
             if (field.absolute) {
-                record.value[record.type][field.name] = l.absoluteName(
-                    record.value[record.type][field.name]
+                record.value[record.type][fieldName] = l.absoluteName(
+                    record.value[record.type][fieldName]
                 );
                 if (field.name === "rname") {
-                    record.value[record.type][field.name] = record.value[record.type][
-                        field.name
+                    record.value[record.type][fieldName] = record.value[record.type][
+                        fieldName
                     ].replaceAll("@", ".");
                 }
             }

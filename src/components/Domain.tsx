@@ -166,13 +166,18 @@ class Domain extends Component<DomainProps, DomainState> {
         if (!fullName || !v === undefined) return;
         const [i, fieldName, fieldChildName] = fullName.split(":");
 
-        this.setState(({ records, meta }) => {
+        this.setState(({ records, meta, domainName }) => {
             //rData[i] = this.handleRDataChange(rData[i], fieldName, fieldChildName, v);
             records[i] = this.handleRecordChange(records[i], fieldName, fieldChildName, v);
+
+            if (records[i].type === "SOA" && fieldName === "name") {
+                domainName = records[i].name;
+            }
+
             meta[i] = cloneDeep(meta[i]);
             meta[i].validity = this.validateRecord(records[i]);
             meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
-            return { meta, records };
+            return { meta, records, domainName };
         });
     };
 
@@ -395,7 +400,7 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     handleReplaceClick = () => {
-        this.setState(({ meta, search, replace, records }) => {
+        this.setState(({ meta, search, replace, records, domainName }) => {
             records = cloneDeep(records);
             const regex = true;
             meta.forEach((m, i) => {
@@ -405,6 +410,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         ? records[i].name.replaceAll(RegExp(search, "g"), replace)
                         : records[i].name.replaceAll(search, replace);
 
+                    domainName = replaced;
                     records[i].name = replaced;
                 }
                 if (m.searchMatch.type) {
@@ -451,7 +457,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 }
                 meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
             });
-            return { records, meta };
+            return { records, meta, domainName };
         });
     };
 

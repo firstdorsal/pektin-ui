@@ -77,30 +77,6 @@ export default class App extends Component<AppProps, AppState> {
         });
     };
 
-    loadAuthFromSS = () => {
-        const ssr = sessionStorage.getItem("vaultAuth");
-        if (ssr) {
-            return this.setState(({ config }) => {
-                const vaultAuth = JSON.parse(ssr);
-                config.vaultAuth = vaultAuth;
-                return { config };
-            });
-        }
-    };
-
-    loadPektinConfig = async () => {
-        const { endpoint, token } = this.state.config.vaultAuth;
-        if (endpoint.length) {
-            const pektinConfig = await vaultApi.getValue({ endpoint, token, key: "pektin-config" });
-            if (pektinConfig.error) sessionStorage.clear();
-
-            this.setState(({ config }) => ({
-                config: { ...config, pektin: pektinConfig },
-                configError: !!pektinConfig.error
-            }));
-        }
-    };
-
     loadDomains = async () => {
         try {
             if (this.state.configLoaded) {
@@ -110,25 +86,57 @@ export default class App extends Component<AppProps, AppState> {
         } catch (error) {}
     };
 
+    init = async (vaultAuth: t.VaultAuth, localConfig?: t.LocalConfig) => {
+        const { endpoint, token } = vaultAuth;
+        const pektinConfig = await vaultApi.getValue({ endpoint, token, key: "pektin-config" });
+        if (pektinConfig.error) {
+            sessionStorage.clear();
+            throw Error();
+        }
+
+        const config = {
+            ...this.state.config,
+            local: localConfig ? { ...localConfig } : this.state.config.local,
+            pektin: pektinConfig,
+            vaultAuth
+        };
+        const domains = await l.getDomains(config);
+        return { domains, config };
+    };
+
     componentDidMount = async () => {
         // handle config
         await this.initDb();
-        await this.loadLocalConfig();
-        this.loadAuthFromSS();
-        await this.loadPektinConfig();
-        await this.loadDomains();
+        const localConfig: t.LocalConfig = (await this.state.db.config.get("localConfig"))?.value;
+        try {
+            const ssr = sessionStorage.getItem("vaultAuth");
+            if (!ssr) throw Error();
+            const vaultAuth = JSON.parse(ssr);
+            const { domains, config } = await this.init(vaultAuth, localConfig);
 
-        // handle custom right click menu
-        this.setState(({ g }) => ({
-            configLoaded: true,
-            g: {
-                ...g,
-                changeContextMenu: this.changeContextMenu,
-                updateLocalConfig: this.updateLocalConfig,
-                loadDomains: this.loadDomains
-            }
-        }));
-        document.addEventListener("contextmenu", this.handleContextMenu);
+            // handle custom right click menu
+            this.setState(({ g }) => {
+                return {
+                    configLoaded: true,
+                    g: {
+                        ...g,
+                        changeContextMenu: this.changeContextMenu,
+                        updateLocalConfig: this.updateLocalConfig,
+                        loadDomains: this.loadDomains
+                    },
+                    config,
+                    configError: false,
+                    domains
+                };
+            });
+            document.addEventListener("contextmenu", this.handleContextMenu);
+        } catch (e) {
+            this.setState(({ config }) => ({
+                configError: true,
+                configLoaded: true,
+                config: { ...config, local: localConfig }
+            }));
+        }
     };
     componentWillUnmount() {
         document.removeEventListener("contextmenu", this.handleContextMenu);
@@ -136,9 +144,8 @@ export default class App extends Component<AppProps, AppState> {
 
     saveAuth = async (vaultAuth: t.VaultAuth) => {
         sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
-        this.loadAuthFromSS();
-        await this.loadPektinConfig();
-        await this.loadDomains();
+        const { domains, config } = await this.init(vaultAuth);
+        this.setState({ config, domains });
     };
 
     handleContextMenuOffClick = (e: any) => {

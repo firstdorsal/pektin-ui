@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as t from "../types";
 import * as l from "../lib";
 
@@ -75,7 +76,11 @@ export const getAuthFromConfig = async (config: t.Config): Promise<PektinApiAuth
     };
 };
 
-const request = async (config: t.Config, type: RequestType, body: RequestBody): Promise<PektinResponse> => {
+const request = async (
+    config: t.Config,
+    type: RequestType,
+    body: RequestBody
+): Promise<PektinResponse> => {
     const { token, endpoint, dev } = await getAuthFromConfig(config);
     const uri = dev ? "http://" + endpoint : "https://" + endpoint;
     const res = await f(`${uri}/${type}`, {
@@ -120,17 +125,11 @@ export const addDomain = async (config: t.Config, records: t.DisplayRecord[]) =>
 };
 
 export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
-    /*@ts-ignore*/
     const [name, type]: [string, PektinRRTypes] = record.name.split(":");
     if (type === "TXT") {
-        /*@ts-ignore*/
         const a = new Uint8Array(record.rr_set[0].value.TXT.txt_data[0]);
         record.rr_set[0].value.TXT = Buffer.from(a).toString();
-    } else if (type === "CAA") {
-        /*@ts-ignore*/
-        record.rr_set[0].value.CAA.value = record.rr_set[0].value.CAA.value.url;
     } else if (type === "OPENPGPKEY") {
-        /*@ts-ignore*/
         const a = new Uint8Array(record.rr_set[0].value.OPENPGPKEY.public_key);
         record.rr_set[0].value.OPENPGPKEY = Buffer.from(a).toString();
     } else if (type === "TLSA") {
@@ -138,17 +137,15 @@ export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
         const selector = ["Full", "Spki"];
         const matching = ["Raw", "Sha256", "Sha512"];
 
-        /*@ts-ignore*/
         const a = new Uint8Array(record.rr_set[0].value.TLSA.cert_data);
-        /*@ts-ignore*/
+
         record.rr_set[0].value.TLSA = {
-            /*@ts-ignore*/
             data: Buffer.from(a).toString(),
-            /*@ts-ignore*/
+
             usage: cert_usage.findIndex(e => e === record.rr_set[0].value.TLSA.cert_usage) + 1,
-            /*@ts-ignore*/
+
             selector: selector.findIndex(e => e === record.rr_set[0].value.TLSA.selector) + 1,
-            /*@ts-ignore*/
+
             matching_type: matching.findIndex(e => e === record.rr_set[0].value.TLSA.matching) + 1
         };
     } else if (
@@ -158,10 +155,19 @@ export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
         record.rr_set.forEach((e, i) => {
             if (i > 0) record.rr_set[0].value[type] += " " + record.rr_set[i].value[type];
         });
+    } else if (type === "CAA") {
+        const tag = record.rr_set[0].value[type].tag;
+        record.rr_set[0].value[type].tag = tag.toLowerCase();
+        if (tag === "Issue" || tag === "IssueWild") {
+            record.rr_set[0].value[type].value = record.rr_set[0].value[type].value.Issuer[0];
+        } else if (tag === "Iodef") {
+            record.rr_set[0].value[type].value = record.rr_set[0].value[type].value.Url;
+        }
     }
+
     return {
         name,
-        /*@ts-ignore*/
+
         type,
         ttl: record.rr_set[0].ttl,
         value: record.rr_set[0].value as t.ResourceRecordValue
@@ -170,7 +176,7 @@ export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
 
 export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
     record = cloneDeep(record);
-    let rr_set: PektinRRset = [{ value: record.value as PektinResourceRecordValue, ttl: record.ttl }];
+    let rr_set: PektinRRset = [{ value: record.value, ttl: record.ttl }];
 
     if (
         (record.type === "A" ||
@@ -180,21 +186,32 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
             record.type === "PTR") &&
         typeof record.value[record.type] === "string"
     ) {
-        /*@ts-ignore*/
         rr_set = record.value[record.type].split(" ").map((value: string) => {
-            if (typeof value === "string" && (record.type === "NS" || record.type === "CNAME")) value = l.absoluteName(value);
+            if (typeof value === "string" && (record.type === "NS" || record.type === "CNAME"))
+                value = l.absoluteName(value);
             return { value: { [record.type]: value }, ttl: record.ttl };
         });
     } else if (record.type === "TXT") {
-        /*@ts-ignore*/
         const buff = Buffer.from(rr_set[0].value.TXT, "utf-8");
 
         rr_set[0].value.TXT = { txt_data: [buff.toJSON().data] };
     } else if (record.type === "CAA") {
-        /*@ts-ignore*/
-        rr_set[0].value.CAA.value = { Issuer: rr_set[0].value.CAA.value };
+        rr_set[0].value.CAA.issuer_critical = true;
+        const tag = rr_set[0].value.CAA.tag.toLowerCase();
+        if (tag === "issue" || tag === "issuewild") {
+            if (tag === "issue") {
+                rr_set[0].value.CAA.tag = "Issue";
+            } else {
+                rr_set[0].value.CAA.tag = "IssueWild";
+            }
+            rr_set[0].value.CAA.value = {
+                Issuer: [rr_set[0].value.CAA.value, []] //{ key: "", value: "" }
+            };
+        } else if (tag === "iodef") {
+            rr_set[0].value.CAA.tag = "Iodfef";
+            rr_set[0].value.CAA.value = { Url: rr_set[0].value.CAA.value };
+        }
     } else if (record.type === "OPENPGPKEY") {
-        /*@ts-ignore*/
         const buff = Buffer.from(rr_set[0].value.OPENPGPKEY, "utf-8");
 
         rr_set[0].value.OPENPGPKEY = { public_key: buff.toJSON().data };
@@ -202,16 +219,12 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
         const cert_usage = ["CA", "Service", "TrustAnchor", "DomainIssued"];
         const selector = ["Full", "Spki"];
         const matching = ["Raw", "Sha256", "Sha512"];
-        /*@ts-ignore*/
+
         const buff = Buffer.from(rr_set[0].value.TLSA.data, "utf-8");
         rr_set[0].value.TLSA = {
-            /*@ts-ignore*/
             cert_usage: cert_usage[rr_set[0].value.TLSA.usage - 1],
-            /*@ts-ignore*/
             selector: selector[rr_set[0].value.TLSA.selector - 1],
-            /*@ts-ignore*/
             matching: matching[rr_set[0].value.TLSA.matching_type - 1],
-            /*@ts-ignore*/
             cert_data: buff.toJSON().data
         };
     }
@@ -219,11 +232,13 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
     if (l.rrTemplates[record.type].complex) {
         l.rrTemplates[record.type].fields.forEach((field: any) => {
             if (field.absolute) {
-                /*@ts-ignore*/
-                record.value[record.type][field.name] = l.absoluteName(record.value[record.type][field.name]);
+                record.value[record.type][field.name] = l.absoluteName(
+                    record.value[record.type][field.name]
+                );
                 if (field.name === "rname") {
-                    /*@ts-ignore*/
-                    record.value[record.type][field.name] = record.value[record.type][field.name].replaceAll("@", ".");
+                    record.value[record.type][field.name] = record.value[record.type][
+                        field.name
+                    ].replaceAll("@", ".");
                 }
             }
         });
@@ -247,10 +262,35 @@ export interface PektinResourceRecord {
     value: PektinResourceRecordValue;
 }
 
-type PektinRRTypes = "NEW" | "A" | "AAAA" | "NS" | "CNAME" | "PTR" | "SOA" | "MX" | "TXT" | "SRV" | "CAA" | "OPENPGPKEY" | "TLSA";
+type PektinRRTypes =
+    | "NEW"
+    | "A"
+    | "AAAA"
+    | "NS"
+    | "CNAME"
+    | "PTR"
+    | "SOA"
+    | "MX"
+    | "TXT"
+    | "SRV"
+    | "CAA"
+    | "OPENPGPKEY"
+    | "TLSA";
 
 // the resource record value
-type PektinResourceRecordValue = A | AAAA | NS | CNAME | PTR | SOA | MX | TXT | SRV | CAA | OPENPGPKEY | TLSA;
+type PektinResourceRecordValue =
+    | A
+    | AAAA
+    | NS
+    | CNAME
+    | PTR
+    | SOA
+    | MX
+    | TXT
+    | SRV
+    | CAA
+    | OPENPGPKEY
+    | TLSA;
 
 interface A {
     [A: string]: string;
@@ -308,9 +348,15 @@ interface CAA {
 }
 interface CAAValue {
     issuer_critical: boolean;
-    tag: "Issue" | "IssueWild" | "Iodef" | "Unknown";
+    tag: "Issue" | "IssueWild" | "Iodef";
+    value: Issuer[] | Url;
+}
+interface Issuer {
+    key: string;
     value: string;
 }
+type Url = `https://${string}` | `http://${string}` | `mailto:${string}`;
+
 interface OPENPGPKEY {
     [OPENPGPKEY: string]: OPENPGPKEYValue;
 }

@@ -174,7 +174,7 @@ export interface CAA {
 }
 export interface CAAValue {
     flag: number; //0;
-    tag: "Issue" | "IssueWild" | "Iodef" | "Unknown"; //"issue" | "issuewild" | "iodef" | "contactemail" | "contactphone";
+    tag: "Issue" | "IssueWild" | "Iodef"; //"issue" | "issuewild" | "iodef" | "contactemail" | "contactphone";
     value: string;
 }
 export interface OPENPGPKEY {

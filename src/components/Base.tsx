@@ -20,12 +20,22 @@ export default class Base extends Component<BaseProps, BaseState> {
                     <br />
 
                     <h2>Add Existing Domain</h2>
-                    <NavLink className="link" activeClassName="navActive" to="/add/existing/manual">
+                    <NavLink
+                        exact
+                        className="link"
+                        activeClassName="navActive"
+                        to="/add/existing/manual"
+                    >
                         <Add />
                         <span className="linkText">Manually</span>
                     </NavLink>
 
-                    <NavLink className="link" activeClassName="navActive" to="/add/existing/import">
+                    <NavLink
+                        exact
+                        className="link"
+                        activeClassName="navActive"
+                        to="/add/existing/import"
+                    >
                         <ImportExport />
                         <span className="linkText">Import</span>
                     </NavLink>
@@ -45,6 +55,7 @@ export default class Base extends Component<BaseProps, BaseState> {
                                       activeClassName="navActive"
                                       className="link"
                                       key={i}
+                                      exact
                                       to={`/domain/${domain}`}
                                   >
                                       {domain}
@@ -52,7 +63,7 @@ export default class Base extends Component<BaseProps, BaseState> {
                               );
                           })
                         : ""}
-                    <NavLink className="link config" activeClassName="navActive" to="/config">
+                    <NavLink exact className="link config" activeClassName="navActive" to="/config">
                         <Settings />
                         <span className="linkText">Configuration</span>
                     </NavLink>

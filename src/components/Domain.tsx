@@ -410,7 +410,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         ? records[i].name.replaceAll(RegExp(search, "g"), replace)
                         : records[i].name.replaceAll(search, replace);
 
-                    domainName = replaced;
+                    if (records[i].type === "SOA") domainName = replaced;
                     records[i].name = replaced;
                 }
                 if (m.searchMatch.type) {

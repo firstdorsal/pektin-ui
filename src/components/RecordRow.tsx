@@ -95,7 +95,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     const field: any = fieldValues[i];
                     const fieldValue = fieldKeys.length > 1 ? v[fieldName] + "" : v + "";
                     const isSearchMatch =
-                        fields.length > 1 ? currentSearchField[fieldName] : currentSearchField;
+                        typeof currentSearchField === "boolean"
+                            ? currentSearchField
+                            : currentSearchField[fieldName];
 
                     const verify = this.props.meta.validity
                         ? this.props.meta.validity[fieldName]

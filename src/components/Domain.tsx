@@ -385,21 +385,25 @@ class Domain extends Component<DomainProps, DomainState> {
                                 meta[i].anySearchMatch = true;
                             }
                         }
-                        const type = rec.type;
-                        const value = rec.value[type];
+                        // handle values column
+                        const value = rec.value[rec.type];
+                        console.log(value);
+
                         if (typeof value === "string") {
                             const m = value.match(v);
                             if (m) {
-                                meta[i].searchMatch.value[type] = !!m;
+                                meta[i].searchMatch.value[rec.type] = !!m;
                                 meta[i].anySearchMatch = true;
                             }
                         } else {
-                            const values = Object.values(value);
-                            const keys = Object.keys(value);
-                            for (let ii = 0; ii < values.length; ii++) {
-                                const m = values[ii].toString().match(v);
+                            const fieldValues = Object.values(value);
+                            const fields = Object.keys(value);
+                            meta[i].searchMatch.value = { [rec.type]: {} };
+
+                            for (let ii = 0; ii < fieldValues.length; ii++) {
+                                const m = fieldValues[ii].toString().match(v);
                                 if (m) {
-                                    meta[i].searchMatch.value[type][keys[ii]] = !!m;
+                                    meta[i].searchMatch.value[rec.type][fields[ii]] = !!m;
                                     meta[i].anySearchMatch = true;
                                 }
                             }
@@ -423,6 +427,8 @@ class Domain extends Component<DomainProps, DomainState> {
                     defaultOrder[i] = combine[i][2];
                 });
                 this.list.recomputeRowHeights();
+                console.log(meta);
+
                 return { records, meta, search: v };
             });
         } else {
@@ -444,8 +450,14 @@ class Domain extends Component<DomainProps, DomainState> {
                         ? records[i].name.replaceAll(RegExp(search, "g"), replace)
                         : records[i].name.replaceAll(search, replace);
 
-                    if (records[i].type === "SOA") domainName = replaced;
-                    records[i].name = replaced;
+                    if (records[i].type === "SOA") {
+                        if (this.props.variant === "import") {
+                            domainName = replaced;
+                            records[i].name = replaced;
+                        }
+                    } else {
+                        records[i].name = replaced;
+                    }
                 }
                 if (m.searchMatch.type) {
                     const replaced = regex
@@ -473,7 +485,9 @@ class Domain extends Component<DomainProps, DomainState> {
                             : value.replaceAll(search, replace);
                         records[i].value[type] = replaced;
                     } else {
-                        const smKeys = Object.keys(m.searchMatch.value[type]);
+                        let smKeys: any[] = [];
+                        if (m.searchMatch.value[type])
+                            smKeys = Object.keys(m.searchMatch.value[type]);
                         for (let ii = 0; ii < smKeys.length; ii++) {
                             if (m.searchMatch.value[type][smKeys[ii]]) {
                                 /*@ts-ignore*/

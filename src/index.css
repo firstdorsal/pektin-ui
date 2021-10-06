@@ -139,6 +139,10 @@ aside > h1 {
     left: 0px;
 }
 
+.rowWrapper input:disabled {
+    cursor: text;
+}
+
 .recRow {
     height: 70px;
     overflow: hidden;

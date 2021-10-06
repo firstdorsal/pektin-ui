@@ -6,6 +6,7 @@ import PektinBackup from "./foreignApis/PektinBackup";
 import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
 import * as pektinApi from "./apis/pektin";
+import punycode from "punycode";
 
 export const defaultSearchMatch = {
     name: false,
@@ -28,6 +29,7 @@ export const regex = {
     ip: /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/,
     legacyIp:
         /^(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
+
     domainName:
         /^(?:[a-z0-9_](?:[a-z0-9-_]{0,61}[a-z0-9_]|[-]{2,}?)?\.)+[a-z0-9-_][a-z0-9-]{0,61}[a-z0-9]{1,61}[.]?$/
 };
@@ -161,7 +163,16 @@ export const supportedRecords = [
     "TLSA"
 ];
 
+export const unicodeToAscii = (input: string) => {
+    return punycode.toASCII(input);
+};
+
+export const asciiToUnicode = (input: string) => {
+    return punycode.toUnicode(input);
+};
+
 export const validateDomain = (input: string, params?: t.ValidateParams): t.ValidationResult => {
+    input = unicodeToAscii(input);
     if (input === undefined || !input.replace("*.", "").match(regex.domainName)) {
         return { type: "error", message: "Invalid domain" };
     }
@@ -187,6 +198,7 @@ export const validateDomain = (input: string, params?: t.ValidateParams): t.Vali
         };
     }
     if (params?.domainName) {
+        params.domainName = unicodeToAscii(params.domainName);
         if (!input.endsWith(params.domainName) && !input.endsWith(params.domainName.slice(0, -1))) {
             return {
                 type: "error",
@@ -234,6 +246,7 @@ export const validateIp = (input: string, type?: "legacy"): t.ValidationResult =
 };
 
 export const validateDomains = (input: string, params?: t.ValidateParams): t.ValidationResult => {
+    input = unicodeToAscii(input);
     input = input.replace(/\s\s+/g, " ");
     const domains = input.split(" ");
 

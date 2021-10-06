@@ -87,8 +87,12 @@ const request = async (
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...body, token })
+    }).catch(e => {
+        e = e.toString();
+        e = e.substring(e.indexOf(":") + 2);
+        return { error: e };
     });
-
+    if (res.error) return res;
     return await res.json().catch(() => ({ error: true, message: res.statusText, data: {} }));
 };
 
@@ -126,6 +130,7 @@ export const addDomain = async (config: t.Config, records: t.DisplayRecord[]) =>
 
 export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
     const [name, type]: [string, PektinRRTypes] = record.name.split(":");
+
     if (type === "TXT") {
         const a = new Uint8Array(record.rr_set[0].value.TXT.txt_data[0]);
         record.rr_set[0].value.TXT = Buffer.from(a).toString();

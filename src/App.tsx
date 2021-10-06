@@ -190,7 +190,7 @@ export default class App extends Component<AppProps, AppState> {
 
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
-
+        //яндекс.рф
         return (
             <Router>
                 {this.state.configError ? <Redirect to="/auth"></Redirect> : ""}

@@ -201,6 +201,7 @@ class Domain extends Component<DomainProps, DomainState> {
             recordName: valName,
             totalValidity: valName.type
         };
+
         if (typeof record.value[record.type] === "string") {
             const keys = Object.keys(l.rrTemplates[record.type]?.fields);
 
@@ -212,7 +213,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     fieldValidity.totalValidity !== "error" &&
                     fieldValidity[keys[0]].type !== "ok"
                 ) {
-                    fieldValidity.totalValidity = fieldValidity[keys[0]].type;
+                    fieldValidity.totalValidity = fieldValidity[keys[0]]?.type;
                 }
             }
         } else {
@@ -221,13 +222,16 @@ class Domain extends Component<DomainProps, DomainState> {
 
             keys.forEach((key, i) => {
                 if (l.rrTemplates[record.type]?.fields[key]?.validate) {
-                    fieldValidity[key] = l.rrTemplates[record.type].fields[key].validate(values[i]);
+                    fieldValidity[key] = l.rrTemplates[record.type].fields[key].validate(
+                        values[i],
+                        record.value[record.type]
+                    );
 
                     if (
                         fieldValidity.totalValidity !== "error" &&
                         fieldValidity[key].type !== "ok"
                     ) {
-                        fieldValidity.totalValidity = fieldValidity[keys[0]].type;
+                        fieldValidity.totalValidity = fieldValidity[key]?.type;
                     }
                 }
             });
@@ -378,7 +382,6 @@ class Domain extends Component<DomainProps, DomainState> {
                         } else {
                             const values = Object.values(value);
                             const keys = Object.keys(value);
-                            meta[i].searchMatch.value[type] = {};
                             for (let ii = 0; ii < values.length; ii++) {
                                 const m = values[ii].toString().match(v);
                                 if (m) {

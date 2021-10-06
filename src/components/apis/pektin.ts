@@ -186,11 +186,17 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
             record.type === "PTR") &&
         typeof record.value[record.type] === "string"
     ) {
-        rr_set = record.value[record.type].split(" ").map((value: string) => {
-            if (typeof value === "string" && (record.type === "NS" || record.type === "CNAME"))
-                value = l.absoluteName(value);
-            return { value: { [record.type]: value }, ttl: record.ttl };
-        });
+        rr_set = record.value[record.type]
+            .split(" ")
+            .map((value: string) => {
+                if (typeof value === "string" && (record.type === "NS" || record.type === "CNAME"))
+                    value = l.absoluteName(value);
+                if (value.length) {
+                    return { value: { [record.type]: value }, ttl: record.ttl };
+                }
+                return false;
+            })
+            .filter(e => e);
     } else if (record.type === "TXT") {
         const buff = Buffer.from(rr_set[0].value.TXT, "utf-8");
 

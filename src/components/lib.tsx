@@ -185,7 +185,7 @@ export const validateDomain = (input: string): t.ValidationResult => {
     return { type: "ok" };
 };
 
-export const verifyIp = (input: string, type?: "legacy"): t.ValidationResult => {
+export const validateIp = (input: string, type?: "legacy"): t.ValidationResult => {
     if (type === "legacy") {
         if (input === undefined || !input.match(regex.legacyIp)) {
             return {
@@ -199,12 +199,13 @@ export const verifyIp = (input: string, type?: "legacy"): t.ValidationResult => 
     return { type: "ok" };
 };
 
-export const verifyDomains = (input: string): t.ValidationResult => {
+export const validateDomains = (input: string): t.ValidationResult => {
     const domains = input.split(" ");
     if (domains.length === 1) return validateDomain(input);
     if (domains[domains.length - 1] !== undefined && domains[domains.length - 1].length === 0) {
         return {
-            type: "ok"
+            type: "warning",
+            message: "Space characters indicate a list, but no second element was provided"
         };
     }
     for (let i = 0; i < domains.length; i++) {
@@ -219,14 +220,15 @@ export const verifyDomains = (input: string): t.ValidationResult => {
 
 export const validateIps = (input: string, type?: "legacy"): t.ValidationResult => {
     const ips = input.split(" ");
-    if (ips.length === 1) return verifyIp(input, type);
+    if (ips.length === 1) return validateIp(input, type);
     if (ips[ips.length - 1] !== undefined && ips[ips.length - 1].length === 0) {
         return {
-            type: "ok"
+            type: "warning",
+            message: "Space characters indicate a list, but no second element was provided"
         };
     }
     for (let i = 0; i < ips.length; i++) {
-        const v = verifyIp(ips[i], type);
+        const v = validateIp(ips[i], type);
         if (v.type !== "ok") {
             v.message = `IP ${i + 1}: ${v.message}`;
             return v;
@@ -276,7 +278,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => verifyDomains(field)
+                validate: (field: string): t.ValidationResult => validateDomains(field)
             }
         },
         color: [29, 117, 0],
@@ -292,7 +294,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => verifyDomains(field)
+                validate: (field: string): t.ValidationResult => validateDomains(field)
             }
         },
         color: [255, 0, 0],
@@ -308,7 +310,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => verifyDomains(field)
+                validate: (field: string): t.ValidationResult => validateDomains(field)
             }
         },
         color: [255, 122, 0],
@@ -344,11 +346,12 @@ export const rrTemplates: any = {
                 validate: (field: string): t.ValidationResult => {
                     const dv = validateDomain(field);
                     if (dv.type !== "ok") return dv;
-                    if (field.indexOf("@") > -1)
+                    if (field.indexOf("@") > -1) {
                         return {
                             type: "warning",
                             message: "The @ symbol should be replaced with a dot"
                         };
+                    }
                     return { type: "ok" };
                 }
             }
@@ -389,7 +392,8 @@ export const rrTemplates: any = {
                 placeholder: "mx.example.com.",
                 inputType: "text",
                 width: 9,
-                absolute: true
+                absolute: true,
+                validate: (field: string): t.ValidationResult => validateDomain(field)
             }
         },
         color: [29, 94, 224],
@@ -442,7 +446,8 @@ export const rrTemplates: any = {
                 placeholder: "mx.example.com.",
                 inputType: "text",
                 width: 6,
-                absolute: true
+                absolute: true,
+                validate: (field: string): t.ValidationResult => validateDomain(field)
             }
         },
         color: [149, 61, 196],
@@ -460,12 +465,54 @@ export const rrTemplates: any = {
             tag: {
                 placeholder: "issue",
                 inputType: "text",
-                width: 6
+                width: 6,
+                validate: (field: string, val: t.CAAValue): t.ValidationResult => {
+                    if (
+                        field.toLowerCase().indexOf("issue") > -1 ||
+                        field.toLowerCase().indexOf("issuewild") > -1 ||
+                        field.toLowerCase().indexOf("iodef") > -1
+                    ) {
+                        if (field === field.toLowerCase()) {
+                            return {
+                                type: "ok"
+                            };
+                        }
+                        return {
+                            type: "warning",
+                            message: "Tags should only contain lowercase characters"
+                        };
+                    }
+                    return {
+                        type: "error",
+                        message: `Tag must contain one of: issue, issuewild, iodef)`
+                    };
+                }
             },
             value: {
                 placeholder: "letsencrypt.org",
                 inputType: "text",
-                width: 6
+                width: 6,
+                validate: (field: string, val: t.CAAValue): t.ValidationResult => {
+                    if (val.tag === "iodef") {
+                        if (
+                            field.indexOf("https://") === -1 &&
+                            field.indexOf("http://") === -1 &&
+                            field.indexOf("mailto:") === -1
+                        ) {
+                            return {
+                                type: "error",
+                                message: `iodef tags must contain a protocol: https://, http://, mailto:)`
+                            };
+                        }
+                    }
+                    if (isAbsolute(field)) {
+                        return {
+                            type: "warning",
+                            message: `CAA values should NOT be absolute names (NOT end with a dot)`
+                        };
+                    }
+                    return validateDomain(field + ".");
+                }
             }
         },
         color: [212, 11, 165],

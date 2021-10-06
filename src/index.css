@@ -12,7 +12,7 @@
     --f2: black;
     --error: #f44336;
     --warning: #ffa632;
-    --ok: lime;
+    --ok: rgb(19, 212, 52);
     --light: whitesmoke;
     --aside-padding: 15px;
     --aside-width: 270px;
@@ -251,7 +251,8 @@ input[value*="tick"] {
 }
 button.error,
 button.error:hover {
-    background: var(--error);
+    background: var(--error) !important;
+    color: inherit !important;
     cursor: default;
 }
 
@@ -268,4 +269,9 @@ button.error:hover {
 button.warning,
 button.warning:hover {
     background: var(--warning);
+}
+
+button.ok,
+button.ok:hover {
+    background: var(--ok);
 }

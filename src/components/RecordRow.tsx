@@ -96,9 +96,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     const fieldValue = fieldKeys.length > 1 ? v[fieldName] + "" : v + "";
                     const isSearchMatch =
                         fields.length > 1 ? currentSearchField[fieldName] : currentSearchField;
+
                     const verify = this.props.meta.validity
                         ? this.props.meta.validity[fieldName]
                         : undefined;
+                    console.log(currentSearchField);
+
                     return (
                         <Grid key={fieldName} xs={field.width} item>
                             <TextField
@@ -108,7 +111,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                     width: "100%"
                                 }}
                                 className={(() => {
-                                    let c = isSearchMatch ? "searchMatch" : "";
+                                    let c = isSearchMatch ? "searchMatch " : "";
                                     c += " " + verify !== undefined ? verify?.type : "";
                                     return c;
                                 })()}
@@ -281,7 +284,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         >
                             <Fab
                                 onClick={() => this.props.saveRecord(p.index)}
-                                disabled={!this.props.meta?.changed}
+                                disabled={(() => {
+                                    if (!this.props.meta?.changed) return true;
+
+                                    const v = this.props.meta.validity?.totalValidity;
+                                    if (v === "error") return true;
+                                })()}
                                 size="small"
                                 title={(() => {
                                     const v = this.props.meta.validity?.totalValidity;

@@ -40,7 +40,7 @@ export default class Base extends Component<BaseProps, BaseState> {
                                 message = this.props.health[app.id].message;
                             }
                             return (
-                                <span style={{ color, display: "inline-block" }}>
+                                <span key={app.id} style={{ color, display: "inline-block" }}>
                                     {app.icon(message)}
                                 </span>
                             );

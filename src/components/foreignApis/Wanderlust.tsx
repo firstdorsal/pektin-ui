@@ -204,7 +204,7 @@ const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRecordVal
             return {
                 CAA: {
                     flag: parseInt(t[0]),
-                    tag: t[1] as "Issue" | "IssueWild" | "Iodef",
+                    tag: t[1] as "issue" | "issuewild" | "iodef",
                     value: t[2].replaceAll('"', "")
                 }
             };

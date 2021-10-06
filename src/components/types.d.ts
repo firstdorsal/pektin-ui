@@ -18,6 +18,10 @@ export interface FieldValidity {
     totalValidity: ValidationType;
 }
 
+export interface ValidateParams {
+    domainName: string;
+}
+
 export interface Glob {
     contextMenu: boolean;
     changeContextMenu: Function;

@@ -19,6 +19,8 @@ export default class Base extends Component<BaseProps, BaseState> {
         return (
             <div className="container">
                 <aside>
+                    <h1>Pektin-ui</h1>
+
                     <div
                         style={{
                             margin: "0px",
@@ -46,10 +48,8 @@ export default class Base extends Component<BaseProps, BaseState> {
                             );
                         })}
                     </div>
-                    <h1>Pektin-ui</h1>
                     <br />
                     <br />
-
                     <h2>Add Existing Domain</h2>
                     <NavLink
                         exact

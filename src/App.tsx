@@ -155,7 +155,7 @@ export default class App extends Component<AppProps, AppState> {
             this.setState({ health: { vault } });
         }
 
-        setTimeout(this.healtChecks, 1000);
+        setTimeout(this.healtChecks, 5000);
     };
 
     componentWillUnmount() {

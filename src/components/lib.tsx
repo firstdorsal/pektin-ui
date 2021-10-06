@@ -28,7 +28,7 @@ export const regex = {
     ip: /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/,
     legacyIp:
         /^(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
-    domainName: /(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/
+    domainName: /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9][.]?$/
 };
 
 export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
@@ -47,6 +47,7 @@ export const getDomains = (config: t.Config, format = "pektin") => {
 export const getRecords = (config: t.Config, domainName: string, format = "pektin") => {
     return pektinApi.getRecords(config, domainName);
 };
+
 export const setRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {
     return pektinApi.setRecords(config, records);
 };
@@ -159,7 +160,7 @@ export const supportedRecords = [
     "TLSA"
 ];
 
-export const validateDomain = (input: string): t.ValidationResult => {
+export const validateDomain = (input: string, params?: t.ValidateParams): t.ValidationResult => {
     if (input === undefined || !input.match(regex.domainName)) {
         return { type: "error", message: "Invalid domain" };
     }
@@ -169,6 +170,31 @@ export const validateDomain = (input: string): t.ValidationResult => {
             type: "error",
             message: "Spaces indicate a list of domains, but only one is supported here"
         };
+    }
+
+    if (input.startsWith(".")) {
+        return {
+            type: "error",
+            message: "Name can't start with a dot (empty label)"
+        };
+    }
+    if (params?.domainName) {
+        if (!input.endsWith(params.domainName) && !input.endsWith(params.domainName.slice(0, -1))) {
+            return {
+                type: "error",
+                message: `Name must end in the current domain name ${params?.domainName}`
+            };
+        } else if (
+            input !== params.domainName &&
+            input + "." !== params.domainName &&
+            !input.endsWith("." + params.domainName) &&
+            !(input + ".").endsWith("." + params.domainName)
+        ) {
+            return {
+                type: "error",
+                message: `Name must end in the current domain name ${params?.domainName} Subdomains must be seperated by a dot`
+            };
+        }
     }
     if (!isAbsolute(input.replaceAll(" ", ""))) {
         return {
@@ -199,41 +225,49 @@ export const validateIp = (input: string, type?: "legacy"): t.ValidationResult =
     return { type: "ok" };
 };
 
-export const validateDomains = (input: string): t.ValidationResult => {
+export const validateDomains = (input: string, params?: t.ValidateParams): t.ValidationResult => {
+    input = input.replace(/\s\s+/g, " ");
     const domains = input.split(" ");
-    if (domains.length === 1) return validateDomain(input);
+
+    if (domains.length === 1) return validateDomain(input, params);
+
+    for (let i = 0; i < domains.length; i++) {
+        if (!domains[i].length) break;
+        const v = validateDomain(domains[i], params);
+        if (v.type !== "ok") {
+            v.message = `Domain ${i + 1}: ${v.message}`;
+            return v;
+        }
+    }
     if (domains[domains.length - 1] !== undefined && domains[domains.length - 1].length === 0) {
         return {
             type: "warning",
             message: "Space characters indicate a list, but no second element was provided"
         };
     }
-    for (let i = 0; i < domains.length; i++) {
-        const v = validateDomain(domains[i]);
-        if (v.type !== "ok") {
-            v.message = `Domain ${i + 1}: ${v.message}`;
-            return v;
-        }
-    }
     return { type: "ok" };
 };
 
 export const validateIps = (input: string, type?: "legacy"): t.ValidationResult => {
+    input = input.replace(/\s\s+/g, " ");
     const ips = input.split(" ");
     if (ips.length === 1) return validateIp(input, type);
-    if (ips[ips.length - 1] !== undefined && ips[ips.length - 1].length === 0) {
-        return {
-            type: "warning",
-            message: "Space characters indicate a list, but no second element was provided"
-        };
-    }
+
     for (let i = 0; i < ips.length; i++) {
+        if (!ips[i].length) break;
         const v = validateIp(ips[i], type);
         if (v.type !== "ok") {
             v.message = `IP ${i + 1}: ${v.message}`;
             return v;
         }
     }
+    if (ips[ips.length - 1] !== undefined && ips[ips.length - 1].length === 0) {
+        return {
+            type: "warning",
+            message: "Space characters indicate a list, but no second element was provided"
+        };
+    }
+
     return { type: "ok" };
 };
 

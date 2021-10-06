@@ -76,13 +76,24 @@ class Domain extends Component<DomainProps, DomainState> {
     };
     list: any;
     saveRecord = async (i: number) => {
-        const successState = () => {
+        const successState = async (setRecord: t.DisplayRecord) => {
+            let record = setRecord;
+            try {
+                record = (await l.getRecords(this.props.config, this.state.domainName)).filter(
+                    dbRecord =>
+                        dbRecord.name.toLowerCase() === setRecord.name.toLowerCase() &&
+                        dbRecord.type === setRecord.type
+                )[0];
+            } catch (e) {}
+
             this.setState(({ meta, ogRecords, records }) => {
-                ogRecords = cloneDeep(ogRecords);
                 meta = cloneDeep(meta);
-                ogRecords[i] = records[i];
+                records = cloneDeep(records);
+                ogRecords[i] = cloneDeep(record);
+                records[i] = cloneDeep(record);
+                meta[i].validity = this.validateRecord(record, this.state.domainName);
                 meta[i].changed = false;
-                return { meta, ogRecords };
+                return { meta, ogRecords, records };
             });
         };
         if (
@@ -95,11 +106,13 @@ class Domain extends Component<DomainProps, DomainState> {
             const setRes = await l.setRecords(this.props.config, [this.state.records[i]]);
             if (setRes && setRes.error !== undefined && setRes.error === false) {
                 l.deleteRecords(this.props.config, [this.state.ogRecords[i]]);
-                successState();
+                await successState(this.state.records[i]);
             }
         } else {
             const res = await l.setRecords(this.props.config, [this.state.records[i]]);
-            if (res && res.error !== undefined && res.error === false) successState();
+            if (res && res.error !== undefined && res.error === false) {
+                await successState(this.state.records[i]);
+            }
         }
     };
     saveAllChangedRecords = async () => {
@@ -174,33 +187,20 @@ class Domain extends Component<DomainProps, DomainState> {
                 domainName = records[i].name;
             }
             meta[i] = cloneDeep(meta[i]);
-            meta[i].validity = this.validateRecord(records[i]);
+            meta[i].validity = this.validateRecord(records[i], this.state.domainName);
             meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
             return { meta, records, domainName };
         });
     };
 
-    initData = (records: t.DisplayRecord[]) => {
-        const meta = records.map(record => {
-            const m: t.DomainMeta = cloneDeep(l.defaultMeta);
-            if (this.props.variant === "import") {
-                m.selected = true;
-            }
-            m.validity = this.validateRecord(record);
-
-            return m;
-        });
-        const defaultOrder = records.map((e, i) => i);
-        this.setState({ records, ogRecords: cloneDeep(records), meta, defaultOrder });
-    };
-
-    validateRecord = (record: t.DisplayRecord): t.FieldValidity => {
-        const valName = l.validateDomain(record.name);
+    validateRecord = (record: t.DisplayRecord, domainName: string): t.FieldValidity => {
+        const valName = l.validateDomain(record?.name, { domainName });
         /*@ts-ignore*/
         const fieldValidity: t.FieldValidity = {
             recordName: valName,
             totalValidity: valName.type
         };
+        if (!record) return fieldValidity;
 
         if (typeof record.value[record.type] === "string") {
             const keys = Object.keys(l.rrTemplates[record.type]?.fields);
@@ -236,8 +236,21 @@ class Domain extends Component<DomainProps, DomainState> {
                 }
             });
         }
-
         return fieldValidity;
+    };
+
+    initData = (records: t.DisplayRecord[], domainName: string) => {
+        const meta = records.map(record => {
+            const m: t.DomainMeta = cloneDeep(l.defaultMeta);
+            if (this.props.variant === "import") {
+                m.selected = true;
+            }
+            m.validity = this.validateRecord(record, domainName);
+
+            return m;
+        });
+        const defaultOrder = records.map((e, i) => i);
+        this.setState({ records, ogRecords: cloneDeep(records), meta, defaultOrder, domainName });
     };
 
     componentDidMount = async () => {
@@ -247,22 +260,23 @@ class Domain extends Component<DomainProps, DomainState> {
                     `domain component is set to variant "import" but has no records`
                 );
             }
+            let domainName = "";
             for (let i = 0; i < this.props.records.length; i++) {
                 const record = this.props.records[i];
                 if (record.type === "SOA") {
-                    this.setState({ domainName: record.name });
+                    domainName = record.name;
+
                     break;
                 }
             }
-
-            this.initData(this.props.records);
+            this.initData(this.props.records, domainName);
         } else {
             this.setState({ domainName: this.props.computedMatch.params.domainName });
             const records = await l.getRecords(
                 this.props.config,
                 this.props.computedMatch.params.domainName
             );
-            this.initData(records);
+            this.initData(records, this.props.computedMatch.params.domainName);
         }
     };
 
@@ -273,7 +287,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 this.props.config,
                 this.props.computedMatch.params.domainName
             );
-            this.initData(records);
+            this.initData(records, this.props.computedMatch.params.domainName);
         }
     };
 

@@ -100,7 +100,6 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     const verify = this.props.meta.validity
                         ? this.props.meta.validity[fieldName]
                         : undefined;
-                    console.log(currentSearchField);
 
                     return (
                         <Grid key={fieldName} xs={field.width} item>
@@ -143,6 +142,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
     render = () => {
         const p = this.props;
         const { record } = p;
+        if (!record) return <div>Invalid Record</div>;
         const editable = record.type === "SOA" ? false : true;
         const color =
             JSON.stringify(l.rrTemplates[record.type]?.color).replace("[", "").replace("]", "") ||

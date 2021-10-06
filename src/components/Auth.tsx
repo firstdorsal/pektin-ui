@@ -61,7 +61,6 @@ export default class Auth extends Component<AuthProps, AuthState> {
         // send the config to vault and try to get a token
         if (!authError) {
             const r: any = await vaultApi.getToken(parsed);
-            console.log(r.error === "Failed to fetch");
 
             if (r.error === "Failed to fetch") {
                 authHelper = (

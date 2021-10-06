@@ -1,3 +1,12 @@
+export interface ServiceHealth {
+    vault: VaultHealth;
+}
+
+export interface VaultHealth {
+    status: "ok" | "sealed" | "offline";
+    message: string;
+}
+
 export type ValidationType = "error" | "warning" | "ok";
 export interface ValidationResult {
     type: ValidationType;

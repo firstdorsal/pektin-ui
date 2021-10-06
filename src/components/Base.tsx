@@ -3,18 +3,49 @@ import { Add, ImportExport, Settings, ShoppingCart } from "@material-ui/icons";
 import React, { Component } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
 import * as t from "./types";
+import { SiVault } from "react-icons/si";
 
 interface BaseProps extends Partial<RouteComponentProps> {
     readonly config: t.Config;
     readonly domains: String[];
+    readonly health: any;
 }
 interface BaseState {}
+
+const apps = [{ name: "Vault", icon: title => <SiVault title={title} />, id: "vault" }];
 
 export default class Base extends Component<BaseProps, BaseState> {
     render = () => {
         return (
             <div className="container">
                 <aside>
+                    <div
+                        style={{
+                            margin: "0px",
+                            paddingLeft: "50px",
+                            paddingRight: "50px",
+                            paddingTop: "20px",
+                            marginBottom: "-10px",
+                            textAlign: "center"
+                        }}
+                    >
+                        {apps.map((app, i) => {
+                            let color = "var(--f1)";
+                            let message = "";
+                            if (this.props.health && this.props.health[app.id]) {
+                                color =
+                                    this.props.health[app.id].status === "ok"
+                                        ? "var(--ok)"
+                                        : "var(--error)";
+                                message = this.props.health[app.id].message;
+                            }
+                            return (
+                                <span style={{ color, display: "inline-block" }}>
+                                    {app.icon(message)}
+                                </span>
+                            );
+                        })}
+                    </div>
                     <h1>Pektin-ui</h1>
                     <br />
                     <br />

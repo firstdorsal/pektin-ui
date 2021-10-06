@@ -12,6 +12,7 @@
     --f2: black;
     --error: #f44336;
     --warning: #ffa632;
+    --ok: lime;
     --light: whitesmoke;
     --aside-padding: 15px;
     --aside-width: 270px;
@@ -97,12 +98,6 @@ code * {
     pointer-events: none;
 }
 
-.__json-string__ {
-    color: var(--a2);
-}
-.__json-key__ {
-    color: var(--a1);
-}
 aside {
     height: 100%;
     width: var(--aside-width);

@@ -21,6 +21,7 @@ interface AppState {
     readonly g: t.Glob;
     readonly domains: string[];
     readonly configError: boolean;
+    readonly health?: t.ServiceHealth;
 }
 interface AppProps {}
 
@@ -39,6 +40,7 @@ export default class App extends Component<AppProps, AppState> {
         },
         domains: []
     };
+    mounted = true;
 
     initDb = async () => {
         await this.state.db.config
@@ -106,6 +108,9 @@ export default class App extends Component<AppProps, AppState> {
 
     componentDidMount = async () => {
         // handle config
+        this.mounted = true;
+        this.healtChecks();
+
         await this.initDb();
         const localConfig: t.LocalConfig = (await this.state.db.config.get("localConfig"))?.value;
         try {
@@ -129,6 +134,7 @@ export default class App extends Component<AppProps, AppState> {
                     domains
                 };
             });
+
             document.addEventListener("contextmenu", this.handleContextMenu);
         } catch (e) {
             this.setState(({ config }) => ({
@@ -138,7 +144,22 @@ export default class App extends Component<AppProps, AppState> {
             }));
         }
     };
+
+    healtChecks = async () => {
+        let vaultHealth = await vaultApi.healthCheck(this.state.config.vaultAuth);
+        if (this.mounted && this.state.configLoaded) {
+            let vault: t.VaultHealth = { status: "ok", message: "Online" };
+            if (vaultHealth?.error) vault = { status: "offline", message: "Offline/Unreachable" };
+            else if (vaultHealth?.sealed) vault = { status: "sealed", message: "Vault is sealed" };
+
+            this.setState({ health: { vault } });
+        }
+
+        setTimeout(this.healtChecks, 1000);
+    };
+
     componentWillUnmount() {
+        this.mounted = false;
         document.removeEventListener("contextmenu", this.handleContextMenu);
     }
 
@@ -169,6 +190,7 @@ export default class App extends Component<AppProps, AppState> {
 
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
+
         return (
             <Router>
                 {this.state.configError ? <Redirect to="/auth"></Redirect> : ""}
@@ -196,10 +218,18 @@ export default class App extends Component<AppProps, AppState> {
                     />
 
                     <PrivateRoute config={this.state.config} exact path="/">
-                        <Base domains={this.state.domains} config={this.state.config}></Base>
+                        <Base
+                            health={this.state.health}
+                            domains={this.state.domains}
+                            config={this.state.config}
+                        ></Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
-                        <Base domains={this.state.domains} config={this.state.config}>
+                        <Base
+                            domains={this.state.domains}
+                            config={this.state.config}
+                            health={this.state.health}
+                        >
                             <AddDomain
                                 loadDomains={this.loadDomains}
                                 g={this.state.g}
@@ -208,23 +238,39 @@ export default class App extends Component<AppProps, AppState> {
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/add/existing/import">
-                        <Base domains={this.state.domains} config={this.state.config}>
+                        <Base
+                            health={this.state.health}
+                            domains={this.state.domains}
+                            config={this.state.config}
+                        >
                             <ImportDomain g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
-                        <Base domains={this.state.domains} config={this.state.config}>
+                        <Base
+                            health={this.state.health}
+                            domains={this.state.domains}
+                            config={this.state.config}
+                        >
                             <Domain computedMatch g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
                     <PrivateRoute exact config={this.state.config} path="/config/">
-                        <Base domains={this.state.domains} config={this.state.config}>
+                        <Base
+                            health={this.state.health}
+                            domains={this.state.domains}
+                            config={this.state.config}
+                        >
                             <ConfigView g={this.state.g} config={this.state.config} />
                         </Base>
                     </PrivateRoute>
 
                     <PrivateRoute config={this.state.config} path="*">
-                        <Base domains={this.state.domains} config={this.state.config}></Base>
+                        <Base
+                            health={this.state.health}
+                            domains={this.state.domains}
+                            config={this.state.config}
+                        ></Base>
                     </PrivateRoute>
                 </Switch>
             </Router>

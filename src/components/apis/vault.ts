@@ -1,4 +1,6 @@
+import * as t from "../types";
 const f = fetch;
+
 interface VaultAuthJSON {
     vaultEndpoint: string;
     username: string;
@@ -48,4 +50,20 @@ export const getValue = async ({
 
     const resJson = await res.json().catch(() => {});
     return resJson?.data?.data;
+};
+
+export const healthCheck = async (vaultAuth: t.VaultAuth) => {
+    const res: any = await f(vaultAuth.endpoint + `/v1/sys/health`, {
+        headers: {
+            "X-Vault-Token": vaultAuth.token
+        }
+    }).catch(e => {
+        e = e.toString();
+        e = e.substring(e.indexOf(":") + 2);
+        return { error: e };
+    });
+    if (res.error) return res;
+
+    const resJson = await res.json().catch(() => {});
+    return resJson;
 };

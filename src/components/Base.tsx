@@ -42,9 +42,14 @@ export default class Base extends Component<BaseProps, BaseState> {
                                 message = this.props.health[app.id].message;
                             }
                             return (
-                                <span key={app.id} style={{ color, display: "inline-block" }}>
-                                    {app.icon(message)}
-                                </span>
+                                <a
+                                    target="blank"
+                                    key={app.id}
+                                    href={this.props.config.vaultAuth.endpoint}
+                                    style={{ color, display: "inline-block" }}
+                                >
+                                    {app.icon(`${app.name}: ${message}`)}
+                                </a>
                             );
                         })}
                     </div>

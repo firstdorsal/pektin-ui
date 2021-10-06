@@ -28,7 +28,8 @@ export const regex = {
     ip: /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/,
     legacyIp:
         /^(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
-    domainName: /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9][.]?$/
+    domainName:
+        /^(?:[a-z0-9_](?:[a-z0-9-_]{0,61}[a-z0-9_]|[-]{2,}?)?\.)+[a-z0-9-_][a-z0-9-]{0,61}[a-z0-9]{1,61}[.]?$/
 };
 
 export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
@@ -161,7 +162,7 @@ export const supportedRecords = [
 ];
 
 export const validateDomain = (input: string, params?: t.ValidateParams): t.ValidationResult => {
-    if (input === undefined || !input.match(regex.domainName)) {
+    if (input === undefined || !input.replace("*.", "").match(regex.domainName)) {
         return { type: "error", message: "Invalid domain" };
     }
     const domains = input.split(" ");
@@ -169,6 +170,13 @@ export const validateDomain = (input: string, params?: t.ValidateParams): t.Vali
         return {
             type: "error",
             message: "Spaces indicate a list of domains, but only one is supported here"
+        };
+    }
+
+    if (input.indexOf("*") > -1 && input.indexOf("*") !== 0) {
+        return {
+            type: "error",
+            message: "Wildcard records can only have a * in the beginning"
         };
     }
 
@@ -230,6 +238,20 @@ export const validateDomains = (input: string, params?: t.ValidateParams): t.Val
     const domains = input.split(" ");
 
     if (domains.length === 1) return validateDomain(input, params);
+
+    if (params?.domainName) {
+        if (domains[domains.length - 1].length === 0) {
+            return {
+                type: "warning",
+                message: "Spaces indicate a list of domains, but only one is supported here"
+            };
+        } else {
+            return {
+                type: "error",
+                message: "Spaces indicate a list of domains, but only one is supported here"
+            };
+        }
+    }
 
     for (let i = 0; i < domains.length; i++) {
         if (!domains[i].length) break;

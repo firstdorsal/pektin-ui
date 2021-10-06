@@ -194,7 +194,7 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     validateRecord = (record: t.DisplayRecord, domainName: string): t.FieldValidity => {
-        const valName = l.validateDomain(record?.name, { domainName });
+        const valName = l.validateDomains(record?.name, { domainName });
         /*@ts-ignore*/
         const fieldValidity: t.FieldValidity = {
             recordName: valName,

@@ -39,7 +39,8 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
         const allTypes: string[] = [];
         for (let i = 0; i < limit; i++) {
             const newNameRes = await providers[provider](currentName, "NSEC");
-            const newNameData = newNameRes.value.split(" ");
+
+            const newNameData = newNameRes.values[0].data.split(" ");
 
             if (newNameRes.typeId !== 47) break;
             /*eslint no-loop-func: "off"*/
@@ -52,14 +53,11 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
             currentName = newNameData[0];
             if (newNameData[0] === ogName && i > 0) break;
         }
-        const allRecords: t.RawDnsRecord[] = await Promise.all(allRecordsRequests);
+        const allRecords: RawDnsRecord[] = await Promise.all(allRecordsRequests);
         return allRecords.map((record: any) => {
             if (record.type === "TYPE61") record.type = "OPENPGPKEY";
-            console.log(record);
-
             return record;
         });
-        //console.log(allRecords.map(l.simpleDnsRecordToRedisEntry));
     };
     handleChange = (e: any) => {
         this.setState(state => ({ ...state, [e.target.name]: e.target.value }));
@@ -71,7 +69,6 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
             this.state.limit
         );
 
-        /*TODO: remove quotes for caa value*/
         this.props.import(records.map(simpleDnsRecordToDisplayRecord).filter(l.isSupportedRecord));
     };
 
@@ -138,33 +135,33 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
 
 type getDnsRecord = (name: string, type: string) => Promise<any>;
 
+export interface RawDnsValue {
+    data: string;
+    ttl: number;
+}
+export interface RawDnsRecord {
+    name: string;
+    type: t.RRType;
+    typeId?: number;
+    values: Array<RawDnsValue>;
+}
+
 const providers: { [provider: string]: getDnsRecord } = {
-    Google: async (name: string, type: string): Promise<any> => {
+    Google: async (name: string, type: string): Promise<RawDnsRecord> => {
         const res = await f(`https://dns.google/resolve?name=${name}&type=${type}`);
         const json = await res.json();
-        const answers = json.Answer ? json.Answer : json.Authority;
-
-        const answer = {
+        let answers = json.Answer ? json.Answer : json.Authority;
+        let answer = {
             type,
-            name: answers[0].name,
-            ttl: answers[0].TTL,
             typeId: answers[0].type,
-            value: answers[0].data
+            name: answers[0].name,
+            values: []
         };
-        answers.forEach((a: any, i: number) => {
-            if (i > 0) answer.value += " " + a.data;
+        answer.values = answers.map((a: any, i: number) => {
+            return { ttl: answers[i].TTL, data: answers[i].data };
         });
-        console.log(answer);
 
-        /*
-        answer.ttl = answer.TTL;
-        delete answer.TTL;
-        answer.typeId = answer.type;
-        answer.type = type;
-        answer.value = answer.data;
-        delete answer.data;
-*/
-        return answer;
+        return answer as RawDnsRecord;
     },
     Cloudflare: async (name: string, type: string): Promise<any> => {
         const res = await f(`https://cloudflare-dns.com/dns-query?name=${name}&type=${type}`, {
@@ -180,17 +177,16 @@ const providers: { [provider: string]: getDnsRecord } = {
     }
 };
 
-const simpleDnsRecordToDisplayRecord = (simple: t.RawDnsRecord): t.DisplayRecord => {
+const simpleDnsRecordToDisplayRecord = (simple: RawDnsRecord): t.DisplayRecord => {
     return {
         name: simple.name,
         type: simple.type,
-        values: [textToRRValue(simple)]
+        values: simple.values.map(e => textToRRValue(e, simple.type))
     };
 };
-const textToRRValue = (simple: t.RawDnsRecord): t.ResourceRecordValue => {
-    const text = simple.value;
-    const ttl = simple.ttl;
-    const recordType = simple.type;
+const textToRRValue = (val: RawDnsValue, recordType: t.RRType): t.ResourceRecordValue => {
+    const text = val.data;
+    const ttl = val.ttl;
     const t = text.split(" ");
     switch (recordType) {
         case "SOA":
@@ -218,7 +214,7 @@ const textToRRValue = (simple: t.RawDnsRecord): t.ResourceRecordValue => {
             return {
                 flag: parseInt(t[0]),
                 tag: t[1] as "issue" | "issuewild" | "iodef",
-                value: t[2].replaceAll('"', ""),
+                caaValue: t[2].replaceAll('"', ""),
                 ttl
             };
 

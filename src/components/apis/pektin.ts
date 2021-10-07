@@ -164,10 +164,11 @@ export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
             const displayValue = { tag: rr.value[type].tag, ttl: rr.ttl };
 
             if (displayValue.tag === "Issue" || displayValue.tag === "IssueWild") {
-                displayValue.value = rr.value[type].value.Issuer[0];
-            } else if (tag === "Iodef") {
-                displayValue.value = rr.value[type].value.Url;
+                displayValue.caaValue = rr.value[type].value.Issuer[0];
+            } else if (displayValue.tag === "Iodef") {
+                displayValue.caaValue = rr.value[type].value.Url;
             }
+            displayValue.tag = displayValue.tag.toLowerCase();
             return displayValue;
         } else if (type === "SOA") {
             return { ttl: rr.ttl, ...rr.value[type] };
@@ -194,12 +195,12 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
         if (record.type === "A" || record.type === "AAAA") {
             return {
                 ttl: rr.ttl,
-                value: { [record.type]: rr.value }
+                value: { [record.type]: rr.value.replace(/\s+/g, "") }
             };
         } else if (record.type === "NS" || record.type === "CNAME" || record.type === "PTR") {
             return {
                 ttl: rr.ttl,
-                value: { [record.type]: l.absoluteName(rr.value) }
+                value: { [record.type]: l.absoluteName(rr.value.replace(/\s+/g, "")) }
             };
         } else if (record.type === "TXT") {
             const buff = Buffer.from(rr.value, "utf-8");
@@ -213,8 +214,11 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
                     ttl: rr.ttl,
                     value: {
                         [record.type]: {
+                            issuer_critical: true,
                             tag: rr.tag.toLowerCase() === "issue" ? "Issue" : "IssueWild",
-                            Issuer: [rr.value, []]
+                            value: {
+                                Issuer: [rr.caaValue.replace(/\s+/g, ""), []]
+                            }
                         }
                     }
                 };
@@ -223,8 +227,11 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
                     ttl: rr.ttl,
                     value: {
                         [record.type]: {
+                            issuer_critical: true,
                             tag: "Iodef",
-                            Url: rr.value
+                            value: {
+                                Url: rr.caaValue.replace(/\s+/g, "")
+                            }
                         }
                     }
                 };
@@ -256,8 +263,8 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
                 ttl: rr.ttl,
                 value: {
                     [record.type]: {
-                        mname: rr.mname,
-                        rname: rr.rname,
+                        mname: l.absoluteName(rr.mname.replace(/\s+/g, "")),
+                        rname: l.absoluteName(rr.rname.replace(/\s+/g, "")),
                         refresh: rr.refresh === undefined ? 0 : rr.refresh,
                         retry: rr.retry === undefined ? 0 : rr.retry,
                         serial: rr.serial === undefined ? 0 : rr.serial,
@@ -271,7 +278,7 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
                 ttl: rr.ttl,
                 value: {
                     [record.type]: {
-                        exchange: rr.exchange,
+                        exchange: l.absoluteName(rr.exchange.replace(/\s+/g, "")),
                         preference: rr.preference === undefined ? 0 : rr.preference
                     }
                 }
@@ -284,7 +291,10 @@ export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
                         priority: rr.priority === undefined ? 0 : rr.priority,
                         weight: rr.weight === undefined ? 0 : rr.weight,
                         port: rr.port === undefined ? 0 : rr.port,
-                        target: rr.target === undefined ? "" : rr.target
+                        target:
+                            rr.target === undefined
+                                ? ""
+                                : l.absoluteName(rr.target.replace(/\s+/g, ""))
                     }
                 }
             };

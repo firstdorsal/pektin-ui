@@ -90,13 +90,6 @@ export interface DomainMeta {
     validity?: FieldValidity;
 }
 
-export interface RawDnsRecord {
-    name: string;
-    type: RRType;
-    ttl: number;
-    value: string;
-}
-
 export interface DisplayRecord {
     name: string;
     type: RRType;
@@ -178,7 +171,7 @@ export interface SRV extends RRVal {
 export interface CAA extends RRVal {
     flag: number; //0;
     tag: "issue" | "issuewild" | "iodef"; //"issue" | "issuewild" | "iodef" | "contactemail" | "contactphone";
-    value: string;
+    caaValue: string;
 }
 
 export interface TLSA extends RRVal {

@@ -176,17 +176,12 @@ export const asciiToUnicode = (input: string) => {
 };
 
 export const validateDomain = (input: string, params?: t.ValidateParams): t.ValidationResult => {
+    const ogInput = input;
+    input = input.replace(/\s+/g, "");
     input = unicodeToAscii(input);
 
     if (input === undefined || !input.toLowerCase().replace("*.", "").match(regex.domainName)) {
         return { type: "error", message: "Invalid domain" };
-    }
-    const domains = input.split(" ");
-    if (domains[1] !== undefined && domains[domains.length - 1].length !== 0) {
-        return {
-            type: "error",
-            message: "Spaces indicate a list of domains, but only one is supported here"
-        };
     }
 
     if (input.indexOf("*") > -1 && input.indexOf("*") !== 0) {
@@ -233,10 +228,19 @@ export const validateDomain = (input: string, params?: t.ValidateParams): t.Vali
             message: "Domains should only contain lower case chars"
         };
     }
+    if (input !== ogInput) {
+        return {
+            type: "warning",
+            message: "Field shouldn't contain whitespace"
+        };
+    }
     return { type: "ok" };
 };
 
 export const validateIp = (input: string, type?: "legacy"): t.ValidationResult => {
+    const ogInput = input;
+    input = input.replaceAll(/\s+/g, "");
+
     if (type === "legacy") {
         if (input === undefined || !input.match(regex.legacyIp)) {
             return {
@@ -250,67 +254,12 @@ export const validateIp = (input: string, type?: "legacy"): t.ValidationResult =
     if (input !== input.toLowerCase()) {
         return { type: "warning", message: "IPs should only contain lower case characters" };
     }
-    return { type: "ok" };
-};
-
-export const validateDomains = (input: string, params?: t.ValidateParams): t.ValidationResult => {
-    input = unicodeToAscii(input);
-    input = input.replace(/\s\s+/g, " ");
-    const domains = input.split(" ");
-
-    if (domains.length === 1) return validateDomain(input, params);
-
-    if (params?.domainName) {
-        if (domains[domains.length - 1].length === 0) {
-            return {
-                type: "warning",
-                message: "Spaces indicate a list of domains, but only one is supported here"
-            };
-        } else {
-            return {
-                type: "error",
-                message: "Spaces indicate a list of domains, but only one is supported here"
-            };
-        }
-    }
-
-    for (let i = 0; i < domains.length; i++) {
-        if (!domains[i].length) break;
-        const v = validateDomain(domains[i], params);
-        if (v.type !== "ok") {
-            v.message = `Domain ${i + 1}: ${v.message}`;
-            return v;
-        }
-    }
-    if (domains[domains.length - 1] !== undefined && domains[domains.length - 1].length === 0) {
+    if (input !== ogInput) {
         return {
             type: "warning",
-            message: "Space characters indicate a list, but no second element was provided"
+            message: "Field shouldn't contain whitespace"
         };
     }
-    return { type: "ok" };
-};
-
-export const validateIps = (input: string, type?: "legacy"): t.ValidationResult => {
-    input = input.replace(/\s\s+/g, " ");
-    const ips = input.split(" ");
-    if (ips.length === 1) return validateIp(input, type);
-
-    for (let i = 0; i < ips.length; i++) {
-        if (!ips[i].length) break;
-        const v = validateIp(ips[i], type);
-        if (v.type !== "ok") {
-            v.message = `IP ${i + 1}: ${v.message}`;
-            return v;
-        }
-    }
-    if (ips[ips.length - 1] !== undefined && ips[ips.length - 1].length === 0) {
-        return {
-            type: "warning",
-            message: "Space characters indicate a list, but no second element was provided"
-        };
-    }
-
     return { type: "ok" };
 };
 
@@ -325,7 +274,7 @@ export const rrTemplates: any = {
                 placeholder: "1:see:bad:c0de",
                 inputType: "text",
                 width: 12,
-                validate: (field: string): t.ValidationResult => validateIps(field)
+                validate: (field: string): t.ValidationResult => validateIp(field)
             }
         },
         color: [43, 255, 0],
@@ -341,7 +290,7 @@ export const rrTemplates: any = {
                 placeholder: "127.0.0.1",
                 inputType: "text",
                 width: 12,
-                validate: (field: string): t.ValidationResult => validateIps(field, "legacy")
+                validate: (field: string): t.ValidationResult => validateIp(field, "legacy")
             }
         },
         color: [82, 51, 18],
@@ -358,7 +307,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomains(field)
+                validate: (field: string): t.ValidationResult => validateDomain(field)
             }
         },
         color: [29, 117, 0],
@@ -375,7 +324,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomains(field)
+                validate: (field: string): t.ValidationResult => validateDomain(field)
             }
         },
         color: [255, 0, 0],
@@ -392,7 +341,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomains(field)
+                validate: (field: string): t.ValidationResult => validateDomain(field)
             }
         },
         color: [255, 122, 0],
@@ -540,7 +489,7 @@ export const rrTemplates: any = {
         template: {
             flag: 0,
             tag: "issue",
-            value: "letsencrypt.org",
+            caaValue: "letsencrypt.org",
             ttl: 3600
         },
         fields: {
@@ -570,7 +519,7 @@ export const rrTemplates: any = {
                     };
                 }
             },
-            value: {
+            caaValue: {
                 placeholder: "letsencrypt.org",
                 inputType: "text",
                 width: 6,

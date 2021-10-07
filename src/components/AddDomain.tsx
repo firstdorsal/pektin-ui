@@ -11,7 +11,7 @@ import { RouteComponentProps } from "react-router-dom";
 const defaultSOA: t.DisplayRecord = {
     name: "",
     type: "SOA",
-    values: l.rrTemplates.SOA.template
+    values: [l.rrTemplates.SOA.template]
 };
 
 interface AddDomainProps extends Partial<RouteComponentProps> {
@@ -91,7 +91,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         /*@ts-ignore*/
                                         l.rrTemplates["SOA"]?.fields.mname?.validate(
                                             /*@ts-ignore*/
-                                            this.state.record.values.SOA.mname
+                                            this.state.record.values[0].mname
                                         )?.type
                                     }
                                 >
@@ -105,11 +105,11 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         name="mname"
                                         placeholder="ns1.example.com"
                                         /*@ts-ignore*/
-                                        value={this.state.record.values.SOA.mname}
+                                        value={this.state.record.values[0].mname}
                                         helperText={
                                             l.rrTemplates["SOA"]?.fields.mname?.validate(
                                                 /*@ts-ignore*/
-                                                this.state.record.values.SOA.mname
+                                                this.state.record.values[0].mname
                                             )?.message || " "
                                         }
                                         InputLabelProps={{
@@ -123,7 +123,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         /*@ts-ignore*/
                                         l.rrTemplates["SOA"]?.fields.rname?.validate(
                                             /*@ts-ignore*/
-                                            this.state.record.values.SOA.rname
+                                            this.state.record.values[0].rname
                                         )?.type
                                     }
                                 >
@@ -137,11 +137,11 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         name="rname"
                                         placeholder="hostmaster.example.com"
                                         /*@ts-ignore*/
-                                        value={this.state.record.values.SOA.rname}
+                                        value={this.state.record.values[0].rname}
                                         helperText={
                                             l.rrTemplates["SOA"]?.fields.rname?.validate(
                                                 /*@ts-ignore*/
-                                                this.state.record.values.SOA.rname
+                                                this.state.record.values[0].rname
                                             )?.message || " "
                                         }
                                         InputLabelProps={{

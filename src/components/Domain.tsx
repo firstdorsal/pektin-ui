@@ -195,7 +195,7 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     validateRecord = (record: t.DisplayRecord, domainName: string): t.FieldValidity => {
-        const valName = l.validateDomains(record?.name, { domainName });
+        const valName = l.validateDomain(record?.name, { domainName });
         /*@ts-ignore*/
         const fieldValidity: t.FieldValidity = {
             recordName: valName,
@@ -528,19 +528,19 @@ class Domain extends Component<DomainProps, DomainState> {
         this.setState(({ records, meta, ogRecords: ogData, defaultOrder }) => {
             //records = cloneDeep(records);
             //meta = cloneDeep(meta);
-            let defaultName = this.props?.computedMatch?.params?.domainName;
+            let defaultName = this.state.domainName;
             defaultName = defaultName ? defaultName : "";
             const newRecord: t.DisplayRecord = {
                 name: l.absoluteName(defaultName),
                 type: "AAAA",
-                values: cloneDeep(l.rrTemplates.AAAA.template)
+                values: [cloneDeep(l.rrTemplates.AAAA.template)]
             };
             const newMeta: t.DomainMeta = cloneDeep(l.defaultMeta);
             newMeta.changed = true;
             const newOgData: t.DisplayRecord = {
                 name: "",
                 type: "NEW",
-                values: cloneDeep(l.rrTemplates.AAAA.template)
+                values: [cloneDeep(l.rrTemplates.AAAA.template)]
             };
             const newDefaultOrder = defaultOrder.length;
 

@@ -250,6 +250,10 @@ export const txtRecords = {
         identifier: "v=spf1",
         parse: parseSPF1
     },
+    SPF2: {
+        identifier: "spf2.0",
+        parse: parseSPF1
+    },
     DKIM1: {
         identifier: "v=DKIM1"
         //parse: (v: string): ParsedDKIM1 | TxtRecordsParseError => {}
@@ -260,3 +264,112 @@ export const txtRecords = {
         //parse: (v: string): ParsedDMARC1 | TxtRecordsParseError => {}
     }
 };
+
+/*
+SPF1
+TODO: automatic spf1 scraping and verification to test function
+
+outlook.com
+v=spf1 include:spf-a.outlook.com include:spf-b.outlook.com ip4:157.55.9.128/25 include:spf.protection.outlook.com include:spf-a.hotmail.com include:_spf-ssg-b.microsoft.com include:_spf-ssg-c.microsoft.com ~all
+
+spfd.protection.outlook.com
+v=spf1 ip4:51.4.72.0/24 ip4:51.5.72.0/24 ip4:51.5.80.0/27 ip4:20.47.149.138/32 ip4:51.4.80.0/27 ip6:2a01:4180:4051:0800::/64 ip6:2a01:4180:4050:0800::/64 ip6:2a01:4180:4051:0400::/64 ip6:2a01:4180:4050:0400::/64 -all
+
+gmail.com
+v=spf1 redirect=_spf.google.com
+
+_spf.google.com
+v=spf1 include:_netblocks.google.com include:_netblocks2.google.com include:_netblocks3.google.com ~all
+
+augsburg.de
+v=spf1 mx ip4:62.216.223.128/29 -all
+
+bundestag.de
+v=spf1 mx a:mail-a3.dbtg.de a:mail-c3.dbtg.de ~all
+
+gmx.de
+v=spf1 redirect=gmx.net
+
+gmx.net
+v=spf1 ip4:213.165.64.0/23 ip4:74.208.5.64/26 ip4:212.227.126.128/25 ip4:212.227.15.0/25 ip4:212.227.17.0/27 ip4:74.208.4.192/26 ip4:82.165.159.0/24 ip4:217.72.207.0/27 ip4:82.165.229.31 ip4:82.165.230.21 -all
+
+belin.es
+v=spf1 mx a:mail.belin.es ip4:37.187.153.22 -all
+
+cantamen.de
+v=spf1 include:_zebus.cantamen.de include:_zoffice.cantamen.de include:_ron.cantamen.de include:_3cx.cantamen.de ~all
+
+hetzner.com
+v=spf1 include:_spf.hetzner.com include:spf.nl2go.com -all
+
+booking.com
+v=spf1 include:%{ir}.%{v}.%{d}.spf.has.pphosted.com -all
+
+facebook.com
+v=spf1 redirect=_spf.facebook.com
+
+_spf.facebook.com
+v=spf1 ip4:66.220.144.128/25 ip4:66.220.155.0/24 ip4:66.220.157.0/25 ip4:69.63.178.128/25 ip4:69.63.181.0/24 ip4:69.63.184.0/25 ip4:69.171.232.0/24 ip4:69.171.244.0/23 -all
+
+amazon.de
+v=spf1 include:amazon.com -all
+
+amazon.com
+v=spf1 include:spf1.amazon.com include:spf2.amazon.com include:amazonses.com -all
+
+spf1.amazon.com
+v=spf1 ip4:207.171.160.0/19 ip4:87.238.80.0/21 ip4:72.21.192.0/19 ip4:194.154.193.192/27 ip4:194.7.41.152/28 ip4:212.123.28.40/32 ip4:203.81.17.0/24 ip4:178.236.10.128/26 ip4:52.94.124.0/28 ip4:99.78.197.208/28 ip4:52.119.213.144/28 -all
+
+*/
+
+/*
+spf2.0
+
+amazon.de
+spf2.0/pra include:amazon.com -all
+amazon.com
+spf2.0/pra include:spf1.amazon.com include:spf2.amazon.com include:amazonses.com -all
+
+spf1.amazon.com
+spf2.0/pra ip4:207.171.160.0/19 ip4:87.238.80.0/21 ip4:72.21.192.0/19 ip4:194.154.193.192/27 ip4:194.7.41.152/28 ip4:212.123.28.40/32 ip4:203.81.17.0/24 ip4:178.236.10.128/26 ip4:52.94.124.0/28 ip4:99.78.197.208/28 ip4:52.119.213.144/28 -all
+
+*/
+
+/*
+verification stuff
+
+google-site-verification=J0NZ2F6kdhXzsguHSKZTm3CWujnrImftkDG3zhz14g0
+Trustpilot-Verification-kqvVskCm6JQ9Vg1qAmahpBSJ5tvZORbriFyVIk4E
+facebook-domain-verification=scdn4fwr0on3j97l5py9vp9raerciu
+globalsign-domain-verification=Sk6NCwvBPC8mpjpg-aJJnVu4ab1vTpwUXBP4kh5qLX
+_globalsign-domain-verification=l_BNpBAnk-rKZRyXJ9UkBfv9o6EEuuenkBrGpYNYo0
+globalsign-smime-dv=CDYX+XFHUw2wml6/Gb8+59BsH31KzUr6c1l2BPvqKX8=
+apple-domain-verification=P8Zbl20P9OhxGB39
+MS=ms98807220 //Microsoft Office 365. augsburg.de
+MS=28BE46DF2C2D9EE896CCCC268DC6CBD9FE32E2D9 //hetzner.de
+pinterest-site-verification=50229699c495513af87299cd94d686f9
+Dynatrace-site-verification=3a88fc1a-195c-455d-ab87-88d09191496b__drhtlct978bncn9utek6qdqapk
+ZOOM_verify_rRPrFA9oTH2bxfFkJeQTzA
+adobe-idp-site-verification=040db58f-cfb9-4203-a555-bfcd15b24b86
+atlassian-domain-verification=F3hugs/a4ZZHwjGTLmlb12IMA3TIRiz3ifqw4TKRz9tWk0LoyBBXfwc775aT/juy
+cisco-ci-domain-verification=18ab0a696c72c79cc3e9c35ddca9a4d722c40bdb86e06aa25aefe1d8284d0946
+docusign=1ddc2bf3-a249-4127-a351-f22dc75077d3
+fastly-domain-delegation-0344411-343733-2021_0223
+logmein-domain-confirmation 90DIFG9EEUT8U8R4895Y87H
+onetrust-domain-verification=3fce180bf9e54d5b97a7c9e1ce3cb10c
+wrike-verification=NDM5MTUzODoyMTFkNjJmZWM5MDk5MTVjOWY2YTQ2MWI4MmVhNjRkZjBmNjg3NzhmZTJhZTQ2NjYxMmVlNjNmMDJkZWRkN2Vi
+pardot326621=b26a7b44d7c73d119ef9dfd1a24d93c77d583ac50ba4ecedd899a9134734403b
+webexdomainverification.RYIX=601f1f0d-b15f-4824-965a-735d477c3ac4
+spycloud-domain-verification=8189b5fe-434e-4adb-9e29-635880677850
+ahrefs-site-verification_c59586c96c2e3ae85a64edd9f506b21b62b8382b6f30385e8a3af024958c0571
+_telesec-domain-validation=2019-10-17_EsWjLFKa2XbjSAS1ix2xprx6iSmXoRqF8j3F6gr5i6WhUKULkv
+QuoVadis=e4cbdf1c-5183-4575-9299-4c597c9c87a2
+yandex-verification: 5005ecaee0968a87
+favro-verification=xttPpZk_Tn7IbEozkV-vd5wJjwPF-U17-FvqUv7dp6S
+*/
+
+/*
+anything else
+v=SSHCA1;key=ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMXX+Aji751cwORw62W56nfsYLMFQc3eMpTlbVED0c72 signservice@biro
+
+*/

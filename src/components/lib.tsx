@@ -42,6 +42,10 @@ export const isSupportedRecord = (record: t.DisplayRecord) => {
     if (supportedRecords.indexOf(record.type) > -1) return true;
     return false;
 };
+export const isSupportedType = (type: string) => {
+    if (supportedRecords.indexOf(type) > -1) return true;
+    return false;
+};
 
 export const getDomains = (config: t.Config, format = "pektin") => {
     return pektinApi.getDomains(config);
@@ -173,7 +177,8 @@ export const asciiToUnicode = (input: string) => {
 
 export const validateDomain = (input: string, params?: t.ValidateParams): t.ValidationResult => {
     input = unicodeToAscii(input);
-    if (input === undefined || !input.replace("*.", "").match(regex.domainName)) {
+
+    if (input === undefined || !input.toLowerCase().replace("*.", "").match(regex.domainName)) {
         return { type: "error", message: "Invalid domain" };
     }
     const domains = input.split(" ");
@@ -241,6 +246,9 @@ export const validateIp = (input: string, type?: "legacy"): t.ValidationResult =
         }
     } else if (input === undefined || !input.match(regex.ip)) {
         return { type: "error", message: "Invalid IP" };
+    }
+    if (input !== input.toLowerCase()) {
+        return { type: "warning", message: "IPs should only contain lower case characters" };
     }
     return { type: "ok" };
 };
@@ -462,7 +470,10 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 9,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomain(field)
+                validate: (field: string): t.ValidationResult => {
+                    if (field === ".") return { type: "ok" };
+                    return validateDomain(field);
+                }
             }
         },
         color: [29, 94, 224],

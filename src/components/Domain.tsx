@@ -387,7 +387,6 @@ class Domain extends Component<DomainProps, DomainState> {
                         }
                         // handle values column
                         const value = rec.value[rec.type];
-                        console.log(value);
 
                         if (typeof value === "string") {
                             const m = value.match(v);
@@ -427,7 +426,6 @@ class Domain extends Component<DomainProps, DomainState> {
                     defaultOrder[i] = combine[i][2];
                 });
                 this.list.recomputeRowHeights();
-                console.log(meta);
 
                 return { records, meta, search: v };
             });
@@ -561,8 +559,9 @@ class Domain extends Component<DomainProps, DomainState> {
             style: any;
             record: t.DisplayRecord;
             meta: t.DomainMeta;
+            totalRows: number;
         }) => {
-            const { key, index, style } = r;
+            const { key, index, style, totalRows } = r;
 
             return (
                 <RecordRow
@@ -576,6 +575,7 @@ class Domain extends Component<DomainProps, DomainState> {
                     index={index}
                     record={r.record}
                     meta={r.meta}
+                    totalRows={totalRows}
                     domainName={this.state.domainName}
                     variant={this.props.variant}
                 />
@@ -751,7 +751,8 @@ class Domain extends Component<DomainProps, DomainState> {
                                         rowRenderer({
                                             ...props,
                                             record: this.state.records[props.index],
-                                            meta: this.state.meta[props.index]
+                                            meta: this.state.meta[props.index],
+                                            totalRows: this.state.records.length
                                         })
                                     }
                                     rowCount={this.state.records.length}

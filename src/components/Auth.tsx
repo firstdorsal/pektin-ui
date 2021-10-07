@@ -65,7 +65,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
             if (r.error === "Failed to fetch") {
                 authHelper = (
                     <React.Fragment>
-                        {r.error}. Is Vault Sealed?{" "}
+                        {r.error}. Is Vault sealed?{" "}
                         <a
                             target="blank"
                             rel="norefferer"

@@ -130,133 +130,170 @@ export const addDomain = async (config: t.Config, records: t.DisplayRecord[]) =>
 
 export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
     const [name, type]: [string, PektinRRTypes] = record.name.split(":");
+    const { rr_set } = record;
+    const display_values = rr_set.map((rr, i) => {
+        if (type === "TXT") {
+            const a = new Uint8Array(rr.value.TXT.txt_data[0]);
+            return { value: Buffer.from(a).toString(), ttl: rr.ttl };
+        } else if (type === "OPENPGPKEY") {
+            const a = new Uint8Array(rr.value.OPENPGPKEY.public_key);
+            return { value: Buffer.from(a).toString(), ttl: rr.ttl };
+        } else if (type === "TLSA") {
+            const cert_usage = ["CA", "Service", "TrustAnchor", "DomainIssued"];
+            const selector = ["Full", "Spki"];
+            const matching = ["Raw", "Sha256", "Sha512"];
 
-    if (type === "TXT") {
-        const a = new Uint8Array(record.rr_set[0].value.TXT.txt_data[0]);
-        record.rr_set[0].value.TXT = Buffer.from(a).toString();
-    } else if (type === "OPENPGPKEY") {
-        const a = new Uint8Array(record.rr_set[0].value.OPENPGPKEY.public_key);
-        record.rr_set[0].value.OPENPGPKEY = Buffer.from(a).toString();
-    } else if (type === "TLSA") {
-        const cert_usage = ["CA", "Service", "TrustAnchor", "DomainIssued"];
-        const selector = ["Full", "Spki"];
-        const matching = ["Raw", "Sha256", "Sha512"];
+            const a = new Uint8Array(rr.value.TLSA.cert_data);
 
-        const a = new Uint8Array(record.rr_set[0].value.TLSA.cert_data);
+            return {
+                data: Buffer.from(a).toString(),
+                usage: cert_usage.findIndex(e => e === rr.value.TLSA.cert_usage) + 1,
+                selector: selector.findIndex(e => e === rr.value.TLSA.selector) + 1,
+                matching_type: matching.findIndex(e => e === rr.value.TLSA.matching) + 1,
+                ttl: rr.ttl
+            };
+        } else if (
+            type === "A" ||
+            type === "AAAA" ||
+            type === "NS" ||
+            type === "CNAME" ||
+            type === "PTR"
+        ) {
+            return { value: rr.value[type], ttl: rr.ttl };
+        } else if (type === "CAA") {
+            const displayValue = { tag: rr.value[type].tag, ttl: rr.ttl };
 
-        record.rr_set[0].value.TLSA = {
-            data: Buffer.from(a).toString(),
-
-            usage: cert_usage.findIndex(e => e === record.rr_set[0].value.TLSA.cert_usage) + 1,
-
-            selector: selector.findIndex(e => e === record.rr_set[0].value.TLSA.selector) + 1,
-
-            matching_type: matching.findIndex(e => e === record.rr_set[0].value.TLSA.matching) + 1
-        };
-    } else if (
-        (type === "A" || type === "AAAA" || type === "NS" || type === "CNAME" || type === "PTR") &&
-        record.rr_set.length > 1
-    ) {
-        record.rr_set.forEach((e, i) => {
-            if (i > 0) record.rr_set[0].value[type] += " " + record.rr_set[i].value[type];
-        });
-    } else if (type === "CAA") {
-        const tag = record.rr_set[0].value[type].tag;
-        record.rr_set[0].value[type].tag = tag.toLowerCase();
-        if (tag === "Issue" || tag === "IssueWild") {
-            record.rr_set[0].value[type].value = record.rr_set[0].value[type].value.Issuer[0];
-        } else if (tag === "Iodef") {
-            record.rr_set[0].value[type].value = record.rr_set[0].value[type].value.Url;
+            if (displayValue.tag === "Issue" || displayValue.tag === "IssueWild") {
+                displayValue.value = rr.value[type].value.Issuer[0];
+            } else if (tag === "Iodef") {
+                displayValue.value = rr.value[type].value.Url;
+            }
+            return displayValue;
+        } else if (type === "SOA") {
+            return { ttl: rr.ttl, ...rr.value[type] };
+        } else if (type === "MX") {
+            return { ttl: rr.ttl, ...rr.value[type] };
+        } else if (type === "SRV") {
+            return { ttl: rr.ttl, ...rr.value[type] };
+        } else {
+            console.log("MISSING TYPE", type);
+            return false;
         }
-    }
+    });
 
     return {
         name,
-
         type,
-        ttl: record.rr_set[0].ttl,
-        value: record.rr_set[0].value as t.ResourceRecordValue
+        values: display_values
     };
 };
 
 export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
     record = cloneDeep(record);
-    let rr_set: PektinRRset = [{ value: record.value, ttl: record.ttl }];
-
-    if (
-        (record.type === "A" ||
-            record.type === "AAAA" ||
-            record.type === "NS" ||
-            record.type === "CNAME" ||
-            record.type === "PTR") &&
-        typeof record.value[record.type] === "string"
-    ) {
-        rr_set = record.value[record.type]
-            .split(" ")
-            .map((value: string) => {
-                if (typeof value === "string" && (record.type === "NS" || record.type === "CNAME"))
-                    value = l.absoluteName(value);
-                if (value.length) {
-                    return { value: { [record.type]: value }, ttl: record.ttl };
-                }
-                return false;
-            })
-            .filter(e => e);
-    } else if (record.type === "TXT") {
-        const buff = Buffer.from(rr_set[0].value.TXT, "utf-8");
-
-        rr_set[0].value.TXT = { txt_data: [buff.toJSON().data] };
-    } else if (record.type === "CAA") {
-        rr_set[0].value.CAA.issuer_critical = true;
-        const tag = rr_set[0].value.CAA.tag.toLowerCase();
-        if (tag === "issue" || tag === "issuewild") {
-            if (tag === "issue") {
-                rr_set[0].value.CAA.tag = "Issue";
-            } else {
-                rr_set[0].value.CAA.tag = "IssueWild";
-            }
-            rr_set[0].value.CAA.value = {
-                Issuer: [rr_set[0].value.CAA.value, []] //{ key: "", value: "" }
+    const rr_set: PektinRRset = record.values.map((rr, i) => {
+        if (record.type === "A" || record.type === "AAAA") {
+            return {
+                ttl: rr.ttl,
+                value: { [record.type]: rr.value }
             };
-        } else if (tag === "iodef") {
-            rr_set[0].value.CAA.tag = "Iodfef";
-            rr_set[0].value.CAA.value = { Url: rr_set[0].value.CAA.value };
-        }
-    } else if (record.type === "OPENPGPKEY") {
-        const buff = Buffer.from(rr_set[0].value.OPENPGPKEY, "utf-8");
-
-        rr_set[0].value.OPENPGPKEY = { public_key: buff.toJSON().data };
-    } else if (record.type === "TLSA") {
-        const cert_usage = ["CA", "Service", "TrustAnchor", "DomainIssued"];
-        const selector = ["Full", "Spki"];
-        const matching = ["Raw", "Sha256", "Sha512"];
-
-        const buff = Buffer.from(rr_set[0].value.TLSA.data, "utf-8");
-        rr_set[0].value.TLSA = {
-            cert_usage: cert_usage[rr_set[0].value.TLSA.usage - 1],
-            selector: selector[rr_set[0].value.TLSA.selector - 1],
-            matching: matching[rr_set[0].value.TLSA.matching_type - 1],
-            cert_data: buff.toJSON().data
-        };
-    }
-
-    if (l.rrTemplates[record.type].complex) {
-        const fieldNames = Object.keys(l.rrTemplates[record.type].fields);
-        const fieldValues = Object.keys(l.rrTemplates[record.type].fields);
-        fieldNames.forEach((fieldName: any, i) => {
-            const field = fieldValues[i];
-            if (field.absolute) {
-                record.value[record.type][fieldName] = l.absoluteName(
-                    record.value[record.type][fieldName]
-                );
-                if (field.name === "rname") {
-                    record.value[record.type][fieldName] = record.value[record.type][
-                        fieldName
-                    ].replaceAll("@", ".");
-                }
+        } else if (record.type === "NS" || record.type === "CNAME" || record.type === "PTR") {
+            return {
+                ttl: rr.ttl,
+                value: { [record.type]: l.absoluteName(rr.value) }
+            };
+        } else if (record.type === "TXT") {
+            const buff = Buffer.from(rr.value, "utf-8");
+            return {
+                ttl: rr.ttl,
+                value: { [record.type]: { txt_data: [buff.toJSON().data] } }
+            };
+        } else if (record.type === "CAA") {
+            if (rr.tag.toLowerCase() === "issue" || rr.tag.toLowerCase() === "issuewild") {
+                return {
+                    ttl: rr.ttl,
+                    value: {
+                        [record.type]: {
+                            tag: rr.tag.toLowerCase() === "issue" ? "Issue" : "IssueWild",
+                            Issuer: [rr.value, []]
+                        }
+                    }
+                };
+            } else if (tag === "iodef") {
+                return {
+                    ttl: rr.ttl,
+                    value: {
+                        [record.type]: {
+                            tag: "Iodef",
+                            Url: rr.value
+                        }
+                    }
+                };
+            } else {
+                return false;
             }
-        });
-    }
+        } else if (record.type === "OPENPGPKEY") {
+            const buff = Buffer.from(rr.value, "utf-8");
+            return { ttl: rr.ttl, value: { [record.type]: { public_key: buff.toJSON().data } } };
+        } else if (record.type === "TLSA") {
+            const cert_usage = ["CA", "Service", "TrustAnchor", "DomainIssued"];
+            const selector = ["Full", "Spki"];
+            const matching = ["Raw", "Sha256", "Sha512"];
+
+            const buff = Buffer.from(rr.data, "utf-8");
+            return {
+                ttl: rr.ttl,
+                value: {
+                    [record.type]: {
+                        cert_usage: cert_usage[rr.usage - 1],
+                        selector: selector[rr.selector - 1],
+                        matching: matching[rr.matching_type - 1],
+                        cert_data: buff.toJSON().data
+                    }
+                }
+            };
+        } else if (record.type === "SOA") {
+            return {
+                ttl: rr.ttl,
+                value: {
+                    [record.type]: {
+                        mname: rr.mname,
+                        rname: rr.rname,
+                        refresh: rr.refresh === undefined ? 0 : rr.refresh,
+                        retry: rr.retry === undefined ? 0 : rr.retry,
+                        serial: rr.serial === undefined ? 0 : rr.serial,
+                        expire: rr.expire === undefined ? 0 : rr.expire,
+                        minimum: rr.minimum === undefined ? 0 : rr.minimum
+                    }
+                }
+            };
+        } else if (record.type === "MX") {
+            return {
+                ttl: rr.ttl,
+                value: {
+                    [record.type]: {
+                        exchange: rr.exchange,
+                        preference: rr.preference === undefined ? 0 : rr.preference
+                    }
+                }
+            };
+        } else if (record.type === "SRV") {
+            return {
+                ttl: rr.ttl,
+                value: {
+                    [record.type]: {
+                        priority: rr.priority === undefined ? 0 : rr.priority,
+                        weight: rr.weight === undefined ? 0 : rr.weight,
+                        port: rr.port === undefined ? 0 : rr.port,
+                        target: rr.target === undefined ? "" : rr.target
+                    }
+                }
+            };
+        } else {
+            console.log("MISSING TYPE", record.type);
+            return false;
+        }
+    });
+
     return {
         name: `${l.absoluteName(record.name).toLowerCase()}:${record.type}`,
         rr_set

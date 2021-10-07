@@ -39,10 +39,10 @@ interface RowState {
 export default class RecordRow extends Component<RowProps, RowState> {
     advancedView = (record: t.DisplayRecord) => {
         const p = this.props;
-        const rr = record.value;
+        const rr = record.values;
 
         if (record.type === "SOA") {
-            const v = rr["SOA"] as t.SOAValue;
+            const v = rr[0] as t.SOA;
 
             return (
                 <Fragment>
@@ -79,14 +79,13 @@ export default class RecordRow extends Component<RowProps, RowState> {
     };
     simpleView = (record: t.DisplayRecord) => {
         const p = this.props;
-        const rr = record.value;
+        const rr = record.values;
         const type = record.type;
-        let v: any = rr[type];
+        let v: any = rr[0];
 
         const fields = l.rrTemplates[type]?.fields;
-        if (!fields) return;
 
-        const currentSearchField = this.props.meta.searchMatch.value[type] || false;
+        const currentSearchField = this.props.meta.searchMatch.values || false;
 
         const fieldKeys = Object.keys(fields);
         const fieldValues = Object.values(fields);
@@ -94,9 +93,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
             <Grid spacing={2} container>
                 {fieldKeys.map((fieldName: any, i: number) => {
                     const field: any = fieldValues[i];
-                    const fieldValue = fieldKeys.length > 1 ? v[fieldName] + "" : v + "";
+                    const fieldValue = fieldKeys?.length > 1 ? v[fieldName] + "" : v.value + "";
                     const isSearchMatch =
-                        typeof currentSearchField === "boolean"
+                        currentSearchField.value !== undefined
                             ? currentSearchField
                             : currentSearchField[fieldName];
 
@@ -249,7 +248,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             onInput={e => this.props.handleChange(e)}
                             name={`${p.index}:ttl:`}
                             type="number"
-                            value={record.ttl}
+                            value={record.values[0]?.ttl}
                         />
                     </span>
                     <span style={{ right: "100px", left: "580px", top: "5px" }}>

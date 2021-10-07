@@ -182,62 +182,56 @@ const providers: { [provider: string]: getDnsRecord } = {
 
 const simpleDnsRecordToDisplayRecord = (simple: t.RawDnsRecord): t.DisplayRecord => {
     return {
-        ...simple,
-        value: textToRRValue(simple.type, simple.value)
+        name: simple.name,
+        type: simple.type,
+        values: [textToRRValue(simple)]
     };
 };
-const textToRRValue = (recordType: t.RRTypes, text: string): t.ResourceRecordValue => {
+const textToRRValue = (simple: t.RawDnsRecord): t.ResourceRecordValue => {
+    const text = simple.value;
+    const ttl = simple.ttl;
+    const recordType = simple.type;
     const t = text.split(" ");
     switch (recordType) {
         case "SOA":
             return {
-                SOA: {
-                    mname: t[0],
-                    rname: t[1],
-                    serial: parseInt(t[2]),
-                    refresh: parseInt(t[3]),
-                    retry: parseInt(t[4]),
-                    expire: parseInt(t[5]),
-                    minimum: parseInt(t[6])
-                }
+                mname: t[0],
+                rname: t[1],
+                ttl
             };
         case "MX":
             return {
-                MX: {
-                    preference: parseInt(t[0]),
-                    exchange: t[1]
-                }
+                preference: parseInt(t[0]),
+                exchange: t[1],
+                ttl
             };
         case "SRV":
             return {
-                SRV: {
-                    priority: parseInt(t[0]),
-                    weight: parseInt(t[1]),
-                    port: parseInt(t[2]),
-                    target: t[3]
-                }
+                priority: parseInt(t[0]),
+                weight: parseInt(t[1]),
+                port: parseInt(t[2]),
+                target: t[3],
+                ttl
             };
 
         case "CAA":
             return {
-                CAA: {
-                    flag: parseInt(t[0]),
-                    tag: t[1] as "issue" | "issuewild" | "iodef",
-                    value: t[2].replaceAll('"', "")
-                }
+                flag: parseInt(t[0]),
+                tag: t[1] as "issue" | "issuewild" | "iodef",
+                value: t[2].replaceAll('"', ""),
+                ttl
             };
 
         case "TLSA":
             return {
-                TLSA: {
-                    usage: parseInt(t[0]),
-                    selector: parseInt(t[1]),
-                    matching_type: parseInt(t[2]),
-                    data: t[3]
-                }
+                usage: parseInt(t[0]) as 0 | 1 | 2 | 3,
+                selector: parseInt(t[1]) as 0 | 1,
+                matching_type: parseInt(t[2]) as 0 | 1 | 2,
+                data: t[3],
+                ttl
             };
 
         default:
-            return { [recordType]: text };
+            return { value: text, ttl };
     }
 };

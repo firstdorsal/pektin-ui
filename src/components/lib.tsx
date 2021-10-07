@@ -12,7 +12,7 @@ export const defaultSearchMatch = {
     name: false,
     type: false,
     ttl: false,
-    value: {}
+    values: []
 };
 
 export const defaultMeta = {
@@ -137,13 +137,13 @@ export const displayRecordToBind = (
     rec0: t.DisplayRecord,
     onlyValues: boolean = false
 ): ReactNode => {
-    if (!rec0 || !rec0.value) return "";
+    if (!rec0 || !rec0.values) return "";
     if (rec0.type === "SOA") {
-        const soa = rec0.value.SOA as t.SOAValue;
+        const soa = rec0.values[0] as t.SOA;
         if (onlyValues) return `${soa.mname} ${soa.rname}`;
-        return `${absoluteName(rec0.name)} ${rec0.ttl ? rec0.ttl : ""} IN ${rec0.type} ${
-            soa.mname
-        } ${soa.rname} ${soa.serial} ${soa.refresh} ${soa.retry} ${soa.expire} ${soa.minimum}`;
+        return `${absoluteName(rec0.name)} ${rec0.values[0].ttl ? rec0.values[0].ttl : ""} IN ${
+            rec0.type
+        } ${soa.mname} ${soa.rname} 0 0 0 0 0`;
     }
     return "Not Implemented for this record";
 };
@@ -317,7 +317,8 @@ export const validateIps = (input: string, type?: "legacy"): t.ValidationResult 
 export const rrTemplates: any = {
     AAAA: {
         template: {
-            AAAA: ""
+            value: "",
+            ttl: 3600
         },
         fields: {
             ip_addr: {
@@ -332,7 +333,8 @@ export const rrTemplates: any = {
     },
     A: {
         template: {
-            A: ""
+            value: "",
+            ttl: 3600
         },
         fields: {
             legacy_addr: {
@@ -347,7 +349,8 @@ export const rrTemplates: any = {
     },
     NS: {
         template: {
-            NS: ""
+            value: "",
+            ttl: 3600
         },
         fields: {
             name: {
@@ -363,7 +366,8 @@ export const rrTemplates: any = {
     },
     CNAME: {
         template: {
-            CNAME: ""
+            value: "",
+            ttl: 3600
         },
         fields: {
             name: {
@@ -379,7 +383,8 @@ export const rrTemplates: any = {
     },
     PTR: {
         template: {
-            PTR: ""
+            value: "",
+            ttl: 3600
         },
         fields: {
             name: {
@@ -395,15 +400,14 @@ export const rrTemplates: any = {
     },
     SOA: {
         template: {
-            SOA: {
-                mname: "",
-                rname: "hostmaster.",
-                serial: 0,
-                refresh: 0,
-                retry: 0,
-                expire: 0,
-                minimum: 0
-            }
+            mname: "",
+            rname: "hostmaster.",
+            serial: 0,
+            refresh: 0,
+            retry: 0,
+            expire: 0,
+            minimum: 0,
+            ttl: 3600
         },
         fields: {
             mname: {
@@ -453,10 +457,9 @@ export const rrTemplates: any = {
     },
     MX: {
         template: {
-            MX: {
-                preference: 10,
-                exchange: ""
-            }
+            preference: 10,
+            exchange: "",
+            ttl: 3600
         },
         fields: {
             preference: {
@@ -481,7 +484,8 @@ export const rrTemplates: any = {
     },
     TXT: {
         template: {
-            TXT: ""
+            value: "",
+            ttl: 3600
         },
         fields: {
             text: {
@@ -495,12 +499,11 @@ export const rrTemplates: any = {
     },
     SRV: {
         template: {
-            SRV: {
-                priority: 1,
-                weight: 1,
-                port: 443,
-                target: ""
-            }
+            priority: 1,
+            weight: 1,
+            port: 443,
+            target: "",
+            ttl: 3600
         },
         fields: {
             priority: {
@@ -535,18 +538,17 @@ export const rrTemplates: any = {
     },
     CAA: {
         template: {
-            CAA: {
-                flag: 0,
-                tag: "issue",
-                value: "letsencrypt.org"
-            }
+            flag: 0,
+            tag: "issue",
+            value: "letsencrypt.org",
+            ttl: 3600
         },
         fields: {
             tag: {
                 placeholder: "issue",
                 inputType: "text",
                 width: 6,
-                validate: (field: string, val: t.CAAValue): t.ValidationResult => {
+                validate: (field: string, val: t.CAA): t.ValidationResult => {
                     if (
                         field.toLowerCase().indexOf("issue") > -1 ||
                         field.toLowerCase().indexOf("issuewild") > -1 ||
@@ -572,7 +574,7 @@ export const rrTemplates: any = {
                 placeholder: "letsencrypt.org",
                 inputType: "text",
                 width: 6,
-                validate: (field: string, val: t.CAAValue): t.ValidationResult => {
+                validate: (field: string, val: t.CAA): t.ValidationResult => {
                     if (val.tag === "iodef") {
                         if (
                             field.indexOf("https://") === -1 &&
@@ -601,7 +603,8 @@ export const rrTemplates: any = {
     },
     OPENPGPKEY: {
         template: {
-            OPENPGPKEY: ""
+            value: "",
+            ttl: 3600
         },
         fields: { key: { placeholder: "", inputType: "text", width: 12 } },
         color: [145, 0, 7],
@@ -609,34 +612,33 @@ export const rrTemplates: any = {
     },
     TLSA: {
         template: {
-            TLSA: {
-                usage: 3,
-                selector: 1,
-                matching_type: 1,
-                data: ""
-            }
+            usage: 3,
+            selector: 1,
+            matching_type: 1,
+            data: "",
+            ttl: 3600
         },
         fields: {
             usage: {
                 placeholder: 3,
                 inputType: "number",
                 width: 2,
-                min: 1,
-                max: 4
+                min: 0,
+                max: 3
             },
             selector: {
                 placeholder: 1,
                 inputType: "number",
                 width: 2,
-                min: 1,
-                max: 2
+                min: 0,
+                max: 1
             },
             matching_type: {
                 placeholder: 1,
                 inputType: "number",
                 width: 2,
-                min: 1,
-                max: 3
+                min: 0,
+                max: 2
             },
             data: {
                 placeholder: "50c1ab1e11feb0a75",

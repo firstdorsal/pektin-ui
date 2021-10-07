@@ -78,7 +78,7 @@ export interface SearchMatch {
     name: boolean;
     type: boolean;
     ttl: boolean;
-    value: ValueSearchMatch;
+    values: ValueSearchMatch;
 }
 
 export interface DomainMeta {
@@ -92,27 +92,18 @@ export interface DomainMeta {
 
 export interface RawDnsRecord {
     name: string;
-    type: RRTypes;
+    type: RRType;
     ttl: number;
     value: string;
 }
 
 export interface DisplayRecord {
     name: string;
-    type: RRTypes;
-    ttl: number;
-    value: ResourceRecordValue;
+    type: RRType;
+    values: ResourceRecordValue[];
 }
 
-export type RRset = Array<ResourceRecord>;
-
-// a resource record with a ttl and the rr value
-export interface ResourceRecord {
-    ttl: number;
-    value: ResourceRecordValue;
-}
-
-export type RRTypes =
+export type RRType =
     | "NEW"
     | "A"
     | "AAAA"
@@ -127,7 +118,6 @@ export type RRTypes =
     | "OPENPGPKEY"
     | "TLSA";
 
-// the resource record value
 export type ResourceRecordValue =
     | A
     | AAAA
@@ -142,75 +132,62 @@ export type ResourceRecordValue =
     | OPENPGPKEY
     | TLSA;
 
-export interface A {
-    [A: string]: string;
+export interface RRVal {
+    ttl: number;
+    value?: string;
 }
-export interface AAAA {
-    [AAAA: string]: string;
+
+export interface A extends RRVal {
+    value: string;
 }
-export interface NS {
-    [NS: string]: string;
+export interface AAAA extends RRVal {
+    value: string;
 }
-export interface CNAME {
-    [CNAME: string]: string;
+export interface NS extends RRVal {
+    value: string;
 }
-export interface PTR {
-    [PTR: string]: string;
+export interface CNAME extends RRVal {
+    value: string;
 }
-export interface SOA {
-    [SOA: string]: SOAValue;
+export interface PTR extends RRVal {
+    value: string;
 }
-export interface SOAValue {
+export interface TXT extends RRVal {
+    value: string;
+}
+export interface OPENPGPKEY extends RRVal {
+    value: string;
+}
+export interface SOA extends RRVal {
     mname: string;
     rname: string;
-    serial: number;
-    refresh: number;
-    retry: number;
-    expire: number;
-    minimum: number;
 }
-export interface MX {
-    [MX: string]: MXValue;
-}
-export interface MXValue {
+
+export interface MX extends RRVal {
     preference: number;
     exchange: string;
 }
-export interface TXT {
-    [TXT: string]: string;
-}
 
-export interface SRV {
-    [SRV: string]: SRVValue;
-}
-export interface SRVValue {
+export interface SRV extends RRVal {
     priority: number;
     weight: number;
     port: number;
     target: string;
 }
 
-export interface CAA {
-    [CAA: string]: CAAValue;
-}
-export interface CAAValue {
+export interface CAA extends RRVal {
     flag: number; //0;
     tag: "issue" | "issuewild" | "iodef"; //"issue" | "issuewild" | "iodef" | "contactemail" | "contactphone";
     value: string;
 }
-export interface OPENPGPKEY {
-    [OPENPGPKEY: string]: string;
-}
 
-export interface TLSA {
-    [TLSA: string]: TLSAValue;
-}
-export interface TLSAValue {
-    usage: number;
-    selector: number;
-    matching_type: number;
+export interface TLSA extends RRVal {
+    usage: 0 | 1 | 2 | 3;
+    selector: 0 | 1;
+    matching_type: 0 | 1 | 2;
     data: string;
 }
+
 export type codeStyle =
     | "a11yDark"
     | "a11yLight"

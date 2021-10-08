@@ -21,6 +21,8 @@ export default class Config extends Component<ConfigProps, ConfigState> {
         this.setState(state => ({ ...state, [e.target.name]: e.target.value }));
     };
 
+    // TODO: update value in all entries in redis when variable was changed
+
     render = () => {
         return (
             <Container>
@@ -31,12 +33,17 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                 <br />
                 <h2>Variables</h2>
                 <p>
-                    These are stored locally in your browser and can be pasted in every input field via the context menu (right
-                    click)
+                    These are stored locally in your browser and can be pasted in every input field
+                    via the context menu (right click)
                 </p>
                 <p>The default context menu can still be accessed by holding alt, shift or ctrl</p>
                 <div>
-                    <TextField value={this.state.newKey} name="newKey" onChange={this.handleInputChange} placeholder="key" />
+                    <TextField
+                        value={this.state.newKey}
+                        name="newKey"
+                        onChange={this.handleInputChange}
+                        placeholder="key"
+                    />
                     <TextField
                         value={this.state.newValue}
                         name="newValue"
@@ -45,7 +52,10 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                     />
                     <IconButton
                         onClick={() => {
-                            this.props.g.updateLocalConfig({ key: this.state.newKey, value: this.state.newValue }, "newVariable");
+                            this.props.g.updateLocalConfig(
+                                { key: this.state.newKey, value: this.state.newValue },
+                                "newVariable"
+                            );
                             this.setState({ newKey: "", newValue: "" });
                         }}
                     >
@@ -57,18 +67,24 @@ export default class Config extends Component<ConfigProps, ConfigState> {
                     return (
                         <div key={i}>
                             <TextField
-                                onChange={e => this.props.g.updateLocalConfig(e, "updateVariable", i)}
+                                onChange={e =>
+                                    this.props.g.updateLocalConfig(e, "updateVariable", i)
+                                }
                                 name="key"
                                 placeholder="key"
                                 value={v.key}
                             />
                             <TextField
-                                onChange={e => this.props.g.updateLocalConfig(e, "updateVariable", i)}
+                                onChange={e =>
+                                    this.props.g.updateLocalConfig(e, "updateVariable", i)
+                                }
                                 name="value"
                                 placeholder="value"
                                 value={v.value}
                             />
-                            <IconButton onClick={e => this.props.g.updateLocalConfig(i, "removeVariable")}>
+                            <IconButton
+                                onClick={e => this.props.g.updateLocalConfig(i, "removeVariable")}
+                            >
                                 <RemoveCircle />
                             </IconButton>
                         </div>

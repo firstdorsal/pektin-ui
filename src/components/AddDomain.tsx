@@ -65,7 +65,12 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                     <Ballot />
                                     <span className="caps label">data</span>
                                 </div>
-                                <div className={l.validateDomain(this.state.record.name)?.type}>
+                                <div
+                                    className={
+                                        l.validateDomain(this.props.config, this.state.record.name)
+                                            ?.type
+                                    }
+                                >
                                     <br />
                                     <div className="tfName">name</div>
                                     <div className="tfHelper">
@@ -77,7 +82,10 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         value={this.state.record.name}
                                         name="name"
                                         helperText={
-                                            l.validateDomain(this.state.record.name)?.message || " "
+                                            l.validateDomain(
+                                                this.props.config,
+                                                this.state.record.name
+                                            )?.message || " "
                                         }
                                         InputLabelProps={{
                                             shrink: true
@@ -90,6 +98,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                     className={
                                         /*@ts-ignore*/
                                         l.rrTemplates["SOA"]?.fields.mname?.validate(
+                                            this.props.config,
                                             /*@ts-ignore*/
                                             this.state.record.values[0].mname
                                         )?.type
@@ -108,6 +117,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         value={this.state.record.values[0].mname}
                                         helperText={
                                             l.rrTemplates["SOA"]?.fields.mname?.validate(
+                                                this.props.config,
                                                 /*@ts-ignore*/
                                                 this.state.record.values[0].mname
                                             )?.message || " "
@@ -122,6 +132,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                     className={
                                         /*@ts-ignore*/
                                         l.rrTemplates["SOA"]?.fields.rname?.validate(
+                                            this.props.config,
                                             /*@ts-ignore*/
                                             this.state.record.values[0].rname
                                         )?.type
@@ -140,6 +151,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         value={this.state.record.values[0].rname}
                                         helperText={
                                             l.rrTemplates["SOA"]?.fields.rname?.validate(
+                                                this.props.config,
                                                 /*@ts-ignore*/
                                                 this.state.record.values[0].rname
                                             )?.message || " "

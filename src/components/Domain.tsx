@@ -248,7 +248,7 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 
     validateRecord = (record: t.DisplayRecord, domainName: string): t.FieldValidity => {
-        const valName = l.validateDomain(record?.name, { domainName });
+        const valName = l.validateDomain(this.props.config, record?.name, { domainName });
         /*@ts-ignore*/
         const fieldValidity: t.FieldValidity = {
             name: valName,
@@ -266,7 +266,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 if (l.rrTemplates[record.type]?.fields[templateFields[0]]?.validate) {
                     rrValidity[templateFields[0]] = l.rrTemplates[record.type].fields[
                         templateFields[0]
-                    ].validate(record.values[rrIndex].value);
+                    ].validate(this.props.config, record.values[rrIndex].value);
                     if (
                         fieldValidity.totalValidity !== "error" &&
                         rrValidity[templateFields[0]].type !== "ok"
@@ -281,6 +281,7 @@ class Domain extends Component<DomainProps, DomainState> {
                 keys.forEach((key, i) => {
                     if (l.rrTemplates[record.type]?.fields[key]?.validate !== undefined) {
                         rrValidity[key] = l.rrTemplates[record.type].fields[key].validate(
+                            this.props.config,
                             values[i],
                             record.values[rrIndex]
                         );
@@ -448,7 +449,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         // handle values column
                         const value = rec.values[0];
 
-                        if (value.value !== undefined) {
+                        if (value?.value !== undefined) {
                             const m = value.value.match(v);
                             if (m) {
                                 meta[i].searchMatch.values.value = !!m;
@@ -501,49 +502,59 @@ class Domain extends Component<DomainProps, DomainState> {
         this.setState(({ meta, search, replace, records, domainName }) => {
             records = cloneDeep(records);
             const regex = true;
-            meta.forEach((m, i) => {
+            meta.forEach((m, recordIndex) => {
                 if (!m.anySearchMatch) return;
                 if (m.searchMatch.name) {
                     const replaced = regex
-                        ? records[i].name.replaceAll(RegExp(search, "g"), replace)
-                        : records[i].name.replaceAll(search, replace);
+                        ? records[recordIndex].name.replaceAll(RegExp(search, "g"), replace)
+                        : records[recordIndex].name.replaceAll(search, replace);
 
-                    if (records[i].type === "SOA") {
+                    if (records[recordIndex].type === "SOA") {
                         if (this.props.variant === "import") {
                             domainName = replaced;
-                            records[i].name = replaced;
+                            records[recordIndex].name = replaced;
                         }
                     } else {
-                        records[i].name = replaced;
+                        records[recordIndex].name = replaced;
                     }
                 }
                 if (m.searchMatch.type) {
                     const replaced = regex
-                        ? (records[i].type.replaceAll(RegExp(search, "g"), replace) as t.RRType)
-                        : (records[i].type.replaceAll(search, replace) as t.RRType);
+                        ? (records[recordIndex].type.replaceAll(
+                              RegExp(search, "g"),
+                              replace
+                          ) as t.RRType)
+                        : (records[recordIndex].type.replaceAll(search, replace) as t.RRType);
 
-                    records[i].type = replaced;
-                    records[i].values = l.rrTemplates[replaced].template;
+                    if (records[recordIndex].type !== "SOA") {
+                        records[recordIndex].type = replaced;
+                        records[recordIndex].values = [l.rrTemplates[replaced].template];
+                    }
                 }
                 if (m.searchMatch.ttl) {
                     const replaced = regex
                         ? parseInt(
-                              records[i].values[0].ttl
+                              records[recordIndex].values[0].ttl
                                   .toString()
                                   .replaceAll(RegExp(search, "g"), replace)
                           )
-                        : parseInt(records[i].values[0].ttl.toString().replaceAll(search, replace));
+                        : parseInt(
+                              records[recordIndex].values[0].ttl
+                                  .toString()
+                                  .replaceAll(search, replace)
+                          );
 
-                    if (!isNaN(replaced) && replaced >= 0) records[i].values[0].ttl = replaced;
+                    if (!isNaN(replaced) && replaced >= 0)
+                        records[recordIndex].values[0].ttl = replaced;
                 }
                 if (m.searchMatch.values) {
-                    const type = records[i].type;
-                    const value = records[i].values[0];
-                    if (value.value !== undefined) {
+                    const type = records[recordIndex].type;
+                    const value = records[recordIndex].values[0];
+                    if (value?.value !== undefined) {
                         const replaced = regex
                             ? value.value.replaceAll(RegExp(search, "g"), replace)
                             : value.value.replaceAll(search, replace);
-                        records[i].values[0].value = replaced;
+                        records[recordIndex].values[0].value = replaced;
                     } else {
                         let smKeys: any[] = [];
                         if (m.searchMatch.values[type])
@@ -558,12 +569,20 @@ class Domain extends Component<DomainProps, DomainState> {
                                     ? fieldValue.replaceAll(RegExp(search, "g"), replace)
                                     : fieldValue.replaceAll(search, replace);
                                 /*@ts-ignore*/
-                                records[i].values[type][smKeys[ii]] = replaced;
+                                records[recordIndex].values[type][smKeys[ii]] = replaced;
                             }
                         }
                     }
                 }
-                meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
+                meta[recordIndex] = cloneDeep(meta[recordIndex]);
+                meta[recordIndex].validity = this.validateRecord(
+                    records[recordIndex],
+                    this.state.domainName
+                );
+                meta[recordIndex].changed = !isEqual(
+                    records[recordIndex],
+                    this.state.ogRecords[recordIndex]
+                );
             });
             return { records, meta, domainName };
         });

@@ -66,6 +66,7 @@ export interface LocalConfig {
     codeStyle: codeStyle;
     variables: Variable[];
     synesthesia: boolean;
+    replaceVariables: boolean;
 }
 
 export interface PektinUiConnectionConfig {

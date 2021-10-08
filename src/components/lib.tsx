@@ -34,9 +34,30 @@ export const regex = {
         /^(?:[a-z0-9_](?:[a-z0-9-_]{0,61}[a-z0-9_]|[-]{2,}?)?\.)+[a-z0-9-_][a-z0-9-]{0,61}[a-z0-9]{1,61}[.]?$/
 };
 
-export const variablesToValues = (variables: t.Variable[], input: string) => {};
+export const variablesToValues = (config: t.Config, input: string) => {
+    if (!config?.local?.replaceVariables) return input;
+    const variables = config?.local?.variables;
+    console.log(variables, input);
+    if (!variables) return input;
 
-export const valuesToVariables = (variables: t.Variable[], input: string) => {};
+    if (!input) return "";
+    for (let i = 0; i < variables.length; i++) {
+        input = input.replaceAll(`$${variables[i].key}`, variables[i].value);
+    }
+    return input;
+};
+
+export const valuesToVariables = (config: t.Config, input: string) => {
+    if (!config?.local?.replaceVariables) return input;
+    const variables = config?.local?.variables;
+    if (!variables) return input;
+
+    if (!input) return "";
+    for (let i = 0; i < variables.length; i++) {
+        input = input.replaceAll(variables[i].value, `$${variables[i].key}`);
+    }
+    return input;
+};
 
 export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
     return pektinApi.jsTemp(config, records);
@@ -70,19 +91,27 @@ export const addDomain = (config: t.Config, record: t.DisplayRecord, format = "p
     return pektinApi.addDomain(config, [record]);
 };
 
-export const toRealRecord = (dData: t.DisplayRecord, format = "pektin"): RealData => {
+export const toRealRecord = (
+    config: t.Config,
+    dData: t.DisplayRecord,
+    format = "pektin"
+): RealData => {
     if (format === "something") {
-        return pektinApi.toRealRecord(dData);
+        return pektinApi.toRealRecord(config, dData);
     } else {
-        return pektinApi.toRealRecord(dData);
+        return pektinApi.toRealRecord(config, dData);
     }
 };
 
-export const toDisplayRecord = (rData: RealData, format = "pektin"): t.DisplayRecord => {
+export const toDisplayRecord = (
+    config: t.Config,
+    rData: RealData,
+    format = "pektin"
+): t.DisplayRecord => {
     if (format === "something") {
-        return pektinApi.toDisplayRecord(rData);
+        return pektinApi.toDisplayRecord(config, rData);
     } else {
-        return pektinApi.toDisplayRecord(rData);
+        return pektinApi.toDisplayRecord(config, rData);
     }
 };
 
@@ -110,7 +139,8 @@ const defaultLocalConfig: t.LocalConfig = {
     defaultActiveTab: 0,
     codeStyle: "dracula",
     variables: [],
-    synesthesia: false
+    synesthesia: false,
+    replaceVariables: true
 };
 
 export const defaulConfig: t.Config = {
@@ -179,7 +209,12 @@ export const asciiToUnicode = (input: string) => {
     return punycode.toUnicode(input);
 };
 
-export const validateDomain = (input: string, params?: t.ValidateParams): t.ValidationResult => {
+export const validateDomain = (
+    config: t.Config,
+    input: string,
+    params?: t.ValidateParams
+): t.ValidationResult => {
+    input = variablesToValues(config, input);
     const ogInput = input;
     input = input.replace(/\s+/g, "");
     input = unicodeToAscii(input);
@@ -245,7 +280,13 @@ export const validateDomain = (input: string, params?: t.ValidateParams): t.Vali
     return { type: "ok" };
 };
 
-export const validateIp = (input: string, type?: "legacy"): t.ValidationResult => {
+export const validateIp = (
+    config: t.Config,
+    input: string,
+    type?: "legacy"
+): t.ValidationResult => {
+    input = variablesToValues(config, input);
+
     const ogInput = input;
     input = input.replaceAll(/\s+/g, "");
 
@@ -283,7 +324,8 @@ export const rrTemplates: any = {
                 name: "ip",
                 inputType: "text",
                 width: 12,
-                validate: (field: string): t.ValidationResult => validateIp(field)
+                validate: (config: t.Config, field: string): t.ValidationResult =>
+                    validateIp(config, field)
             }
         },
         color: [43, 255, 0],
@@ -300,7 +342,8 @@ export const rrTemplates: any = {
                 name: "legacy ip",
                 inputType: "text",
                 width: 12,
-                validate: (field: string): t.ValidationResult => validateIp(field, "legacy")
+                validate: (config: t.Config, field: string): t.ValidationResult =>
+                    validateIp(config, field, "legacy")
             }
         },
         color: [82, 51, 18],
@@ -318,7 +361,8 @@ export const rrTemplates: any = {
                 name: "nameserver",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomain(field)
+                validate: (config: t.Config, field: string): t.ValidationResult =>
+                    validateDomain(config, field)
             }
         },
         color: [29, 117, 0],
@@ -336,7 +380,8 @@ export const rrTemplates: any = {
                 name: "canonical name",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomain(field)
+                validate: (config: t.Config, field: string): t.ValidationResult =>
+                    validateDomain(config, field)
             }
         },
         color: [255, 0, 0],
@@ -354,7 +399,8 @@ export const rrTemplates: any = {
                 name: "pointer",
                 width: 12,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomain(field)
+                validate: (config: t.Config, field: string): t.ValidationResult =>
+                    validateDomain(config, field)
             }
         },
         color: [255, 122, 0],
@@ -379,7 +425,8 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 6,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomain(field)
+                validate: (config: t.Config, field: string): t.ValidationResult =>
+                    validateDomain(config, field)
             },
             rname: {
                 placeholder: "hostmaster.example.com.",
@@ -388,8 +435,8 @@ export const rrTemplates: any = {
                 name: "hostmaster contact",
                 width: 6,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => {
-                    const dv = validateDomain(field);
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    const dv = validateDomain(config, field);
                     if (dv.type !== "ok") return dv;
                     if (field.indexOf("@") > -1) {
                         return {
@@ -439,9 +486,9 @@ export const rrTemplates: any = {
                 name: "mail exchange",
                 width: 9,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => {
+                validate: (config: t.Config, field: string): t.ValidationResult => {
                     if (field === ".") return { type: "ok" };
-                    return validateDomain(field);
+                    return validateDomain(config, field);
                 }
             }
         },
@@ -501,7 +548,8 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 6,
                 absolute: true,
-                validate: (field: string): t.ValidationResult => validateDomain(field)
+                validate: (config: t.Config, field: string): t.ValidationResult =>
+                    validateDomain(config, field)
             }
         },
         color: [149, 61, 196],
@@ -520,7 +568,7 @@ export const rrTemplates: any = {
                 inputType: "text",
                 name: "tag",
                 width: 6,
-                validate: (field: string, val: t.CAA): t.ValidationResult => {
+                validate: (config: t.Config, field: string): t.ValidationResult => {
                     if (
                         field.toLowerCase().indexOf("issue") > -1 ||
                         field.toLowerCase().indexOf("issuewild") > -1 ||
@@ -547,7 +595,7 @@ export const rrTemplates: any = {
                 name: "value",
                 inputType: "text",
                 width: 6,
-                validate: (field: string, val: t.CAA): t.ValidationResult => {
+                validate: (config: t.Config, field: string, val: t.CAA): t.ValidationResult => {
                     if (val.tag === "iodef") {
                         if (
                             field.indexOf("https://") === -1 &&
@@ -566,7 +614,7 @@ export const rrTemplates: any = {
                             message: `CAA values should NOT be absolute names (NOT end with a dot)`
                         };
                     }
-                    return validateDomain(field + ".");
+                    return validateDomain(config, field + ".");
                 }
             }
         },

@@ -39,10 +39,10 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         const codeStyle = codeStyles[this.props.config.local.codeStyle];
         const tabs = [
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="json">
-                {JSON.stringify(l.toRealRecord(this.props.data), null, "    ")}
+                {JSON.stringify(l.toRealRecord(this.props.config, this.props.data), null, "    ")}
             </SyntaxHighlighter>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="yaml">
-                {toYaml(l.toRealRecord(this.props.data))}
+                {toYaml(l.toRealRecord(this.props.config, this.props.data))}
             </SyntaxHighlighter>,
             <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
                 {l.jsTemp(this.props.config, [this.props.data])}
@@ -145,7 +145,7 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
     curl = (auth: any, data: t.DisplayRecord, multiline: boolean) => {
         const body = {
             token: auth.dev ? auth.token : "API_TOKEN",
-            records: [l.toRealRecord(data)]
+            records: [l.toRealRecord(this.props.config, data)]
         };
 
         if (multiline)

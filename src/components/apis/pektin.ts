@@ -46,7 +46,11 @@ const res = await fetch(endpoint + "/set", {
     body: JSON.stringify({
         token,
         records: 
-                ${JSON.stringify(records.map(toRealRecord), null, "    ")}
+                ${JSON.stringify(
+                    records.map(record => toRealRecord(config, record)),
+                    null,
+                    "    "
+                )}
     })
 }).catch(e => {
     console.log(e);
@@ -113,22 +117,28 @@ export const getRecords = async (config: t.Config, domainName: string) => {
         records[i] = { name: e, ...recordValues[i] };
     });
 
-    return records.map(toDisplayRecord);
+    return records.map(record => toDisplayRecord(config, record));
 };
 
 export const setRecords = async (config: t.Config, records: t.DisplayRecord[]) => {
-    return await request(config, "set", { records: records.map(toRealRecord) });
+    return await request(config, "set", {
+        records: records.map(record => toRealRecord(config, record))
+    });
 };
 
 export const deleteRecords = async (config: t.Config, records: t.DisplayRecord[]) => {
-    return await request(config, "delete", { keys: records.map(toRealRecord).map(e => e.name) });
+    return await request(config, "delete", {
+        keys: records.map(record => toRealRecord(config, record)).map(e => e.name)
+    });
 };
 
 export const addDomain = async (config: t.Config, records: t.DisplayRecord[]) => {
-    return await request(config, "set", { records: records.map(toRealRecord) });
+    return await request(config, "set", {
+        records: records.map(record => toRealRecord(config, record))
+    });
 };
 
-export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
+export const toDisplayRecord = (config: t.Config, record: RedisEntry): t.DisplayRecord => {
     const [name, type]: [string, PektinRRTypes] = record.name.split(":");
     const { rr_set } = record;
     const display_values = rr_set.map((rr, i) => {
@@ -159,7 +169,10 @@ export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
             type === "CNAME" ||
             type === "PTR"
         ) {
-            return { value: rr.value[type], ttl: rr.ttl };
+            return {
+                value: l.valuesToVariables(config, rr.value[type]),
+                ttl: rr.ttl
+            };
         } else if (type === "CAA") {
             const displayValue = { tag: rr.value[type].tag, ttl: rr.ttl };
 
@@ -189,18 +202,23 @@ export const toDisplayRecord = (record: RedisEntry): t.DisplayRecord => {
     };
 };
 
-export const toRealRecord = (record: t.DisplayRecord): RedisEntry => {
+export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEntry => {
     record = cloneDeep(record);
     const rr_set: PektinRRset = record.values.map((rr, i) => {
         if (record.type === "A" || record.type === "AAAA") {
             return {
                 ttl: rr.ttl,
-                value: { [record.type]: rr.value.replace(/\s+/g, "") }
+                value: { [record.type]: l.variablesToValues(config, rr.value.replace(/\s+/g, "")) }
             };
         } else if (record.type === "NS" || record.type === "CNAME" || record.type === "PTR") {
             return {
                 ttl: rr.ttl,
-                value: { [record.type]: l.absoluteName(rr.value.replace(/\s+/g, "")) }
+                value: {
+                    [record.type]: l.variablesToValues(
+                        config,
+                        l.absoluteName(rr.value.replace(/\s+/g, ""))
+                    )
+                }
             };
         } else if (record.type === "TXT") {
             const buff = Buffer.from(rr.value, "utf-8");

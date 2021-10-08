@@ -19,13 +19,10 @@ export class ContextMenu extends Component<ContextMenuProps, ContextMenuState> {
         contextMenu: false
     };
     componentDidUpdate = () => {
-        if (this.state.contextMenu !== this.props.g.contextMenu) this.setState({ contextMenu: this.props.g.contextMenu });
+        if (this.state.contextMenu !== this.props.g.contextMenu)
+            this.setState({ contextMenu: this.props.g.contextMenu });
     };
-    /*
-    shouldComponentUpdate = (nextProps: ContextMenuProps, nextState: ContextMenuState) => {
-        if (nextProps.g.contextMenu === this.props.g.contextMenu) return false;
-        return true;
-    };*/
+
     render = () => {
         const contextMenu = () => {
             const cm = this.state.contextMenu;
@@ -35,12 +32,15 @@ export class ContextMenu extends Component<ContextMenuProps, ContextMenuState> {
             const renderVariables = () => {
                 return variables.length ? (
                     variables.map((e: any, i: number) => {
-                        let disabled = target.type === "number" && isNaN(parseInt(e.value)) ? "nan" : false;
+                        let disabled =
+                            target.type === "number" && isNaN(parseInt(e.value)) ? "nan" : false;
                         if (target.disabled) disabled = "disabled";
 
                         const style = disabled ? { color: "var(--b1)" } : { cursor: "pointer" };
                         let title =
-                            disabled === "nan" ? `"${e.value}" can't be used here as it cannot be casted into a number` : e.value;
+                            disabled === "nan"
+                                ? `"${e.value}" can't be used here as it cannot be casted into a number`
+                                : e.value;
                         if (disabled === "disabled") title = "This field is disabled";
                         return (
                             <div

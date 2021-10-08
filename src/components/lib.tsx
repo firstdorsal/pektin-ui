@@ -34,6 +34,10 @@ export const regex = {
         /^(?:[a-z0-9_](?:[a-z0-9-_]{0,61}[a-z0-9_]|[-]{2,}?)?\.)+[a-z0-9-_][a-z0-9-]{0,61}[a-z0-9]{1,61}[.]?$/
 };
 
+export const variablesToValues = (variables: t.Variable[], input: string) => {};
+
+export const valuesToVariables = (variables: t.Variable[], input: string) => {};
+
 export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
     return pektinApi.jsTemp(config, records);
 };
@@ -180,7 +184,11 @@ export const validateDomain = (input: string, params?: t.ValidateParams): t.Vali
     input = input.replace(/\s+/g, "");
     input = unicodeToAscii(input);
 
-    if (input === undefined || !input.toLowerCase().replace("*.", "").match(regex.domainName)) {
+    if (
+        input === undefined ||
+        input.length === 0 ||
+        !input.toLowerCase().replace("*.", "").match(regex.domainName)
+    ) {
         return { type: "error", message: "Invalid domain" };
     }
 
@@ -242,13 +250,13 @@ export const validateIp = (input: string, type?: "legacy"): t.ValidationResult =
     input = input.replaceAll(/\s+/g, "");
 
     if (type === "legacy") {
-        if (input === undefined || !input.match(regex.legacyIp)) {
+        if (input === undefined || input.length === 0 || !input.match(regex.legacyIp)) {
             return {
                 type: "error",
                 message: "Invalid legacy/V4 IP adress"
             };
         }
-    } else if (input === undefined || !input.match(regex.ip)) {
+    } else if (input === undefined || input.length === 0 || !input.match(regex.ip)) {
         return { type: "error", message: "Invalid IP" };
     }
     if (input !== input.toLowerCase()) {
@@ -272,6 +280,7 @@ export const rrTemplates: any = {
         fields: {
             ip_addr: {
                 placeholder: "1:see:bad:c0de",
+                name: "ip",
                 inputType: "text",
                 width: 12,
                 validate: (field: string): t.ValidationResult => validateIp(field)
@@ -288,6 +297,7 @@ export const rrTemplates: any = {
         fields: {
             legacy_addr: {
                 placeholder: "127.0.0.1",
+                name: "legacy ip",
                 inputType: "text",
                 width: 12,
                 validate: (field: string): t.ValidationResult => validateIp(field, "legacy")
@@ -305,6 +315,7 @@ export const rrTemplates: any = {
             name: {
                 placeholder: "ns1.example.com.",
                 inputType: "text",
+                name: "nameserver",
                 width: 12,
                 absolute: true,
                 validate: (field: string): t.ValidationResult => validateDomain(field)
@@ -322,6 +333,7 @@ export const rrTemplates: any = {
             name: {
                 placeholder: "example.com.",
                 inputType: "text",
+                name: "canonical name",
                 width: 12,
                 absolute: true,
                 validate: (field: string): t.ValidationResult => validateDomain(field)
@@ -339,6 +351,7 @@ export const rrTemplates: any = {
             name: {
                 placeholder: "example.com.",
                 inputType: "text",
+                name: "pointer",
                 width: 12,
                 absolute: true,
                 validate: (field: string): t.ValidationResult => validateDomain(field)
@@ -362,6 +375,7 @@ export const rrTemplates: any = {
             mname: {
                 placeholder: "ns1.example.com.",
                 helperText: "The domain's primary name server",
+                name: "primary nameserver",
                 inputType: "text",
                 width: 6,
                 absolute: true,
@@ -371,6 +385,7 @@ export const rrTemplates: any = {
                 placeholder: "hostmaster.example.com.",
                 helperText: "The hostmaster's email, the @ is replaced with a dot",
                 inputType: "text",
+                name: "hostmaster contact",
                 width: 6,
                 absolute: true,
                 validate: (field: string): t.ValidationResult => {
@@ -414,12 +429,14 @@ export const rrTemplates: any = {
             preference: {
                 placeholder: "10",
                 inputType: "number",
+                name: "preference",
                 width: 3,
                 min: 0
             },
             exchange: {
                 placeholder: "mx.example.com.",
                 inputType: "text",
+                name: "mail exchange",
                 width: 9,
                 absolute: true,
                 validate: (field: string): t.ValidationResult => {
@@ -440,6 +457,7 @@ export const rrTemplates: any = {
             text: {
                 placeholder: "this is some text",
                 inputType: "text",
+                name: "text",
                 width: 12
             }
         },
@@ -458,17 +476,20 @@ export const rrTemplates: any = {
             priority: {
                 placeholder: 1,
                 inputType: "number",
+                name: "priority",
                 width: 2,
                 min: 0
             },
             weight: {
                 placeholder: 1,
+                name: "weight",
                 inputType: "number",
                 width: 2,
                 min: 0
             },
             port: {
                 placeholder: 443,
+                name: "port",
                 inputType: "number",
                 width: 2,
                 min: 0,
@@ -476,6 +497,7 @@ export const rrTemplates: any = {
             },
             target: {
                 placeholder: "mx.example.com.",
+                name: "target domain",
                 inputType: "text",
                 width: 6,
                 absolute: true,
@@ -496,6 +518,7 @@ export const rrTemplates: any = {
             tag: {
                 placeholder: "issue",
                 inputType: "text",
+                name: "tag",
                 width: 6,
                 validate: (field: string, val: t.CAA): t.ValidationResult => {
                     if (
@@ -521,6 +544,7 @@ export const rrTemplates: any = {
             },
             caaValue: {
                 placeholder: "letsencrypt.org",
+                name: "value",
                 inputType: "text",
                 width: 6,
                 validate: (field: string, val: t.CAA): t.ValidationResult => {
@@ -555,7 +579,7 @@ export const rrTemplates: any = {
             value: "",
             ttl: 3600
         },
-        fields: { key: { placeholder: "", inputType: "text", width: 12 } },
+        fields: { key: { placeholder: "", name: "public key", inputType: "text", width: 12 } },
         color: [145, 0, 7],
         complex: false
     },
@@ -570,6 +594,7 @@ export const rrTemplates: any = {
         fields: {
             usage: {
                 placeholder: 3,
+                name: "usage",
                 inputType: "number",
                 width: 2,
                 min: 0,
@@ -577,6 +602,7 @@ export const rrTemplates: any = {
             },
             selector: {
                 placeholder: 1,
+                name: "selector",
                 inputType: "number",
                 width: 2,
                 min: 0,
@@ -584,6 +610,7 @@ export const rrTemplates: any = {
             },
             matching_type: {
                 placeholder: 1,
+                name: "matching",
                 inputType: "number",
                 width: 2,
                 min: 0,
@@ -591,6 +618,7 @@ export const rrTemplates: any = {
             },
             data: {
                 placeholder: "50c1ab1e11feb0a75",
+                name: "data",
                 inputType: "text",
                 width: 6
             }

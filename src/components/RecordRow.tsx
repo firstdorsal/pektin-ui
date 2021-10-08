@@ -15,14 +15,23 @@ import {
     Container
 } from "@material-ui/core";
 import DataDisplay from "./DataDisplay";
-import { Ballot, Check, Clear, Info, KeyboardArrowDown, KeyboardArrowUp } from "@material-ui/icons";
+import {
+    AddCircle,
+    Ballot,
+    Check,
+    Clear,
+    Info,
+    KeyboardArrowDown,
+    KeyboardArrowUp,
+    RemoveCircle
+} from "@material-ui/icons";
 import isEqual from "lodash/isEqual";
 
 interface RowProps {
     readonly handleChange: Function;
     readonly saveRecord: any;
     readonly changeMeta: Function;
-    readonly index: number;
+    readonly recordIndex: number;
     readonly record: t.DisplayRecord;
     readonly meta: t.DomainMeta;
     readonly config: t.Config;
@@ -31,6 +40,8 @@ interface RowProps {
     readonly domainName: string;
     readonly variant?: string;
     readonly totalRows: number;
+    readonly addRRValue: Function;
+    readonly removeRRValue: Function;
 }
 interface RowState {
     //dnssec: boolean;
@@ -40,13 +51,87 @@ export default class RecordRow extends Component<RowProps, RowState> {
     advancedView = (record: t.DisplayRecord) => {
         const p = this.props;
         const rr = record.values;
+        const recordValue = (record: t.DisplayRecord, rrIndex: number) => {
+            let v: any = record.values[rrIndex];
+            const { type } = record;
 
+            const fields = l.rrTemplates[type]?.fields;
+            const fieldNames = Object.keys(fields);
+            const fieldValues = Object.values(fields);
+            return (
+                <div style={{ position: "relative" }}>
+                    <Grid
+                        spacing={2}
+                        container
+                        style={{
+                            width: "calc(100% - 25px)"
+                        }}
+                    >
+                        {fieldNames.map((fieldName: any, fieldIndex: number) => {
+                            const field: any = fieldValues[fieldIndex];
+                            const fieldValue =
+                                fieldNames?.length > 1 ? v[fieldName] + "" : v.value + "";
+
+                            const verify =
+                                this.props.meta.validity && this.props.meta.validity.values[rrIndex]
+                                    ? this.props.meta.validity.values[rrIndex][fieldName]
+                                    : undefined;
+
+                            return (
+                                <Grid
+                                    key={`${p.recordIndex}:rrField:${rrIndex}:${fieldName}`}
+                                    xs={field.width}
+                                    item
+                                >
+                                    <TextField
+                                        size="small"
+                                        type={field.inputType}
+                                        style={{
+                                            width: "100%"
+                                        }}
+                                        className={verify !== undefined ? verify?.type : ""}
+                                        onChange={e => this.props.handleChange(e)}
+                                        placeholder={field.placeholder.toString()}
+                                        title={verify ? verify.message : ""}
+                                        InputLabelProps={{
+                                            shrink: true
+                                        }}
+                                        inputProps={{
+                                            min: field.min,
+                                            max: field.max
+                                        }}
+                                        label={field.name}
+                                        name={`${p.recordIndex}:rrField:${rrIndex}:${fieldName}`}
+                                        value={fieldValue}
+                                    />
+                                </Grid>
+                            );
+                        })}
+                    </Grid>
+                    <span>
+                        <IconButton
+                            disabled={record.values.length === 1}
+                            title="Remove resource record"
+                            style={{
+                                width: "35px",
+                                height: "35px",
+                                position: "absolute",
+                                bottom: "5px",
+                                right: "0px"
+                            }}
+                            onClick={e => this.props.removeRRValue(this.props.recordIndex, rrIndex)}
+                        >
+                            <RemoveCircle />
+                        </IconButton>
+                    </span>
+                </div>
+            );
+        };
         if (record.type === "SOA") {
             const v = rr[0] as t.SOA;
-
             return (
                 <Fragment>
-                    <div className={this.props.meta.validity?.mname?.type}>
+                    <div className={this.props.meta.validity?.values[0].mname?.type}>
                         <br />
                         <div className="tfName">mname</div>
                         <div className="tfHelper">
@@ -54,27 +139,31 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         </div>
                         <TextField
                             onChange={e => this.props.handleChange(e)}
-                            helperText={this.props.meta.validity?.mname?.message || " "}
+                            helperText={this.props.meta.validity?.values[0].mname?.message || " "}
                             placeholder="ns1.example.com"
-                            name={`${p.index}:rrField:mname`}
+                            name={`${p.recordIndex}:rrField:0:mname`}
                             value={v.mname + ""}
                         />
                     </div>
-                    <div className={this.props.meta.validity?.rname?.type}>
+                    <div className={this.props.meta.validity?.values[0].rname?.type}>
                         <div className="tfName">rname</div>
                         <div className="tfHelper">
                             {l.rrTemplates["SOA"].fields.rname.helperText}
                         </div>
                         <TextField
                             onChange={e => this.props.handleChange(e)}
-                            helperText={this.props.meta.validity?.rname?.message || " "}
+                            helperText={this.props.meta.validity?.values[0].rname?.message || " "}
                             placeholder="hostmaster.example.com"
-                            name={`${p.index}:rrField:rname`}
+                            name={`${p.recordIndex}:rrField:0:rname`}
                             value={v.rname + ""}
                         />
                     </div>
                 </Fragment>
             );
+        } else {
+            return this.props.record.values.map((value, rrIndex) => {
+                return recordValue(this.props.record, rrIndex);
+            });
         }
     };
     simpleView = (record: t.DisplayRecord) => {
@@ -87,20 +176,20 @@ export default class RecordRow extends Component<RowProps, RowState> {
 
         const currentSearchField = this.props.meta.searchMatch.values || false;
 
-        const fieldKeys = Object.keys(fields);
+        const fieldNames = Object.keys(fields);
         const fieldValues = Object.values(fields);
         return (
             <Grid spacing={2} container>
-                {fieldKeys.map((fieldName: any, i: number) => {
-                    const field: any = fieldValues[i];
-                    const fieldValue = fieldKeys?.length > 1 ? v[fieldName] + "" : v.value + "";
+                {fieldNames.map((fieldName: any, fieldIndex: number) => {
+                    const field: any = fieldValues[fieldIndex];
+                    const fieldValue = fieldNames?.length > 1 ? v[fieldName] + "" : v.value + "";
                     const isSearchMatch =
                         currentSearchField.value !== undefined
                             ? currentSearchField
                             : currentSearchField[fieldName];
 
                     const verify = this.props.meta.validity
-                        ? this.props.meta.validity[fieldName]
+                        ? this.props.meta.validity.values[0][fieldName]
                         : undefined;
 
                     return (
@@ -126,8 +215,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                     min: field.min,
                                     max: field.max
                                 }}
-                                label={fieldName}
-                                name={`${p.index}:rrField:${fieldName}`}
+                                label={field.name}
+                                name={`${p.recordIndex}:rrField:0:${fieldName}`}
                                 value={fieldValue}
                             />
                         </Grid>
@@ -163,14 +252,14 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     borderLeft: `5px solid rgb(${color})`,
                     opacity
                 }}
-                title={`${this.props.index + 1}/${this.props.totalRows}`}
+                //title={`${this.props.index + 1}/${this.props.totalRows}`}
             >
                 <div className="recRow" style={{ position: "relative" }}>
                     <span style={{ left: "10px", top: "10px" }}>
                         <Checkbox
                             checked={this.props.meta?.selected}
                             name="selected"
-                            onChange={e => this.props.changeMeta(e, p.index, "selected")}
+                            onChange={e => this.props.changeMeta(e, p.recordIndex, "selected")}
                         />
                     </span>
 
@@ -182,20 +271,20 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         }}
                         className={(() => {
                             let c = this.props.meta?.searchMatch.name ? "searchMatch" : "";
-                            const d = this.props.meta.validity?.recordName;
+                            const d = this.props.meta.validity?.name;
                             c += " " + d?.type;
                             return c;
                         })()}
                     >
                         <TextField
                             onInput={e => this.props.handleChange(e)}
-                            name={`${p.index}:name:`}
+                            name={`${p.recordIndex}:name:`}
                             type="text"
                             disabled={!editable}
                             style={{ width: "100%" }}
                             value={record.name}
                             placeholder={this.props.domainName}
-                            title={this.props.meta.validity?.recordName?.message}
+                            title={this.props.meta.validity?.name?.message}
                         />
                     </span>
                     <span
@@ -211,7 +300,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         ) : (
                             <Select
                                 style={{ width: "100%" }}
-                                name={`${p.index}:type:`}
+                                name={`${p.recordIndex}:type:`}
                                 disabled={!editable}
                                 value={record.type}
                                 onChange={e => this.props.handleChange(e)}
@@ -246,9 +335,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     >
                         <Input
                             onInput={e => this.props.handleChange(e)}
-                            name={`${p.index}:ttl:`}
+                            name={`${p.recordIndex}:ttl:`}
                             type="number"
                             value={record.values[0]?.ttl}
+                            inputProps={{
+                                min: 0
+                            }}
                         />
                     </span>
                     <span style={{ right: "100px", left: "580px", top: "5px" }}>
@@ -265,7 +357,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     >
                         <IconButton
                             size="small"
-                            onClick={e => this.props.changeMeta(e, p.index, "expanded")}
+                            title={this.props.meta?.expanded ? "Collapse" : "Expand"}
+                            onClick={e => this.props.changeMeta(e, p.recordIndex, "expanded")}
                         >
                             {this.props.meta?.expanded ? (
                                 <KeyboardArrowUp name="expanded" />
@@ -286,7 +379,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             }}
                         >
                             <Fab
-                                onClick={() => this.props.saveRecord(p.index)}
+                                onClick={() => this.props.saveRecord(p.recordIndex)}
                                 disabled={(() => {
                                     if (!this.props.meta?.changed) return true;
 
@@ -330,15 +423,32 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 spacing={3}
                                 style={{ maxWidth: "100%", margin: "20px 0px" }}
                             >
-                                <Grid item xs={4}>
+                                <Grid item xs={6}>
                                     <Grid item xs={12} style={{ marginBottom: "20px" }}>
                                         <Paper>
                                             <Container style={{ paddingBottom: "20px" }}>
                                                 <div className="cardHead">
                                                     <Ballot />
-                                                    <span className="caps label">data</span>
+                                                    <span className="caps label">rrset</span>
                                                 </div>
                                                 {this.advancedView(record)}
+                                                <div>
+                                                    <IconButton
+                                                        title="Add resource record"
+                                                        style={{
+                                                            width: "35px",
+                                                            height: "35px",
+                                                            marginTop: "5px"
+                                                        }}
+                                                        onClick={() =>
+                                                            this.props.addRRValue(
+                                                                this.props.recordIndex
+                                                            )
+                                                        }
+                                                    >
+                                                        <AddCircle />
+                                                    </IconButton>
+                                                </div>
                                             </Container>
                                         </Paper>
                                     </Grid>
@@ -354,12 +464,13 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                         </Paper>
                                     </Grid>
                                 </Grid>
-
-                                <DataDisplay
-                                    style={{ maxHeight: "600px" }}
-                                    config={this.props.config}
-                                    data={record}
-                                ></DataDisplay>
+                                <Grid container item xs={6}>
+                                    <DataDisplay
+                                        style={{ maxHeight: "600px" }}
+                                        config={this.props.config}
+                                        data={record}
+                                    ></DataDisplay>
+                                </Grid>
                             </Grid>
                         </Collapse>
                     </div>

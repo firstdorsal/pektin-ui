@@ -126,6 +126,8 @@ class Domain extends Component<DomainProps, DomainState> {
                 this.props.g.loadDomains();
                 this.props.history.push({ pathname: `/domain/${this.state.domainName}` });
             }
+        } else {
+            //TODO add normal accept all pending records
         }
     };
 
@@ -145,6 +147,7 @@ class Domain extends Component<DomainProps, DomainState> {
 
     handleRecordChange = (
         record: t.DisplayRecord,
+        rrIndex: number,
         fieldName: string,
         fieldChildName: string,
         v: any
@@ -153,43 +156,93 @@ class Domain extends Component<DomainProps, DomainState> {
         if (fieldName === "name") {
             record.name = v;
         } else if (fieldName === "ttl") {
-            record.values = record.values.map(value => {
-                value.ttl = parseInt(v);
-                return value;
+            record.values = record.values.map(e => {
+                e.ttl = v ? parseInt(v) : 0;
+                return e;
             });
         } else if (fieldName === "type") {
             record.type = v;
+            record.values = [];
             record.values[0] = l.rrTemplates[v as t.RRType].template;
-        } else if (fieldName === "rrField") {
-            if (record.values[0].value !== undefined) {
-                record.values[0].value = v;
+        } else if (fieldName === "rrField" && record.values[rrIndex] !== undefined) {
+            if (record.values[rrIndex]?.value !== undefined) {
+                record.values[rrIndex].value = v;
             } else {
                 const isNumber =
                     typeof l.rrTemplates[record.type].template[fieldChildName] === "number";
                 /*@ts-ignore*/
-                record.values[0][fieldChildName] = isNumber ? parseInt(v) : v;
+                record.values[rrIndex][fieldChildName] = isNumber ? parseInt(v) : v;
             }
         }
         return record;
     };
+    addRRValue = (recordIndex: number) => {
+        this.setState(({ records, meta }) => {
+            const record = cloneDeep(records[recordIndex]);
+            record.values = [...record.values, cloneDeep(record.values[0])];
+            records[recordIndex] = record;
+
+            meta[recordIndex] = cloneDeep(meta[recordIndex]);
+            meta[recordIndex].validity = this.validateRecord(
+                records[recordIndex],
+                this.state.domainName
+            );
+            meta[recordIndex].changed = !isEqual(
+                records[recordIndex],
+                this.state.ogRecords[recordIndex]
+            );
+
+            return { records, meta };
+        });
+    };
+    removeRRValue = (recordIndex: number, rrIndex: number) => {
+        this.setState(({ records, meta }) => {
+            const record = cloneDeep(records[recordIndex]);
+            record.values = record.values.filter((e, i) => i !== rrIndex);
+            records[recordIndex] = record;
+
+            meta[recordIndex] = cloneDeep(meta[recordIndex]);
+            meta[recordIndex].validity = this.validateRecord(
+                records[recordIndex],
+                this.state.domainName
+            );
+            meta[recordIndex].changed = !isEqual(
+                records[recordIndex],
+                this.state.ogRecords[recordIndex]
+            );
+
+            return { records, meta };
+        });
+    };
 
     handleChange = (e: any) => {
         const fullName = e?.target?.name;
-        const v = e?.target?.value;
+        const newValue = e?.target?.value;
 
-        if (!fullName || !v === undefined) return;
-        const [i, fieldName, fieldChildName] = fullName.split(":");
+        if (!fullName || !newValue === undefined) return;
+        const [recordIndex, fieldName, rrIndex, fieldChildName] = fullName.split(":");
 
         this.setState(({ records, meta, domainName }) => {
-            //rData[i] = this.handleRDataChange(rData[i], fieldName, fieldChildName, v);
-            records[i] = this.handleRecordChange(records[i], fieldName, fieldChildName, v);
+            records[recordIndex] = this.handleRecordChange(
+                records[recordIndex],
+                parseInt(rrIndex),
+                fieldName,
+                fieldChildName,
+                newValue
+            );
 
-            if (records[i].type === "SOA" && fieldName === "name") {
-                domainName = records[i].name;
+            if (records[recordIndex].type === "SOA" && fieldName === "name") {
+                domainName = records[recordIndex].name;
             }
-            meta[i] = cloneDeep(meta[i]);
-            meta[i].validity = this.validateRecord(records[i], this.state.domainName);
-            meta[i].changed = !isEqual(records[i], this.state.ogRecords[i]);
+            meta[recordIndex] = cloneDeep(meta[recordIndex]);
+            meta[recordIndex].validity = this.validateRecord(
+                records[recordIndex],
+                this.state.domainName
+            );
+            meta[recordIndex].changed = !isEqual(
+                records[recordIndex],
+                this.state.ogRecords[recordIndex]
+            );
             return { meta, records, domainName };
         });
     };
@@ -198,45 +251,51 @@ class Domain extends Component<DomainProps, DomainState> {
         const valName = l.validateDomain(record?.name, { domainName });
         /*@ts-ignore*/
         const fieldValidity: t.FieldValidity = {
-            recordName: valName,
+            name: valName,
+            values: [],
             totalValidity: valName.type
         };
-        if (!record || !record.values[0]) return fieldValidity;
+        if (!record) return fieldValidity;
 
-        if (record.values[0].value) {
-            const keys = Object.keys(l.rrTemplates[record.type]?.fields);
+        fieldValidity.values = record.values.map((rr, rrIndex) => {
+            const rrValidity: t.RRValidity = {};
 
-            if (l.rrTemplates[record.type]?.fields[keys[0]]?.validate) {
-                fieldValidity[keys[0]] = l.rrTemplates[record.type].fields[keys[0]].validate(
-                    record.values[0].value
-                );
-                if (
-                    fieldValidity.totalValidity !== "error" &&
-                    fieldValidity[keys[0]].type !== "ok"
-                ) {
-                    fieldValidity.totalValidity = fieldValidity[keys[0]]?.type;
-                }
-            }
-        } else {
-            const keys = Object.keys(record.values[0]);
-            const values = Object.values(record.values[0]);
+            if (record.values[rrIndex].value !== undefined) {
+                const templateFields = Object.keys(l.rrTemplates[record.type]?.fields);
 
-            keys.forEach((key, i) => {
-                if (l.rrTemplates[record.type]?.fields[key]?.validate) {
-                    fieldValidity[key] = l.rrTemplates[record.type].fields[key].validate(
-                        values[i],
-                        record.values[0]
-                    );
-
+                if (l.rrTemplates[record.type]?.fields[templateFields[0]]?.validate) {
+                    rrValidity[templateFields[0]] = l.rrTemplates[record.type].fields[
+                        templateFields[0]
+                    ].validate(record.values[rrIndex].value);
                     if (
                         fieldValidity.totalValidity !== "error" &&
-                        fieldValidity[key].type !== "ok"
+                        rrValidity[templateFields[0]].type !== "ok"
                     ) {
-                        fieldValidity.totalValidity = fieldValidity[key]?.type;
+                        fieldValidity.totalValidity = rrValidity[templateFields[0]]?.type;
                     }
                 }
-            });
-        }
+            } else {
+                const keys = Object.keys(record.values[rrIndex]);
+                const values = Object.values(record.values[rrIndex]);
+
+                keys.forEach((key, i) => {
+                    if (l.rrTemplates[record.type]?.fields[key]?.validate !== undefined) {
+                        rrValidity[key] = l.rrTemplates[record.type].fields[key].validate(
+                            values[i],
+                            record.values[rrIndex]
+                        );
+
+                        if (
+                            fieldValidity.totalValidity !== "error" &&
+                            rrValidity[key].type !== "ok"
+                        ) {
+                            fieldValidity.totalValidity = rrValidity[key]?.type;
+                        }
+                    }
+                });
+            }
+            return rrValidity;
+        });
         return fieldValidity;
     };
 
@@ -573,12 +632,14 @@ class Domain extends Component<DomainProps, DomainState> {
                     changeMeta={this.changeMeta}
                     search={this.state.search}
                     key={key}
-                    index={index}
+                    recordIndex={index}
                     record={r.record}
                     meta={r.meta}
                     totalRows={totalRows}
                     domainName={this.state.domainName}
                     variant={this.props.variant}
+                    addRRValue={this.addRRValue}
+                    removeRRValue={this.removeRRValue}
                 />
             );
         };
@@ -642,7 +703,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         style={{
                             width: "50px",
                             position: "absolute",
-                            right: "0px",
+                            right: "15px",
                             top: "13px"
                         }}
                     >

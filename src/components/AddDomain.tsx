@@ -158,7 +158,6 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                                         onChange={this.handleChange}
                                         name="ttl"
                                         value={this.state.record.values[0].ttl}
-                                        label="ttl"
                                         inputProps={{
                                             min: 0
                                         }}
@@ -188,11 +187,13 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                             </Container>
                         </Paper>
                     </Grid>
-                    <DataDisplay
-                        style={{ marginTop: "15px" }}
-                        config={this.props.config}
-                        data={this.state.record}
-                    ></DataDisplay>
+                    <Grid container item xs={8}>
+                        <DataDisplay
+                            style={{ marginTop: "15px" }}
+                            config={this.props.config}
+                            data={this.state.record}
+                        ></DataDisplay>
+                    </Grid>
                 </Grid>
             </Container>
         );

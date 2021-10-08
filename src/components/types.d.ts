@@ -14,8 +14,12 @@ export interface ValidationResult {
 }
 
 export interface FieldValidity {
-    [fieldName: string]: ValidationResult;
+    name: ValidationResult;
+    values: RRValidity[];
     totalValidity: ValidationType;
+}
+export interface RRValidity {
+    [fieldName: string]: ValidationResult;
 }
 
 export interface ValidateParams {

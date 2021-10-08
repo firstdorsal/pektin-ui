@@ -162,7 +162,8 @@ const providers: { [provider: string]: getDnsRecord } = {
         });
 
         return answer as RawDnsRecord;
-    },
+    }
+    /*
     Cloudflare: async (name: string, type: string): Promise<any> => {
         const res = await f(`https://cloudflare-dns.com/dns-query?name=${name}&type=${type}`, {
             headers: { accept: "application/dns-json" }
@@ -174,7 +175,7 @@ const providers: { [provider: string]: getDnsRecord } = {
         answer.typeId = answer.type;
         answer.type = type;
         return answer;
-    }
+    }*/
 };
 
 const simpleDnsRecordToDisplayRecord = (simple: RawDnsRecord): t.DisplayRecord => {

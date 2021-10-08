@@ -54,41 +54,72 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         ];
 
         return (
-            <Grid className="DataDisplay" style={this.props.style ? { ...this.props.style } : {}} container item xs={8}>
-                <Grid style={{ marginBottom: "20px" }} item xs={12}>
-                    <Paper style={{ maxHeight: "100%" }} elevation={3}>
-                        <div style={{ marginLeft: "20px", height: "40px" }}>
-                            <div className="cardHead">
-                                <Code />
-                                <span className="caps label">code</span>
-                            </div>
+            <Grid
+                className="DataDisplay"
+                style={{ ...this.props.style, marginBottom: "20px" }}
+                item
+                xs={12}
+            >
+                <Paper style={{ maxHeight: "100%" }} elevation={3}>
+                    <div style={{ marginLeft: "20px", height: "40px" }}>
+                        <div className="cardHead">
+                            <Code />
+                            <span className="caps label">code</span>
                         </div>
-                        <div style={{ height: "80px" }}>
-                            <Tabs
-                                variant="fullWidth"
-                                value={this.state.activeTab}
-                                onChange={(e, n) => this.setState({ activeTab: n })}
-                            >
-                                <Tab
-                                    label="JSON"
-                                    icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />}
-                                    value={0}
-                                />
-                                <Tab
-                                    label="YAML"
-                                    icon={<AccountTree style={{ width: "20px", height: "10px", transform: "scale(2)" }} />}
-                                    value={1}
-                                />
-                                <Tab label="JAVASCRIPT" icon={<SiJavascript style={{ width: "25px" }} />} value={2} />
-                                <Tab label="CURL" icon={<SiCurl style={{ width: "25px" }} />} value={3} />
-                                <Tab label="BIND" icon={<MdShortText style={{ width: "25px" }} />} value={4} />
-                            </Tabs>
-                        </div>
-                        <div style={{ overflowY: "scroll", maxHeight: "460px" }} className="tabs">
-                            {tabs[this.state.activeTab]}
-                        </div>
-                    </Paper>
-                </Grid>
+                    </div>
+                    <div style={{ height: "80px" }}>
+                        <Tabs
+                            variant="fullWidth"
+                            value={this.state.activeTab}
+                            onChange={(e, n) => this.setState({ activeTab: n })}
+                        >
+                            <Tab
+                                label="JSON"
+                                icon={
+                                    <AccountTree
+                                        style={{
+                                            width: "20px",
+                                            height: "10px",
+                                            transform: "scale(2)"
+                                        }}
+                                    />
+                                }
+                                value={0}
+                            />
+                            <Tab
+                                label="YAML"
+                                icon={
+                                    <AccountTree
+                                        style={{
+                                            width: "20px",
+                                            height: "10px",
+                                            transform: "scale(2)"
+                                        }}
+                                    />
+                                }
+                                value={1}
+                            />
+                            <Tab
+                                label="JAVASCRIPT"
+                                icon={<SiJavascript style={{ width: "25px" }} />}
+                                value={2}
+                            />
+                            <Tab
+                                label="CURL"
+                                icon={<SiCurl style={{ width: "25px" }} />}
+                                value={3}
+                            />
+                            <Tab
+                                label="BIND"
+                                icon={<MdShortText style={{ width: "25px" }} />}
+                                value={4}
+                            />
+                        </Tabs>
+                    </div>
+                    <div style={{ overflowY: "scroll", maxHeight: "460px" }} className="tabs">
+                        {tabs[this.state.activeTab]}
+                    </div>
+                </Paper>
             </Grid>
         );
     };
@@ -112,14 +143,19 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
         this.setState({ auth: await pektinApi.getAuthFromConfig(this.props.config) });
     };
     curl = (auth: any, data: t.DisplayRecord, multiline: boolean) => {
-        const body = { token: auth.dev ? auth.token : "API_TOKEN", records: [l.toRealRecord(data)] };
+        const body = {
+            token: auth.dev ? auth.token : "API_TOKEN",
+            records: [l.toRealRecord(data)]
+        };
 
         if (multiline)
             return `curl -v ${auth.endpoint}/set -H "Content-Type: application/json" -d '<< EOF
     ${JSON.stringify(body, null, "    ")} 
     EOF'`;
 
-        return `curl -v ${auth.endpoint}/set -H "Content-Type: application/json" -d '${JSON.stringify(body)}'`;
+        return `curl -v ${
+            auth.endpoint
+        }/set -H "Content-Type: application/json" -d '${JSON.stringify(body)}'`;
     };
 
     render = () => {
@@ -128,7 +164,11 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
         return (
             <React.Fragment>
                 <Container style={{ textAlign: "center" }}>
-                    <Switch onChange={() => this.setState(({ multiline }) => ({ multiline: !multiline }))} />
+                    <Switch
+                        onChange={() =>
+                            this.setState(({ multiline }) => ({ multiline: !multiline }))
+                        }
+                    />
                     Multiline
                 </Container>
                 <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="sh">

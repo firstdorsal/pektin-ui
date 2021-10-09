@@ -432,23 +432,27 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                                     <span className="caps label">rrset</span>
                                                 </div>
                                                 {this.advancedView(record)}
-                                                <div>
-                                                    <IconButton
-                                                        title="Add resource record"
-                                                        style={{
-                                                            width: "35px",
-                                                            height: "35px",
-                                                            marginTop: "5px"
-                                                        }}
-                                                        onClick={() =>
-                                                            this.props.addRRValue(
-                                                                this.props.recordIndex
-                                                            )
-                                                        }
-                                                    >
-                                                        <AddCircle />
-                                                    </IconButton>
-                                                </div>
+                                                {record.type !== "SOA" ? (
+                                                    <div>
+                                                        <IconButton
+                                                            title="Add resource record"
+                                                            style={{
+                                                                width: "35px",
+                                                                height: "35px",
+                                                                marginTop: "5px"
+                                                            }}
+                                                            onClick={() =>
+                                                                this.props.addRRValue(
+                                                                    this.props.recordIndex
+                                                                )
+                                                            }
+                                                        >
+                                                            <AddCircle />
+                                                        </IconButton>
+                                                    </div>
+                                                ) : (
+                                                    ""
+                                                )}
                                             </Container>
                                         </Paper>
                                     </Grid>

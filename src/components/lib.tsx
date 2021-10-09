@@ -37,7 +37,6 @@ export const regex = {
 export const variablesToValues = (config: t.Config, input: string) => {
     if (!config?.local?.replaceVariables) return input;
     const variables = config?.local?.variables;
-    console.log(variables, input);
     if (!variables) return input;
 
     if (!input) return "";
@@ -161,6 +160,7 @@ export const defaulConfig: t.Config = {
 
 export const absoluteName = (name: string) => {
     if (!name?.length) return "";
+    name = name.replaceAll(/\s+/g, "");
     if (name[name.length - 1] !== ".") return name + ".";
     return name;
 };

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import "@fontsource/inter/900.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/400.css";
-import Base from "./components/Base";
+import Sidebar from "./components/SideBar";
 import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
 import AddDomain from "./components/AddDomain";
 import Domain from "./components/Domain";
@@ -193,7 +193,7 @@ export default class App extends Component<AppProps, AppState> {
         //яндекс.рф
         return (
             <Router>
-                {this.state.configError ? <Redirect to="/auth"></Redirect> : ""}
+                {this.state.configError ? <Redirect to="/auth" /> : ""}
 
                 {this.state.g.contextMenu ? (
                     <div
@@ -204,6 +204,7 @@ export default class App extends Component<AppProps, AppState> {
                 ) : (
                     ""
                 )}
+
                 <Switch>
                     <Route
                         exact
@@ -217,92 +218,104 @@ export default class App extends Component<AppProps, AppState> {
                         )}
                     />
 
-                    <PrivateRoute config={this.state.config} exact path="/">
-                        <Base
-                            health={this.state.health}
-                            domains={this.state.domains}
-                            config={this.state.config}
-                        ></Base>
-                    </PrivateRoute>
-                    <PrivateRoute exact config={this.state.config} path="/add/existing/manual">
-                        <Base
-                            domains={this.state.domains}
-                            config={this.state.config}
-                            health={this.state.health}
-                        >
-                            <AddDomain
-                                loadDomains={this.loadDomains}
-                                g={this.state.g}
-                                config={this.state.config}
-                            />
-                        </Base>
-                    </PrivateRoute>
-                    <PrivateRoute exact config={this.state.config} path="/add/existing/import">
-                        <Base
-                            health={this.state.health}
-                            domains={this.state.domains}
-                            config={this.state.config}
-                        >
-                            <ImportDomain g={this.state.g} config={this.state.config} />
-                        </Base>
-                    </PrivateRoute>
-                    <PrivateRoute config={this.state.config} exact path={`/domain/:domainName`}>
-                        <Base
-                            health={this.state.health}
-                            domains={this.state.domains}
-                            config={this.state.config}
-                        >
-                            <Domain computedMatch g={this.state.g} config={this.state.config} />
-                        </Base>
-                    </PrivateRoute>
-                    <PrivateRoute exact config={this.state.config} path="/config/">
-                        <Base
-                            health={this.state.health}
-                            domains={this.state.domains}
-                            config={this.state.config}
-                        >
-                            <ConfigView g={this.state.g} config={this.state.config} />
-                        </Base>
-                    </PrivateRoute>
+                    <Route
+                        exact
+                        path="/add/existing/manual"
+                        component={(routeProps: any) => {
+                            return (
+                                <div className="container">
+                                    <Sidebar
+                                        health={this.state.health}
+                                        domains={this.state.domains}
+                                        config={this.state.config}
+                                    ></Sidebar>
+                                    <main>
+                                        <AddDomain
+                                            loadDomains={this.loadDomains}
+                                            g={this.state.g}
+                                            config={this.state.config}
+                                        />
+                                    </main>
+                                </div>
+                            );
+                        }}
+                    />
 
-                    <PrivateRoute config={this.state.config} path="*">
-                        <Base
-                            health={this.state.health}
-                            domains={this.state.domains}
-                            config={this.state.config}
-                        ></Base>
-                    </PrivateRoute>
+                    <Route
+                        exact
+                        path="/add/existing/import"
+                        component={(routeProps: any) => {
+                            return (
+                                <div className="container">
+                                    <Sidebar
+                                        health={this.state.health}
+                                        domains={this.state.domains}
+                                        config={this.state.config}
+                                    ></Sidebar>
+                                    <main>
+                                        <ImportDomain g={this.state.g} config={this.state.config} />
+                                    </main>
+                                </div>
+                            );
+                        }}
+                    />
+                    <Route
+                        path={`/domain/:domainName`}
+                        component={(routeProps: any) => {
+                            return (
+                                <div className="container">
+                                    <Sidebar
+                                        health={this.state.health}
+                                        domains={this.state.domains}
+                                        config={this.state.config}
+                                    ></Sidebar>
+                                    <main>
+                                        <Domain
+                                            {...routeProps}
+                                            g={this.state.g}
+                                            config={this.state.config}
+                                        />
+                                    </main>
+                                </div>
+                            );
+                        }}
+                    />
+                    <Route
+                        exact
+                        path="/config/"
+                        component={(routeProps: any) => {
+                            return (
+                                <div className="container">
+                                    <Sidebar
+                                        health={this.state.health}
+                                        domains={this.state.domains}
+                                        config={this.state.config}
+                                    ></Sidebar>
+                                    <main>
+                                        <ConfigView g={this.state.g} config={this.state.config} />
+                                    </main>
+                                </div>
+                            );
+                        }}
+                    />
+
+                    <Route
+                        path="*"
+                        component={(routeProps: any) => {
+                            return (
+                                <div className="container">
+                                    <Sidebar
+                                        health={this.state.health}
+                                        domains={this.state.domains}
+                                        config={this.state.config}
+                                    ></Sidebar>
+                                    <main></main>
+                                </div>
+                            );
+                        }}
+                    />
                 </Switch>
             </Router>
-        );
-    };
-}
-interface PrivateRouteProps {
-    readonly config: t.Config;
-    readonly children: any;
-    readonly [propName: string]: any;
-}
-interface PrivateRouteState {}
-class PrivateRoute extends Component<PrivateRouteProps, PrivateRouteState> {
-    render = () => {
-        return (
-            <Route
-                {...this.props.rest}
-                render={(routeProps: any) =>
-                    this.props.config.vaultAuth.token.length ? (
-                        React.cloneElement(this.props.children, {
-                            ...routeProps,
-                            computedMatch: this.props.computedMatch
-                        })
-                    ) : (
-                        <Redirect
-                            to={{
-                                pathname: "/auth"
-                            }}
-                        />
-                    )
-                }
-            />
         );
     };
 }

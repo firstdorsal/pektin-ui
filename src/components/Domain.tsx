@@ -332,23 +332,23 @@ class Domain extends Component<DomainProps, DomainState> {
             }
             this.initData(this.props.records, domainName);
         } else {
-            this.setState({ domainName: this.props.computedMatch.params.domainName });
+            this.setState({ domainName: this.props.match.params.domainName });
             const records = await l.getRecords(
                 this.props.config,
-                this.props.computedMatch.params.domainName
+                this.props.match.params.domainName
             );
-            this.initData(records, this.props.computedMatch.params.domainName);
+            this.initData(records, this.props.match.params.domainName);
         }
     };
 
     componentDidUpdate = async (e: DomainProps) => {
         // replace the current state when the components props change to a new domain page
-        if (this.props.computedMatch?.params?.domainName !== e.computedMatch?.params?.domainName) {
+        if (this.props.match?.params?.domainName !== e.match?.params?.domainName) {
             const records = await l.getRecords(
                 this.props.config,
-                this.props.computedMatch.params.domainName
+                this.props.match.params.domainName
             );
-            this.initData(records, this.props.computedMatch.params.domainName);
+            this.initData(records, this.props.match.params.domainName);
         }
     };
 
@@ -615,6 +615,9 @@ class Domain extends Component<DomainProps, DomainState> {
             };
             const newMeta: t.DomainMeta = cloneDeep(l.defaultMeta);
             newMeta.changed = true;
+
+            newMeta.validity = this.validateRecord(newRecord, this.state.domainName);
+
             const newOgData: t.DisplayRecord = {
                 name: "",
                 type: "NEW",
@@ -631,155 +634,155 @@ class Domain extends Component<DomainProps, DomainState> {
         });
     };
 
-    render = () => {
-        const rowRenderer = (r: {
-            key: any;
-            index: number;
-            style: any;
-            record: t.DisplayRecord;
-            meta: t.DomainMeta;
-            totalRows: number;
-        }) => {
-            const { key, index, style, totalRows } = r;
+    rowRenderer = (r: {
+        key: any;
+        index: number;
+        style: any;
+        record: t.DisplayRecord;
+        meta: t.DomainMeta;
+        totalRows: number;
+    }) => {
+        const { key, index, style, totalRows } = r;
 
-            return (
-                <RecordRow
-                    style={style}
-                    config={this.props.config}
-                    handleChange={this.handleChange}
-                    saveRecord={this.saveRecord}
-                    changeMeta={this.changeMeta}
-                    search={this.state.search}
-                    key={key}
-                    recordIndex={index}
-                    record={r.record}
-                    meta={r.meta}
-                    totalRows={totalRows}
-                    domainName={this.state.domainName}
-                    variant={this.props.variant}
-                    addRRValue={this.addRRValue}
-                    removeRRValue={this.removeRRValue}
-                />
-            );
+        return (
+            <RecordRow
+                style={style}
+                config={this.props.config}
+                handleChange={this.handleChange}
+                saveRecord={this.saveRecord}
+                changeMeta={this.changeMeta}
+                search={this.state.search}
+                key={key}
+                recordIndex={index}
+                record={r.record}
+                meta={r.meta}
+                totalRows={totalRows}
+                domainName={this.state.domainName}
+                variant={this.props.variant}
+                addRRValue={this.addRRValue}
+                removeRRValue={this.removeRRValue}
+            />
+        );
+    };
+    sortDirectionIcon = (columnItem: ColumnItem) => {
+        const style = {
+            height: "1px",
+            transform: "translate(4px,-5px) scale(20)"
         };
-        const sortDirectionIcon = (columnItem: ColumnItem) => {
-            const style = {
-                height: "1px",
-                transform: "translate(4px,-5px) scale(20)"
-            };
-            if (columnItem.direction === 0) return;
-            if (columnItem.direction === 1) {
-                if (columnItem.type === "string") return <FaSortAlphaDown style={style} />;
-                return <FaSortNumericDown style={style} />;
-            }
-            if (columnItem.direction === 2) {
-                if (columnItem.type === "string") return <FaSortAlphaDownAlt style={style} />;
-                return <FaSortNumericDownAlt style={style} />;
-            }
-        };
-        const tableHead = () => {
-            return (
-                <div
-                    style={{
-                        height: "70px",
-                        position: "relative",
-                        borderBottom: "1px solid var(--b1)",
-                        width: "100%"
-                    }}
-                >
-                    <span
-                        style={{
-                            left: "15px",
-                            top: "10px",
-                            position: "absolute"
-                        }}
-                    >
-                        <Checkbox checked={this.state.selectAll} onChange={this.selectAll} />
-                    </span>
-                    {columnItems.map((item, i) => {
-                        return (
-                            <span
-                                style={{
-                                    left: item.left,
-                                    top: "26px",
-                                    position: "absolute",
-                                    fontWeight: 500,
-                                    fontSize: "14px",
-                                    cursor: item.name !== "value" ? "pointer" : "default"
-                                }}
-                                className="caps"
-                                key={item.name}
-                                onClick={() =>
-                                    item.name !== "value" ? this.sortColumns(item.name) : ""
-                                }
-                            >
-                                <span>{item.name}</span>
-                                <span> {sortDirectionIcon(this.state.columnItems[i])}</span>
-                            </span>
-                        );
-                    })}
-                    <span
-                        style={{
-                            width: "50px",
-                            position: "absolute",
-                            right: "15px",
-                            top: "13px"
-                        }}
-                    >
-                        <Fab
-                            onClick={() => this.saveAllChangedRecords()}
-                            disabled={
-                                this.state.changedRecords === 0 && this.props.variant !== "import"
-                            }
-                            size="small"
-                        >
-                            <Check />
-                        </Fab>
-                    </span>
-                </div>
-            );
-        };
-        const searchAndReplace = () => {
-            return (
+        if (columnItem.direction === 0) return;
+        if (columnItem.direction === 1) {
+            if (columnItem.type === "string") return <FaSortAlphaDown style={style} />;
+            return <FaSortNumericDown style={style} />;
+        }
+        if (columnItem.direction === 2) {
+            if (columnItem.type === "string") return <FaSortAlphaDownAlt style={style} />;
+            return <FaSortNumericDownAlt style={style} />;
+        }
+    };
+    tableHead = () => {
+        return (
+            <div
+                style={{
+                    height: "70px",
+                    position: "relative",
+                    borderBottom: "1px solid var(--b1)",
+                    width: "100%"
+                }}
+            >
                 <span
                     style={{
-                        position: "absolute",
-                        top: "-10px",
-                        right: "10px",
-                        padding: "20px"
+                        left: "15px",
+                        top: "10px",
+                        position: "absolute"
                     }}
                 >
-                    <TextField
-                        style={{ paddingRight: "20px" }}
-                        color="secondary"
-                        variant="standard"
-                        type="text"
-                        name="search"
-                        placeholder="Search"
-                        value={this.state.search}
-                        onChange={this.handleSearchAndReplaceChange}
-                    />
-                    <TextField
-                        variant="standard"
-                        type="text"
-                        color="secondary"
-                        name="replace"
-                        placeholder="Replace All"
-                        value={this.state.replace}
-                        onChange={this.handleSearchAndReplaceChange}
-                    />
-                    <IconButton
-                        disabled={this.state.search.length ? false : true}
-                        onClick={this.handleReplaceClick}
-                        style={{ paddingTop: "7px" }}
+                    <Checkbox checked={this.state.selectAll} onChange={this.selectAll} />
+                </span>
+                {columnItems.map((item, i) => {
+                    return (
+                        <span
+                            style={{
+                                left: item.left,
+                                top: "26px",
+                                position: "absolute",
+                                fontWeight: 500,
+                                fontSize: "14px",
+                                cursor: item.name !== "value" ? "pointer" : "default"
+                            }}
+                            className="caps"
+                            key={item.name}
+                            onClick={() =>
+                                item.name !== "value" ? this.sortColumns(item.name) : ""
+                            }
+                        >
+                            <span>{item.name}</span>
+                            <span> {this.sortDirectionIcon(this.state.columnItems[i])}</span>
+                        </span>
+                    );
+                })}
+                <span
+                    style={{
+                        width: "50px",
+                        position: "absolute",
+                        right: "15px",
+                        top: "13px"
+                    }}
+                >
+                    <Fab
+                        onClick={() => this.saveAllChangedRecords()}
+                        disabled={
+                            this.state.changedRecords === 0 && this.props.variant !== "import"
+                        }
                         size="small"
                     >
-                        <VscReplaceAll></VscReplaceAll>
-                    </IconButton>
+                        <Check />
+                    </Fab>
                 </span>
-            );
-        };
+            </div>
+        );
+    };
+    searchAndReplace = () => {
+        return (
+            <span
+                style={{
+                    position: "absolute",
+                    top: "-10px",
+                    right: "10px",
+                    padding: "20px"
+                }}
+            >
+                <TextField
+                    style={{ paddingRight: "20px" }}
+                    color="secondary"
+                    variant="standard"
+                    type="text"
+                    name="search"
+                    placeholder="Search"
+                    value={this.state.search}
+                    onChange={this.handleSearchAndReplaceChange}
+                />
+                <TextField
+                    variant="standard"
+                    type="text"
+                    color="secondary"
+                    name="replace"
+                    placeholder="Replace All"
+                    value={this.state.replace}
+                    onChange={this.handleSearchAndReplaceChange}
+                />
+                <IconButton
+                    disabled={this.state.search.length ? false : true}
+                    onClick={this.handleReplaceClick}
+                    style={{ paddingTop: "7px" }}
+                    size="small"
+                >
+                    <VscReplaceAll></VscReplaceAll>
+                </IconButton>
+            </span>
+        );
+    };
 
+    render = () => {
         return (
             <div style={{ height: "100%", ...this.props.style }}>
                 <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
@@ -804,7 +807,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         </Fragment>
                     )}
 
-                    {searchAndReplace()}
+                    {this.searchAndReplace()}
                 </div>
 
                 <div
@@ -814,7 +817,7 @@ class Domain extends Component<DomainProps, DomainState> {
                         background: this.props.config.local.synesthesia ? "lightgrey" : ""
                     }}
                 >
-                    {tableHead()}
+                    {this.tableHead()}
                     <AutoSizer>
                         {({ height, width }) => (
                             <Fragment>
@@ -829,7 +832,7 @@ class Domain extends Component<DomainProps, DomainState> {
                                         return this.state.meta[index]?.expanded ? 670 : 70;
                                     }}
                                     rowRenderer={props =>
-                                        rowRenderer({
+                                        this.rowRenderer({
                                             ...props,
                                             record: this.state.records[props.index],
                                             meta: this.state.meta[props.index],

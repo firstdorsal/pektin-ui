@@ -216,7 +216,7 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
                 value: {
                     [record.type]: l.variablesToValues(
                         config,
-                        l.absoluteName(rr.value.replace(/\s+/g, ""))
+                        l.absoluteName(rr.value.replaceAll(/\s+/g, ""))
                     )
                 }
             };
@@ -235,7 +235,7 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
                             issuer_critical: true,
                             tag: rr.tag.toLowerCase() === "issue" ? "Issue" : "IssueWild",
                             value: {
-                                Issuer: [rr.caaValue.replace(/\s+/g, ""), []]
+                                Issuer: [rr.caaValue.replaceAll(/\s+/g, ""), []]
                             }
                         }
                     }
@@ -248,7 +248,7 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
                             issuer_critical: true,
                             tag: "Iodef",
                             value: {
-                                Url: rr.caaValue.replace(/\s+/g, "")
+                                Url: rr.caaValue.replaceAll(/\s+/g, "")
                             }
                         }
                     }
@@ -281,8 +281,8 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
                 ttl: rr.ttl,
                 value: {
                     [record.type]: {
-                        mname: l.absoluteName(rr.mname.replace(/\s+/g, "")),
-                        rname: l.absoluteName(rr.rname.replace(/\s+/g, "")),
+                        mname: l.absoluteName(rr.mname.replaceAll(/\s+/g, "")),
+                        rname: l.absoluteName(rr.rname.replaceAll(/\s+/g, "")),
                         refresh: rr.refresh === undefined ? 0 : rr.refresh,
                         retry: rr.retry === undefined ? 0 : rr.retry,
                         serial: rr.serial === undefined ? 0 : rr.serial,
@@ -296,7 +296,7 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
                 ttl: rr.ttl,
                 value: {
                     [record.type]: {
-                        exchange: l.absoluteName(rr.exchange.replace(/\s+/g, "")),
+                        exchange: l.absoluteName(rr.exchange.replaceAll(/\s+/g, "")),
                         preference: rr.preference === undefined ? 0 : rr.preference
                     }
                 }
@@ -312,7 +312,7 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
                         target:
                             rr.target === undefined
                                 ? ""
-                                : l.absoluteName(rr.target.replace(/\s+/g, ""))
+                                : l.absoluteName(rr.target.replaceAll(/\s+/g, ""))
                     }
                 }
             };
@@ -323,7 +323,7 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
     });
 
     return {
-        name: `${l.absoluteName(record.name).toLowerCase()}:${record.type}`,
+        name: `${l.absoluteName(record.name).toLowerCase().replaceAll(/\s+/g, "")}:${record.type}`,
         rr_set
     };
 };

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import "@fontsource/inter/900.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/400.css";
@@ -191,6 +191,7 @@ export default class App extends Component<AppProps, AppState> {
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
         //яндекс.рф
+
         return (
             <Router>
                 {this.state.configError ? <Redirect to="/auth" /> : ""}

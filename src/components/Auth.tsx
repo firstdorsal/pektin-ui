@@ -1,5 +1,5 @@
 import { Container, IconButton, Paper, TextField } from "@material-ui/core";
-import React, { Component, ReactElement } from "react";
+import React, { Component, ReactElement, Fragment } from "react";
 import * as t from "./types";
 import * as l from "./lib";
 import * as vaultApi from "./apis/vault";
@@ -83,7 +83,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
             } else if (r.errors) {
                 if (r.errors[0] === "Vault is sealed") {
                     authHelper = (
-                        <React.Fragment>
+                        <Fragment>
                             {r.errors[0]}.{" "}
                             <a
                                 href={`${parsed.vaultEndpoint}/ui/vault/unseal`}
@@ -91,7 +91,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
                             >
                                 You can unseal it here
                             </a>
-                        </React.Fragment>
+                        </Fragment>
                     );
                     authError = true;
                 } else {

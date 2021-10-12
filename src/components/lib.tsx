@@ -6,6 +6,8 @@ import PektinBackup from "./foreignApis/PektinBackup";
 import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
 import * as pektinApi from "./apis/pektin";
+import * as txt from "./apis/txtRecords";
+
 import punycode from "punycode";
 
 export const defaultSearchMatch = {
@@ -505,7 +507,26 @@ export const rrTemplates: any = {
                 placeholder: "this is some text",
                 inputType: "text",
                 name: "text",
-                width: 12
+                width: 12,
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    field = variablesToValues(config, field);
+                    if (field.startsWith(txt.txtRecords.SPF1.identifier)) {
+                        const parsedSpf = txt.txtRecords.SPF1.parse(field);
+
+                        if ((parsedSpf as t.ValidationResult).type === "error") {
+                            return parsedSpf as t.ValidationResult;
+                        }
+                        /*@ts-ignore*/
+                        if (parsedSpf.mechanisms && parsedSpf.mechanisms.length) {
+                            /*@ts-ignore*/
+                            const mechanisms = parsedSpf.mechanisms.filter(e => e.type !== "ok");
+                            if (mechanisms.length > 0) {
+                                return mechanisms[0];
+                            }
+                        }
+                    }
+                    return { type: "ok" };
+                }
             }
         },
         color: [140, 140, 140],

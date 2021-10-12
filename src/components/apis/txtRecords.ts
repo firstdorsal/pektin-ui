@@ -1,4 +1,5 @@
 import { regex } from "../lib";
+import * as t from "../types";
 
 export const SPF1QualifierNames = ["Pass", "Fail", "SoftFail", "Neutral"];
 
@@ -22,14 +23,10 @@ interface SPF1Mechanism {
     ip6?: string;
     prefixLength?: number;
 }
-interface ParsedSPF1 {
-    mechanisms?: Array<SPF1Mechanism | TxtRecordsParseError>;
+export interface ParsedSPF1 {
+    mechanisms?: Array<SPF1Mechanism | t.ValidationResult>;
     modifier?: "redirect" | "exp";
     modifierDomain?: string;
-}
-interface TxtRecordsParseError {
-    error: true;
-    message: string;
 }
 
 // https://www.ietf.org/rfc/rfc6376.txt
@@ -77,24 +74,78 @@ const checkPrefixLength = (input: string, type: 6 | 4 | 0 = 0): boolean => {
 };
 
 const splitFirstAndRest = (string: string, seperator: string) => {
+    if (string.indexOf(seperator) === -1) {
+        return [string, ""];
+    }
     return [
         string.substr(0, string.indexOf(seperator)),
         string.substr(string.indexOf(seperator) + 1)
     ];
 };
 
-const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
+const checkMacros = (string: string): false | t.ValidationResult => {
+    if (string.indexOf("%") === -1) return { type: "error", message: `invalid domain: ${string}` };
+    if (!string.match(/.*(%{|%%|%-|%_).*/g)) {
+        return {
+            type: "error",
+            message: `invalid macro in domain:  % character is not followed by a '{', '%', '-', or '_'`
+        };
+    }
+    if (string.match(/.*%{.*/g)) {
+        if (string.match(/{/g)?.length !== string.match(/}/g)?.length) {
+            return {
+                type: "error",
+                message: `invalid macro in domain: Unbalanced ammount of brackets`
+            };
+        }
+
+        if (!string.match(/.*{[0-9slodipvhr-]+}.*/g)) {
+            return {
+                type: "error",
+                message: `invalid macro in domain: Invalid character in curly brackets`
+            };
+        }
+    }
+
+    /*
+    Invalid:
+    %(ir).sbl.example.org
+
+    Valid:
+    %{ir}.sbl.example.org
+    %{ir}.%{v}._spf.%{d2}
+    %{lr-}.lp._spf.%{d2}
+    %{lr-}.lp.%{ir}.%{v}._spf.%{d2}
+    %{ir}.%{v}.%{l1r-}.lp._spf.%{d2}
+    %{d2}.trusted-domains.example.net
+    %{ir}.%{v}._spf.%{d2}
+
+    s = <sender>
+    l = local-part of <sender>
+    o = domain of <sender>
+    d = <domain>
+    i = <ip>
+    p = the validated domain name of <ip> (do not use)
+    v = the string "in-addr" if <ip> is ipv4, or "ip6" if <ip> is ipv6
+    h = HELO/EHLO domain
+*/
+    return false;
+};
+
+const parseSPF1 = (v2: string): ParsedSPF1 | t.ValidationResult => {
+    const v = v2.replaceAll(/\s+/g, " ");
+
     const split = v.split(" ");
     if (split[0] !== "v=spf1")
         return {
-            error: true,
+            type: "error",
             message: "invalid spf1 record identifier"
         };
-    if (split.length === 1 || !split[1]) return { error: true, message: "spf1 record is empty" };
+    if (split.length === 1 || !split[1]) return { type: "error", message: "spf1 record is empty" };
     const parsed: ParsedSPF1 = {};
     split.shift();
-    const parseMechanism = (e: string): SPF1Mechanism | TxtRecordsParseError => {
-        if (!e.length) return { error: true, message: "invalid spf1 mechanism" };
+    const parseMechanism = (e: string, index: number): SPF1Mechanism | t.ValidationResult => {
+        if (!e.length) return { type: "error", message: "invalid spf1 mechanism" };
         const mechanism: SPF1Mechanism = {} as SPF1Mechanism;
         if (["+", "-", "~", "?"].indexOf(e.charAt(0)) > -1) {
             mechanism.qualifier = e.charAt(0) as "+" | "-" | "~" | "?";
@@ -116,10 +167,18 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                     mechanism.type = type;
                     mechanism.domain = rest;
                 } else {
-                    return {
-                        error: true,
-                        message: `invalid domain: ${rest}`
-                    };
+                    if (type !== "ptr") {
+                        const cm = checkMacros(rest);
+                        if (cm && cm.type === "error") return cm;
+
+                        mechanism.type = type;
+                        mechanism.domain = rest;
+                    } else {
+                        return {
+                            type: "error",
+                            message: `invalid domain: ${rest}`
+                        };
+                    }
                 }
             } else if (type === "mx" || type === "a") {
                 if (rest.indexOf("/") <= -1) {
@@ -128,7 +187,7 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                         mechanism.domain = rest;
                     } else {
                         return {
-                            error: true,
+                            type: "error",
                             message: `invalid domain: ${rest}`
                         };
                     }
@@ -141,13 +200,13 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                             mechanism.prefixLength = parseInt(prefixLength);
                         } else {
                             return {
-                                error: true,
+                                type: "error",
                                 message: `invalid prefix-length: ${prefixLength}`
                             };
                         }
                     } else {
                         return {
-                            error: true,
+                            type: "error",
                             message: `invalid domain: ${domain}`
                         };
                     }
@@ -162,7 +221,7 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                             mechanism.prefixLength = parseInt(prefixLength);
                         } else {
                             return {
-                                error: true,
+                                type: "error",
                                 message: `invalid ipv6 prefix-length: ${prefixLength}`
                             };
                         }
@@ -172,12 +231,13 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                     }
                 } else {
                     return {
-                        error: true,
+                        type: "error",
                         message: `invalid ipv6 address: ${ip6}`
                     };
                 }
             } else if (type === "ip4") {
                 const [ip4, prefixLength] = splitFirstAndRest(rest, "/");
+
                 if (ip4.match(regex.legacyIp)) {
                     if (prefixLength) {
                         if (checkPrefixLength(prefixLength, 4)) {
@@ -186,7 +246,7 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                             mechanism.prefixLength = parseInt(prefixLength);
                         } else {
                             return {
-                                error: true,
+                                type: "error",
                                 message: `invalid ipv4 prefix-length: ${prefixLength}`
                             };
                         }
@@ -196,7 +256,7 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                     }
                 } else {
                     return {
-                        error: true,
+                        type: "error",
                         message: `invalid ipv4 address: ${ip4}`
                     };
                 }
@@ -208,14 +268,14 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                 mechanism.prefixLength = parseInt(prefixLength);
             } else {
                 return {
-                    error: true,
+                    type: "error",
                     message: `invalid prefix-length: ${prefixLength}`
                 };
             }
         } else {
             return {
-                error: true,
-                message: "invalid spf1 mechanism: no valid prefix matched"
+                type: "error",
+                message: `invalid spf1 mechanism at index ${index}: ${e}`
             };
         }
         return mechanism;
@@ -233,15 +293,16 @@ const parseSPF1 = (v: string): ParsedSPF1 | TxtRecordsParseError => {
                 parsed.modifierDomain = modifierDomain;
             } else {
                 return {
-                    error: true,
+                    type: "error",
                     message: `invalid spf1 modifier: invalid domain: ${modifierDomain}`
                 };
             }
         } else if (parsed.mechanisms) {
-            parsed.mechanisms[i] = parseMechanism(e);
+            parsed.mechanisms[i] = parseMechanism(e, i) as SPF1Mechanism;
         }
     });
     if (!parsed.mechanisms.length) delete parsed.mechanisms;
+
     return parsed;
 };
 
@@ -264,6 +325,35 @@ export const txtRecords = {
         //parse: (v: string): ParsedDMARC1 | TxtRecordsParseError => {}
     }
 };
+
+/*
+ip4:82.165.229.31 ip4:82.165.230.21 ip4:37.187.153.22: invalid ip
+
+include:%{ir}.%{v}.%{d}.spf.has.pphosted.com: invalid domain; very strange
+
+
+*/
+
+export const spfTests = [
+    `v=spf1 include:spf-a.outlook.com include:spf-b.outlook.com ip4:157.55.9.128/25 include:spf.protection.outlook.com include:spf-a.hotmail.com include:_spf-ssg-b.microsoft.com include:_spf-ssg-c.microsoft.com ~all`,
+    `v=spf1 ip4:51.4.72.0/24 ip4:51.5.72.0/24 ip4:51.5.80.0/27 ip4:20.47.149.138/32 ip4:51.4.80.0/27 ip6:2a01:4180:4051:0800::/64 ip6:2a01:4180:4050:0800::/64 ip6:2a01:4180:4051:0400::/64 ip6:2a01:4180:4050:0400::/64 -all`,
+    `v=spf1 redirect=_spf.google.com`,
+    `v=spf1 include:_netblocks.google.com include:_netblocks2.google.com include:_netblocks3.google.com ~all`,
+    `v=spf1 mx ip4:62.216.223.128/29 -all`,
+    `v=spf1 mx a:mail-a3.dbtg.de a:mail-c3.dbtg.de ~all`,
+    `v=spf1 redirect=gmx.net`,
+    `v=spf1 ip4:213.165.64.0/23 ip4:74.208.5.64/26 ip4:212.227.126.128/25 ip4:212.227.15.0/25 ip4:212.227.17.0/27 ip4:74.208.4.192/26 ip4:82.165.159.0/24 ip4:217.72.207.0/27 ip4:82.165.229.31 ip4:82.165.230.21 -all`,
+    `v=spf1 mx a:mail.belin.es ip4:37.187.153.22 -all`,
+    `v=spf1 include:_zebus.cantamen.de include:_zoffice.cantamen.de include:_ron.cantamen.de include:_3cx.cantamen.de ~all`,
+    `v=spf1 include:_spf.hetzner.com include:spf.nl2go.com -all`,
+    `v=spf1 include:%{ir}.%{v}.%{d}.spf.has.pphosted.com -all`,
+    `v=spf1 redirect=_spf.facebook.com`,
+    `v=spf1 ip4:66.220.144.128/25 ip4:66.220.155.0/24 ip4:66.220.157.0/25 ip4:69.63.178.128/25 ip4:69.63.181.0/24 ip4:69.63.184.0/25 ip4:69.171.232.0/24 ip4:69.171.244.0/23 -all`,
+    `v=spf1 include:amazon.com -all`,
+    `v=spf1 include:spf1.amazon.com include:spf2.amazon.com include:amazonses.com -all`,
+    `v=spf1 ip4:207.171.160.0/19 ip4:87.238.80.0/21 ip4:72.21.192.0/19 ip4:194.154.193.192/27 ip4:194.7.41.152/28 ip4:212.123.28.40/32 ip4:203.81.17.0/24 ip4:178.236.10.128/26 ip4:52.94.124.0/28 ip4:99.78.197.208/28 ip4:52.119.213.144/28 -all`,
+    `v=spf1 include:%{ir}.%{v.%{d}.spf.has.pphosted.com -all`
+];
 
 /*
 SPF1

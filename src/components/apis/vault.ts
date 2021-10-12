@@ -36,7 +36,7 @@ export const getValue = async ({
     token: string;
     key: string;
 }) => {
-    const res: any = await f(endpoint + `/v1/pektin-kv/data/${key}`, {
+    const res: any = await f(`${endpoint}/v1/pektin-kv/data/${key}`, {
         headers: {
             "X-Vault-Token": token
         }

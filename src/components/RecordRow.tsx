@@ -215,7 +215,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                     min: field.min,
                                     max: field.max
                                 }}
-                                label={field.name}
+                                label={
+                                    field.name +
+                                    (this.props.record.values.length > 1
+                                        ? ` 1/${this.props.record.values.length}`
+                                        : "")
+                                }
                                 name={`${p.recordIndex}:rrField:0:${fieldName}`}
                                 value={fieldValue}
                             />

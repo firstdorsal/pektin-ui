@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { Add, ImportExport, Settings, ShoppingCart } from "@material-ui/icons";
-import React, { Component } from "react";
+import { Component } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
+import Health from "./Health";
 import * as t from "./types";
-import { SiVault } from "react-icons/si";
 
 interface BaseProps extends Partial<RouteComponentProps> {
     readonly config: t.Config;
@@ -12,46 +12,12 @@ interface BaseProps extends Partial<RouteComponentProps> {
 }
 interface BaseState {}
 
-const apps = [{ name: "Vault", icon: title => <SiVault title={title} />, id: "vault" }];
-
 export default class Sidebar extends Component<BaseProps, BaseState> {
     render = () => {
         return (
             <aside>
                 <h1>Pektin-ui</h1>
-
-                <div
-                    style={{
-                        margin: "0px",
-                        paddingLeft: "50px",
-                        paddingRight: "50px",
-                        paddingTop: "20px",
-                        marginBottom: "-10px",
-                        textAlign: "center"
-                    }}
-                >
-                    {apps.map((app, i) => {
-                        let color = "var(--f1)";
-                        let message = "";
-                        if (this.props.health && this.props.health[app.id]) {
-                            color =
-                                this.props.health[app.id].status === "ok"
-                                    ? "var(--ok)"
-                                    : "var(--error)";
-                            message = this.props.health[app.id].message;
-                        }
-                        return (
-                            <a
-                                target="blank"
-                                key={app.id}
-                                href={this.props.config.vaultAuth.endpoint}
-                                style={{ color, display: "inline-block" }}
-                            >
-                                {app.icon(`${app.name}: ${message}`)}
-                            </a>
-                        );
-                    })}
-                </div>
+                <Health config={this.props.config} health={this.props.health} />
                 <br />
                 <br />
                 <h2>Add Existing Domain</h2>

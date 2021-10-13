@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Component, Fragment, PureComponent } from "react";
 import "@fontsource/inter/900.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/400.css";
@@ -25,7 +25,7 @@ interface AppState {
 }
 interface AppProps {}
 
-export default class App extends Component<AppProps, AppState> {
+export default class App extends PureComponent<AppProps, AppState> {
     state: AppState = {
         config: l.defaulConfig,
         db: new l.PektinUiDb(),
@@ -108,6 +108,8 @@ export default class App extends Component<AppProps, AppState> {
 
     componentDidMount = async () => {
         // handle config
+        document.addEventListener("contextmenu", this.handleContextMenu);
+
         this.mounted = true;
         this.healtChecks();
 
@@ -134,8 +136,6 @@ export default class App extends Component<AppProps, AppState> {
                     domains
                 };
             });
-
-            document.addEventListener("contextmenu", this.handleContextMenu);
         } catch (e) {
             this.setState(({ config }) => ({
                 configError: true,
@@ -195,7 +195,6 @@ export default class App extends Component<AppProps, AppState> {
         return (
             <Router>
                 {this.state.configError ? <Redirect to="/auth" /> : ""}
-
                 {this.state.g.contextMenu ? (
                     <div
                         onClick={this.handleContextMenuOffClick}
@@ -222,9 +221,9 @@ export default class App extends Component<AppProps, AppState> {
                     <Route
                         exact
                         path="/add/existing/manual"
-                        component={(routeProps: any) => {
+                        render={(routeProps: any) => {
                             return (
-                                <div className="container">
+                                <Fragment>
                                     <Sidebar
                                         health={this.state.health}
                                         domains={this.state.domains}
@@ -237,7 +236,7 @@ export default class App extends Component<AppProps, AppState> {
                                             config={this.state.config}
                                         />
                                     </main>
-                                </div>
+                                </Fragment>
                             );
                         }}
                     />
@@ -245,26 +244,30 @@ export default class App extends Component<AppProps, AppState> {
                     <Route
                         exact
                         path="/add/existing/import"
-                        component={(routeProps: any) => {
+                        render={(routeProps: any) => {
                             return (
-                                <div className="container">
+                                <Fragment>
                                     <Sidebar
                                         health={this.state.health}
                                         domains={this.state.domains}
                                         config={this.state.config}
                                     ></Sidebar>
                                     <main>
-                                        <ImportDomain g={this.state.g} config={this.state.config} />
+                                        <ImportDomain
+                                            routeProps={routeProps}
+                                            g={this.state.g}
+                                            config={this.state.config}
+                                        />
                                     </main>
-                                </div>
+                                </Fragment>
                             );
                         }}
                     />
                     <Route
                         path={`/domain/:domainName`}
-                        component={(routeProps: any) => {
+                        render={(routeProps: any) => {
                             return (
-                                <div className="container">
+                                <Fragment>
                                     <Sidebar
                                         health={this.state.health}
                                         domains={this.state.domains}
@@ -277,16 +280,16 @@ export default class App extends Component<AppProps, AppState> {
                                             config={this.state.config}
                                         />
                                     </main>
-                                </div>
+                                </Fragment>
                             );
                         }}
                     />
                     <Route
                         exact
                         path="/config/"
-                        component={(routeProps: any) => {
+                        render={(routeProps: any) => {
                             return (
-                                <div className="container">
+                                <Fragment>
                                     <Sidebar
                                         health={this.state.health}
                                         domains={this.state.domains}
@@ -295,23 +298,23 @@ export default class App extends Component<AppProps, AppState> {
                                     <main>
                                         <ConfigView g={this.state.g} config={this.state.config} />
                                     </main>
-                                </div>
+                                </Fragment>
                             );
                         }}
                     />
 
                     <Route
                         path="*"
-                        component={(routeProps: any) => {
+                        render={(routeProps: any) => {
                             return (
-                                <div className="container">
+                                <Fragment>
                                     <Sidebar
                                         health={this.state.health}
                                         domains={this.state.domains}
                                         config={this.state.config}
                                     ></Sidebar>
                                     <main></main>
-                                </div>
+                                </Fragment>
                             );
                         }}
                     />

@@ -6,6 +6,7 @@ import * as t from "./types";
 interface ImportDomainProps {
     readonly config: t.Config;
     readonly g: t.Glob;
+    readonly routeProps: any;
 }
 interface ImportDomainState {
     readonly activeStep: number;
@@ -71,12 +72,13 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
         const step2 = () => {
             return (
                 <Domain
+                    {...this.props.routeProps}
                     variant="import"
                     g={this.props.g}
                     style={{ height: "calc(100% - 70px)" }}
                     records={this.state.records}
                     config={this.props.config}
-                ></Domain>
+                />
             );
         };
 

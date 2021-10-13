@@ -29,35 +29,6 @@ export interface ParsedSPF1 {
     modifierDomain?: string;
 }
 
-// https://www.ietf.org/rfc/rfc6376.txt
-// eslint-disable-next-line
-interface ParsedDKIM1 {
-    g: any; // granularity
-    h: any; // hash; a list of mechanisms that can be used to produce a digest of message data
-    k: "rsa"; // key type; a list of mechanisms that can be used to decode a DKIM signature
-    n: string; // notes; notes for humans
-    p: string; //public-key; base64 encoded public key
-    s: string[]; // service types for example * or email
-    t: "y" | "s"; // list of flags to modify the selector
-    q: string; // query type for example "dns"
-    l: number; // size limit
-}
-
-// https://datatracker.ietf.org/doc/html/rfc7489#section-6.3
-// eslint-disable-next-line
-interface ParsedDMARC1 {
-    p: "none" | "quarantine" | "reject"; // policy
-    adkim?: "r" | "s"; // dkim alignment: relaxed or strict mode
-    aspf?: "r" | "s"; // spf alignment: relaxed or strict mode
-    fo?: 0 | 1 | "d" | "s"; // Failure reporting options: default is 0
-    pct?: number; //percent: number from 1-100
-    rf?: Array<"afrf" | "iodef">; // report format: Authentication Failure Reporting Format || incident object description exchange format
-    ri?: number; // report interval: number of seconds defaults to 86400 u32
-    rua?: string[]; // report aggregate address: comma seperated list
-    ruf?: string[]; // report failure address: comma seperated list
-    sp?: "none" | "quarantine" | "reject"; // subdomain policy
-}
-
 const anyInArrayStartsWith = (a: string[], start: string): boolean => {
     for (let i = 0; i < a.length; i++) {
         if (start.match(RegExp(`^${a[i]}.*`))) return true;
@@ -83,7 +54,7 @@ const splitFirstAndRest = (string: string, seperator: string) => {
     ];
 };
 
-const checkMacros = (string: string): false | t.ValidationResult => {
+const checkSPF1Macros = (string: string): false | t.ValidationResult => {
     if (string.indexOf("%") === -1) return { type: "error", message: `invalid domain: ${string}` };
     if (!string.match(/.*(%{|%%|%-|%_).*/g)) {
         return {
@@ -133,7 +104,7 @@ const checkMacros = (string: string): false | t.ValidationResult => {
 };
 
 const parseSPF1 = (v2: string): ParsedSPF1 | t.ValidationResult => {
-    const v = v2.replaceAll(/\s+/g, " ");
+    const v = v2.replaceAll(/\s+/g, " ").toLowerCase();
 
     const split = v.split(" ");
     if (split[0] !== "v=spf1")
@@ -144,7 +115,11 @@ const parseSPF1 = (v2: string): ParsedSPF1 | t.ValidationResult => {
     if (split.length === 1 || !split[1]) return { type: "error", message: "spf1 record is empty" };
     const parsed: ParsedSPF1 = {};
     split.shift();
-    const parseMechanism = (e: string, index: number): SPF1Mechanism | t.ValidationResult => {
+    const parseMechanism = (
+        e: string,
+        index: number,
+        length: number
+    ): SPF1Mechanism | t.ValidationResult => {
         if (!e.length) return { type: "error", message: "invalid spf1 mechanism" };
         const mechanism: SPF1Mechanism = {} as SPF1Mechanism;
         if (["+", "-", "~", "?"].indexOf(e.charAt(0)) > -1) {
@@ -168,7 +143,7 @@ const parseSPF1 = (v2: string): ParsedSPF1 | t.ValidationResult => {
                     mechanism.domain = rest;
                 } else {
                     if (type !== "ptr") {
-                        const cm = checkMacros(rest);
+                        const cm = checkSPF1Macros(rest);
                         if (cm && cm.type === "error") return cm;
 
                         mechanism.type = type;
@@ -275,7 +250,7 @@ const parseSPF1 = (v2: string): ParsedSPF1 | t.ValidationResult => {
         } else {
             return {
                 type: "error",
-                message: `invalid spf1 mechanism at index ${index}: ${e}`
+                message: `invalid spf1 mechanism at index ${index + 1}/${length}: ${e}`
             };
         }
         return mechanism;
@@ -298,7 +273,7 @@ const parseSPF1 = (v2: string): ParsedSPF1 | t.ValidationResult => {
                 };
             }
         } else if (parsed.mechanisms) {
-            parsed.mechanisms[i] = parseMechanism(e, i) as SPF1Mechanism;
+            parsed.mechanisms[i] = parseMechanism(e, i, split.length) as SPF1Mechanism;
         }
     });
     if (!parsed.mechanisms.length) delete parsed.mechanisms;
@@ -306,23 +281,135 @@ const parseSPF1 = (v2: string): ParsedSPF1 | t.ValidationResult => {
     return parsed;
 };
 
+const validateSPF1 = (string: string): t.ValidationResult => {
+    const parsedSpf = parseSPF1(string) as ParsedSPF1;
+
+    if ((parsedSpf as t.ValidationResult).type === "error") {
+        return parsedSpf as t.ValidationResult;
+    }
+    if (parsedSpf.mechanisms && parsedSpf.mechanisms.length) {
+        const erroredMechanisms = parsedSpf.mechanisms.filter(
+            (e: any) => e.type === "error" || e.type === "warning"
+        );
+
+        if (erroredMechanisms.length > 0) {
+            return erroredMechanisms[0] as t.ValidationResult;
+        }
+
+        for (let i = 0; i < parsedSpf.mechanisms.length; i++) {
+            const m = parsedSpf.mechanisms[i];
+
+            if (m.type === "all" && i < parsedSpf.mechanisms.length - 1) {
+                if (m.qualifier === "-") {
+                    return {
+                        type: "warning",
+                        message: `All mechanisms after the '-all' will be ignored/overridden: THIS WILL REJECT ALL MAIL`
+                    };
+                } else if (m.qualifier === "+") {
+                    return {
+                        type: "warning",
+                        message: `All mechanisms after the '+all' will be ignored/overridden: this renders the record useless lol`
+                    };
+                }
+            }
+        }
+    }
+    if (string !== string.replaceAll(/\s+/g, " ")) {
+        return {
+            type: "warning",
+            message: `Spf record contains multiple adjacent spaces`
+        };
+    }
+    if (string !== string.toLowerCase()) {
+        return {
+            type: "warning",
+            message: `Spf record should only contain lower case chars`
+        };
+    }
+    return { type: "ok" };
+};
+
+// https://www.ietf.org/rfc/rfc6376.txt
+// https://www.iana.org/assignments/dkim-parameters/dkim-parameters.xhtml
+interface ParsedDKIM1 {
+    v: any;
+    g: any; // granularity
+    h: "sha1" | "sha256"; // hash; a list of mechanisms that can be used to produce a digest of message data
+    k: "rsa" | "ed25519"; // key type; a list of mechanisms that can be used to decode a DKIM signature
+    n: string; // notes; notes for humans
+    p: string; //public-key; base64 encoded public key
+    s: Array<"email" | "*">; // service types for example * or email
+    t: "y" | "s"; // list of flags to modify the selector
+    //q: string; // query type for example "dns"
+    //l: number; // size limit
+}
+const parseDKIM1 = (string: string): ParsedDKIM1 | t.ValidationResult => {
+    const parsed = {} as ParsedDKIM1;
+    string = string.replaceAll(" ", "");
+    const split = string.split(";");
+    split.forEach(e => {
+        const kv = e.split("=");
+        if (kv && kv[0] !== undefined && kv[1] !== undefined) {
+            if (kv[0] === "g") parsed["g"] = kv[1];
+            else if (kv[0] === "h" && (kv[1] === "sha1" || kv[1] === "sha256")) parsed["h"] = kv[1];
+            else if (kv[0] === "k" && (kv[1] === "rsa" || kv[1] === "ed25519")) parsed["k"] = kv[1];
+            else if (kv[0] === "n") parsed["n"] = kv[1];
+            else if (kv[0] === "p") parsed["p"] = kv[1];
+            else if (kv[0] === "s") {
+                let serviceTypes = kv[1].split(",");
+                if (serviceTypes.length) {
+                    serviceTypes = serviceTypes.filter(
+                        string => string === "email" || string === "*"
+                    );
+                    if (serviceTypes.length) {
+                        parsed["s"] = serviceTypes as Array<"email" | "*">;
+                    }
+                }
+            } else if (kv[0] === "t" && (kv[1] === "y" || kv[1] === "s")) parsed["t"] = kv[1];
+        }
+    });
+    //console.log(parsed);
+
+    return parsed;
+};
+
+// https://datatracker.ietf.org/doc/html/rfc7489#section-6.3
+interface ParsedDMARC1 {
+    p: "none" | "quarantine" | "reject"; // policy
+    adkim?: "r" | "s"; // dkim alignment: relaxed or strict mode
+    aspf?: "r" | "s"; // spf alignment: relaxed or strict mode
+    fo?: 0 | 1 | "d" | "s"; // Failure reporting options: default is 0
+    pct?: number; //percent: number from 1-100
+    rf?: Array<"afrf" | "iodef">; // report format: Authentication Failure Reporting Format || incident object description exchange format
+    ri?: number; // report interval: number of seconds defaults to 86400 u32
+    rua?: string[]; // report aggregate address: comma seperated list
+    ruf?: string[]; // report failure address: comma seperated list
+    sp?: "none" | "quarantine" | "reject"; // subdomain policy
+}
+const parseDMARC1 = (string: string): ParsedDMARC1 | t.ValidationResult => {
+    const parsed = {};
+    string = string.replaceAll(" ", "");
+    const split = string.split(";");
+
+    return parsed as ParsedDMARC1;
+};
+
 export const txtRecords = {
     SPF1: {
         identifier: "v=spf1",
-        parse: parseSPF1
+        parse: parseSPF1,
+        validate: validateSPF1
     },
     SPF2: {
-        identifier: "spf2.0",
-        parse: parseSPF1
+        identifier: "spf2.0"
     },
     DKIM1: {
-        identifier: "v=DKIM1"
-        //parse: (v: string): ParsedDKIM1 | TxtRecordsParseError => {}
+        identifier: "v=DKIM1",
+        parse: parseDKIM1
     },
-
     DMARC1: {
-        identifier: "v=DMARC1"
-        //parse: (v: string): ParsedDMARC1 | TxtRecordsParseError => {}
+        identifier: "v=DMARC1",
+        parse: parseDMARC1
     }
 };
 

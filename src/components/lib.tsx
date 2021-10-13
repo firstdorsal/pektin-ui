@@ -511,19 +511,10 @@ export const rrTemplates: any = {
                 validate: (config: t.Config, field: string): t.ValidationResult => {
                     field = variablesToValues(config, field);
                     if (field.startsWith(txt.txtRecords.SPF1.identifier)) {
-                        const parsedSpf = txt.txtRecords.SPF1.parse(field);
-
-                        if ((parsedSpf as t.ValidationResult).type === "error") {
-                            return parsedSpf as t.ValidationResult;
-                        }
-                        /*@ts-ignore*/
-                        if (parsedSpf.mechanisms && parsedSpf.mechanisms.length) {
-                            /*@ts-ignore*/
-                            const mechanisms = parsedSpf.mechanisms.filter(e => e.type !== "ok");
-                            if (mechanisms.length > 0) {
-                                return mechanisms[0];
-                            }
-                        }
+                        return txt.txtRecords.SPF1.validate(field);
+                    }
+                    if (field.startsWith(txt.txtRecords.DKIM1.identifier)) {
+                        txt.txtRecords.DKIM1.parse(field);
                     }
                     return { type: "ok" };
                 }

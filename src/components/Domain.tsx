@@ -6,7 +6,7 @@ import * as l from "./lib";
 import isEqual from "lodash/isEqual";
 import cloneDeep from "lodash/cloneDeep";
 import sortBy from "lodash/sortBy";
-import { RouteComponentProps, withRouter } from "react-router-dom";
+import { RouteComponentProps } from "react-router-dom";
 import RecordRow from "./RecordRow";
 import { AutoSizer, List } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
@@ -43,7 +43,6 @@ interface DomainProps extends RouteComponentProps<RouteParams> {
     readonly variant?: "import";
     readonly records?: t.DisplayRecord[];
     readonly style?: any;
-    readonly computedMatch?: any;
 }
 
 interface ColumnItem {
@@ -60,7 +59,7 @@ const columnItems: ColumnItem[] = [
     { name: "value", left: "580px", type: "string", direction: 0 }
 ];
 
-class Domain extends Component<DomainProps, DomainState> {
+export default class Domain extends Component<DomainProps, DomainState> {
     state: DomainState = {
         records: [],
         ogRecords: [],
@@ -638,11 +637,11 @@ class Domain extends Component<DomainProps, DomainState> {
         key: any;
         index: number;
         style: any;
-        record: t.DisplayRecord;
-        meta: t.DomainMeta;
-        totalRows: number;
+        //record: t.DisplayRecord;
+        //meta: t.DomainMeta;
+        //totalRows: number;
     }) => {
-        const { key, index, style, totalRows } = r;
+        const { key, index, style } = r;
 
         return (
             <RecordRow
@@ -654,9 +653,9 @@ class Domain extends Component<DomainProps, DomainState> {
                 search={this.state.search}
                 key={key}
                 recordIndex={index}
-                record={r.record}
-                meta={r.meta}
-                totalRows={totalRows}
+                record={this.state.records[index]}
+                meta={this.state.meta[index]}
+                totalRows={this.state.records.length}
                 domainName={this.state.domainName}
                 variant={this.props.variant}
                 addRRValue={this.addRRValue}
@@ -820,28 +819,19 @@ class Domain extends Component<DomainProps, DomainState> {
                     {this.tableHead()}
                     <AutoSizer>
                         {({ height, width }) => (
-                            <Fragment>
-                                <List
-                                    overscanRowCount={5}
-                                    style={{ overflowY: "scroll" }}
-                                    ref={ref => (this.list = ref)}
-                                    height={height}
-                                    width={width}
-                                    estimatedRowSize={70}
-                                    rowHeight={({ index }) => {
-                                        return this.state.meta[index]?.expanded ? 670 : 70;
-                                    }}
-                                    rowRenderer={props =>
-                                        this.rowRenderer({
-                                            ...props,
-                                            record: this.state.records[props.index],
-                                            meta: this.state.meta[props.index],
-                                            totalRows: this.state.records.length
-                                        })
-                                    }
-                                    rowCount={this.state.records.length}
-                                />
-                            </Fragment>
+                            <List
+                                overscanRowCount={5}
+                                style={{ overflowY: "scroll" }}
+                                ref={ref => (this.list = ref)}
+                                height={height}
+                                width={width}
+                                estimatedRowSize={70}
+                                rowHeight={({ index }) => {
+                                    return this.state.meta[index]?.expanded ? 670 : 70;
+                                }}
+                                rowRenderer={this.rowRenderer}
+                                rowCount={this.state.records.length}
+                            />
                         )}
                     </AutoSizer>
                 </div>
@@ -850,4 +840,14 @@ class Domain extends Component<DomainProps, DomainState> {
     };
 }
 
-export default withRouter(Domain);
+/*
+props =>
+                                    this.rowRenderer({
+                                        ...props,
+                                        record: this.state.records[props.index],
+                                        meta: this.state.meta[props.index],
+                                        totalRows: this.state.records.length
+                                    })
+                                
+
+*/

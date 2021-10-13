@@ -453,7 +453,6 @@ export const rrTemplates: any = {
         color: [255, 145, 0],
         info: (
             <div>
-                <h2>SOA Record</h2>
                 <p>
                     The "Start Of Authority" record is the most important one, as it defines the
                     existence of the zone.
@@ -495,6 +494,27 @@ export const rrTemplates: any = {
             }
         },
         color: [29, 94, 224],
+        info: (
+            <div>
+                <p>The "Mail Exchange" record points to the location of a mail server.</p>
+                <br />
+                <p>
+                    The preference indicates the order that a sender should try to deliver its mail
+                    to. <br /> A lower preference value indicates a higher priority.
+                </p>
+                <br />
+                <p>
+                    Have a look at{" "}
+                    <a
+                        href="https://datatracker.ietf.org/doc/html/rfc5321#section-5.1"
+                        rel="noreferrer"
+                    >
+                        RFC 5321
+                    </a>{" "}
+                    for more information.
+                </p>
+            </div>
+        ),
         complex: true
     },
     TXT: {
@@ -521,6 +541,33 @@ export const rrTemplates: any = {
             }
         },
         color: [140, 140, 140],
+        info: (
+            <div>
+                <p>The "Text" record is a flexible record that can contain pretty much anything.</p>
+                <br />
+                <p>There are many "sub types" of TXT records like spf, dkim, dmarc etc.</p>
+                <br />
+                <p>
+                    See{" "}
+                    <a
+                        href="https://datatracker.ietf.org/doc/html/rfc1464"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        RFC 1464
+                    </a>{" "}
+                    for more information about the TXT record and{" "}
+                    <a
+                        href="https://datatracker.ietf.org/doc/html/rfc7208"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        RFC 7208
+                    </a>{" "}
+                    for more information about the TXT-SPF record.
+                </p>
+            </div>
+        ),
         complex: false
     },
     SRV: {

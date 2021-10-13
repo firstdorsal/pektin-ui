@@ -57,6 +57,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
 
             const fields = l.rrTemplates[type]?.fields;
             const fieldNames = Object.keys(fields);
+
             const fieldValues = Object.values(fields);
             return (
                 <div style={{ position: "relative" }} key={rrIndex}>
@@ -70,7 +71,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         {fieldNames.map((fieldName: any, fieldIndex: number) => {
                             const field: any = fieldValues[fieldIndex];
                             const fieldValue =
-                                fieldNames?.length > 2 ? v[fieldName] + "" : v?.value + "";
+                                fieldNames?.length > 1 ? v[fieldName] + "" : v?.value + "";
 
                             const verify =
                                 this.props.meta.validity && this.props.meta.validity.values[rrIndex]

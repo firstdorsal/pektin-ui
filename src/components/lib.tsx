@@ -273,7 +273,7 @@ export const validateDomain = (
             message: "Domains should only contain lower case chars"
         };
     }
-    if (input !== ogInput) {
+    if (input !== unicodeToAscii(ogInput)) {
         return {
             type: "warning",
             message: "Field shouldn't contain whitespace"

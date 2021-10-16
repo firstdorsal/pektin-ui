@@ -12,7 +12,7 @@ export interface PektinApiAuth {
     dev?: string | false;
 }
 export interface GetRequestBody {
-    queries: string[];
+    keys: string[];
 }
 export interface SearchRequestBody {
     glob: string;
@@ -23,8 +23,16 @@ export interface SetRequestBody {
 export interface DeleteRequestBody {
     keys: string[];
 }
+export interface GetZoneRecordsRequestBody {
+    names: string[];
+}
 
-type RequestBody = SetRequestBody | GetRequestBody | SearchRequestBody | DeleteRequestBody;
+type RequestBody =
+    | SetRequestBody
+    | GetRequestBody
+    | SearchRequestBody
+    | DeleteRequestBody
+    | GetZoneRecordsRequestBody;
 
 type RequestType = "set" | "get" | "search" | "delete";
 
@@ -107,11 +115,12 @@ export const getDomains = async (config: t.Config): Promise<string[]> => {
 };
 
 export const getRecords = async (config: t.Config, domainName: string) => {
-    const req = await request(config, "search", { glob: `*${l.absoluteName(domainName)}:*` });
-    const recordKeys = req.data;
+    const req = await request(config, "get-zone-records", { names: [l.absoluteName(domainName)] });
+    const recordKeys = req.data[l.absoluteName(domainName)];
     if (!Array.isArray(recordKeys)) return [];
 
-    const recordValues = (await request(config, "get", { queries: recordKeys })).data;
+    const recordValues = (await request(config, "get", { keys: recordKeys })).data;
+
     const records: RedisEntry[] = [];
     recordKeys.forEach((e, i) => {
         records[i] = { name: e, ...recordValues[i] };

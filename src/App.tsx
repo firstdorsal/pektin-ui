@@ -1,4 +1,4 @@
-import { Component, Fragment, PureComponent } from "react";
+import { Fragment, PureComponent } from "react";
 import "@fontsource/inter/900.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/400.css";

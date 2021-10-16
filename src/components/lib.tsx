@@ -534,7 +534,7 @@ export const rrTemplates: any = {
                         return txt.txtRecords.SPF1.validate(field);
                     }
                     if (field.startsWith(txt.txtRecords.DKIM1.identifier)) {
-                        txt.txtRecords.DKIM1.parse(field);
+                        return txt.txtRecords.DKIM1.validate(field);
                     }
                     return { type: "ok" };
                 }
@@ -686,7 +686,14 @@ export const rrTemplates: any = {
             value: "",
             ttl: 3600
         },
-        fields: { key: { placeholder: "", name: "public key", inputType: "text", width: 12 } },
+        fields: {
+            key: {
+                placeholder: "99020d046104063e...",
+                name: "public key",
+                inputType: "text",
+                width: 12
+            }
+        },
         color: [145, 0, 7],
         complex: false
     },

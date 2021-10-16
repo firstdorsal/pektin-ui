@@ -14,7 +14,7 @@ const defaultSOA: t.DisplayRecord = {
     values: [l.rrTemplates.SOA.template]
 };
 
-interface AddDomainProps extends Partial<RouteComponentProps> {
+interface AddDomainProps extends RouteComponentProps {
     readonly config: t.Config;
     readonly g: t.Glob;
     readonly loadDomains: Function;

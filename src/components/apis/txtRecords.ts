@@ -103,8 +103,8 @@ const checkSPF1Macros = (string: string): false | t.ValidationResult => {
     return false;
 };
 
-const parseSPF1 = (v2: string): ParsedSPF1 | t.ValidationResult => {
-    const v = v2.replaceAll(/\s+/g, " ").toLowerCase();
+const parseSPF1 = (value: string): ParsedSPF1 | t.ValidationResult => {
+    const v = value.replaceAll(/\s+/g, " ").toLowerCase();
 
     const split = v.split(" ");
     if (split[0] !== "v=spf1")
@@ -332,45 +332,136 @@ const validateSPF1 = (string: string): t.ValidationResult => {
 // https://www.ietf.org/rfc/rfc6376.txt
 // https://www.iana.org/assignments/dkim-parameters/dkim-parameters.xhtml
 interface ParsedDKIM1 {
-    v: any;
-    g: any; // granularity
-    h: "sha1" | "sha256"; // hash; a list of mechanisms that can be used to produce a digest of message data
-    k: "rsa" | "ed25519"; // key type; a list of mechanisms that can be used to decode a DKIM signature
-    n: string; // notes; notes for humans
-    p: string; //public-key; base64 encoded public key
-    s: Array<"email" | "*">; // service types for example * or email
-    t: "y" | "s"; // list of flags to modify the selector
+    v: any | t.ValidationResult;
+    g: any | t.ValidationResult; // granularity
+    h: "sha1" | "sha256" | t.ValidationResult; // hash; a list of mechanisms that can be used to produce a digest of message data
+    k: "rsa" | "ed25519" | t.ValidationResult; // key type; a list of mechanisms that can be used to decode a DKIM signature
+    n: string | t.ValidationResult; // notes; notes for humans
+    p: string | t.ValidationResult; //public-key; base64 encoded public key
+    s: Array<"email" | "*"> | t.ValidationResult; // service types for example * or email
+    t: "y" | "s" | t.ValidationResult; // list of flags to modify the selector
     //q: string; // query type for example "dns"
     //l: number; // size limit
 }
 const parseDKIM1 = (string: string): ParsedDKIM1 | t.ValidationResult => {
-    const parsed = {} as ParsedDKIM1;
-    string = string.replaceAll(" ", "");
+    let parsed = {} as ParsedDKIM1;
+    string = string.replaceAll(" ", "").replaceAll("v=DKIM1;", "");
     const split = string.split(";");
+
     split.forEach(e => {
+        if (e.indexOf("=") === -1) {
+            /*@ts-ignore*/
+            parsed = { type: "error", message: "Couldnt parse DKIM1: Missing =" };
+            return;
+        }
         const kv = e.split("=");
-        if (kv && kv[0] !== undefined && kv[1] !== undefined) {
-            if (kv[0] === "g") parsed["g"] = kv[1];
-            else if (kv[0] === "h" && (kv[1] === "sha1" || kv[1] === "sha256")) parsed["h"] = kv[1];
-            else if (kv[0] === "k" && (kv[1] === "rsa" || kv[1] === "ed25519")) parsed["k"] = kv[1];
-            else if (kv[0] === "n") parsed["n"] = kv[1];
-            else if (kv[0] === "p") parsed["p"] = kv[1];
-            else if (kv[0] === "s") {
-                let serviceTypes = kv[1].split(",");
-                if (serviceTypes.length) {
-                    serviceTypes = serviceTypes.filter(
-                        string => string === "email" || string === "*"
-                    );
-                    if (serviceTypes.length) {
-                        parsed["s"] = serviceTypes as Array<"email" | "*">;
-                    }
+
+        if (!kv[0]) {
+            /*@ts-ignore*/
+            parsed = { type: "error", message: "Couldnt parse DKIM1: Missing key/name" };
+            return;
+        }
+        if (kv[1] === undefined) {
+            /*@ts-ignore*/
+            parsed = { type: "error", message: `Couldnt parse DKIM1: Missing value ${kv[0]}` };
+            return;
+        }
+
+        if (!kv[1].length) {
+            /*@ts-ignore*/
+            parsed[kv[0]] = {
+                type: "error",
+                message: `Couldnt parse DKIM1 KV pair: Empty value ${kv[0]}`
+            };
+            return;
+        }
+
+        if (kv[0] === "g") {
+            parsed["g"] = kv[1];
+        } else if (kv[0] === "h") {
+            if (kv[1] !== "sha1" && kv[1] !== "sha256") {
+                parsed["h"] = {
+                    type: "error",
+                    message: "Couldnt parse DKIM1 KV pair: h has to be either sha1 or sha256"
+                };
+            } else {
+                parsed["h"] = kv[1];
+            }
+        } else if (kv[0] === "k") {
+            if (kv[1] !== "rsa" && kv[1] !== "ed25519") {
+                parsed["k"] = {
+                    type: "error",
+                    message: "Couldnt parse DKIM1 KV pair: k has to be either rsa or ed25519"
+                };
+            } else {
+                parsed["k"] = kv[1];
+            }
+        } else if (kv[0] === "n") {
+            parsed["n"] = kv[1];
+        } else if (kv[0] === "p") {
+            parsed["p"] = kv[1];
+        } else if (kv[0] === "s") {
+            let serviceTypes = kv[1].split(",");
+            if (serviceTypes.length > 2) {
+                parsed["s"] = {
+                    type: "error",
+                    message:
+                        "Couldnt parse DKIM1 KV pair: s is an array that can only have the options * and email hence cant be longer than 2"
+                };
+            } else if (serviceTypes.length) {
+                const filteredServiceTypes = serviceTypes.filter(
+                    string => string === "email" || string === "*"
+                );
+                if (filteredServiceTypes.length === serviceTypes.length) {
+                    parsed["s"] = serviceTypes as Array<"email" | "*">;
+                } else {
+                    parsed["s"] = {
+                        type: "error",
+                        message:
+                            "Couldnt parse DKIM1 KV pair: s contains one or more invalid service types: may only contain email or *"
+                    };
                 }
-            } else if (kv[0] === "t" && (kv[1] === "y" || kv[1] === "s")) parsed["t"] = kv[1];
+            } else {
+                parsed["s"] = {
+                    type: "error",
+                    message: "Couldnt parse DKIM1 KV pair: s is empty"
+                };
+            }
+        } else if (kv[0] === "t") {
+            if (kv[1] !== "y" && kv[1] !== "s") {
+                parsed["t"] = {
+                    type: "error",
+                    message: "Couldnt parse DKIM1 KV pair: t has to be either y or s"
+                };
+            } else {
+                parsed["t"] = kv[1];
+            }
+        } else {
+            /*@ts-ignore*/
+            parsed[kv[0]] = {
+                type: "error",
+                message: `Couldnt parse DKIM1 KV pair: unknown key ${kv[0]}`
+            };
         }
     });
-    //console.log(parsed);
-
     return parsed;
+};
+
+const validateDKIM1 = (string: string): t.ValidationResult => {
+    const parsed = parseDKIM1(string) as t.ValidationResult;
+    if (parsed.type === "error") {
+        return parsed;
+    } else {
+        const parsedValues = Object.values(parsed);
+        for (let i = 0; i < parsedValues.length; i++) {
+            const parsedValue = parsedValues[i];
+
+            if (parsedValue.type === "error") {
+                return parsedValue;
+            }
+        }
+    }
+    return { type: "ok" };
 };
 
 // https://datatracker.ietf.org/doc/html/rfc7489#section-6.3
@@ -405,7 +496,8 @@ export const txtRecords = {
     },
     DKIM1: {
         identifier: "v=DKIM1",
-        parse: parseDKIM1
+        parse: parseDKIM1,
+        validate: validateDKIM1
     },
     DMARC1: {
         identifier: "v=DMARC1",

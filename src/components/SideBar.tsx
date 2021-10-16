@@ -49,22 +49,38 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
                 </NavLink>
                 <br />
                 <h2>Your Domains</h2>
-                {this.props.domains.length
-                    ? this.props.domains.map((domain: string, i: number) => {
-                          return (
-                              <NavLink
-                                  activeClassName="navActive"
-                                  className="link"
-                                  key={i}
-                                  exact
-                                  to={`/domain/${domain}`}
-                              >
-                                  {domain}
-                              </NavLink>
-                          );
-                      })
-                    : ""}
-                <NavLink exact className="link config" activeClassName="navActive" to="/config">
+                <ul
+                    style={{
+                        overflowX: "hidden",
+                        overflowY: "scroll",
+                        maxHeight: "calc(100% - 410px)"
+                    }}
+                >
+                    {this.props.domains.length
+                        ? this.props.domains.map((domain: string, i: number) => {
+                              return (
+                                  <li key={i}>
+                                      <NavLink
+                                          activeClassName="navActive"
+                                          className="link"
+                                          exact
+                                          to={`/domain/${domain}`}
+                                      >
+                                          {domain}
+                                      </NavLink>
+                                  </li>
+                              );
+                          })
+                        : ""}
+                </ul>
+
+                <NavLink
+                    style={{ background: "var(--a1)" }}
+                    exact
+                    className="link config"
+                    activeClassName="navActive"
+                    to="/config"
+                >
                     <Settings />
                     <span className="linkText">Configuration</span>
                 </NavLink>

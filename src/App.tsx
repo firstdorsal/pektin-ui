@@ -158,10 +158,10 @@ export default class App extends PureComponent<AppProps, AppState> {
         //setTimeout(this.healtChecks, 5000);
     };
 
-    componentWillUnmount() {
+    componentWillUnmount = () => {
         this.mounted = false;
         document.removeEventListener("contextmenu", this.handleContextMenu);
-    }
+    };
 
     saveAuth = async (vaultAuth: t.VaultAuth) => {
         sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
@@ -185,8 +185,9 @@ export default class App extends PureComponent<AppProps, AppState> {
         e.preventDefault();
         this.setState(({ g }) => ({ g: { ...g, contextMenu: e, cmAction: action } }));
     };
-    changeContextMenu = (value: any) =>
-        this.setState(({ g }) => ({ g: { ...g, contextMenu: value } }));
+    changeContextMenu = (value: any) => {
+        return this.setState(({ g }) => ({ g: { ...g, contextMenu: value } }));
+    };
 
     render = () => {
         if (!this.state.configLoaded) return <div></div>;
@@ -231,6 +232,7 @@ export default class App extends PureComponent<AppProps, AppState> {
                                     ></Sidebar>
                                     <main>
                                         <AddDomain
+                                            {...routeProps}
                                             loadDomains={this.loadDomains}
                                             g={this.state.g}
                                             config={this.state.config}

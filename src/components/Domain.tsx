@@ -1,7 +1,7 @@
 import { Component, Fragment } from "react";
 import { Checkbox, Fab, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
-import { AddCircle, Check, Delete, Flare, Map } from "@material-ui/icons";
+import { AddCircle, Check, Close, Delete, Refresh } from "@material-ui/icons";
 import * as l from "./lib";
 import isEqual from "lodash/isEqual";
 import cloneDeep from "lodash/cloneDeep";
@@ -17,7 +17,7 @@ import {
     FaSortNumericDown
 } from "react-icons/fa";
 import { ContextMenu } from "./ContextMenu";
-import { VscReplaceAll } from "react-icons/vsc";
+import { VscRegex, VscReplaceAll } from "react-icons/vsc";
 
 interface DomainState {
     readonly records: t.DisplayRecord[];
@@ -31,6 +31,7 @@ interface DomainState {
     readonly anySelected: boolean;
     readonly domainName: string;
     readonly changedRecords: number;
+    readonly useRegex: boolean;
 }
 
 interface RouteParams {
@@ -50,13 +51,14 @@ interface ColumnItem {
     left: string;
     type: "string" | "number";
     direction: 0 | 1 | 2;
+    search: boolean;
 }
 
 const columnItems: ColumnItem[] = [
-    { name: "name", left: "70px", type: "string", direction: 0 },
-    { name: "type", left: "405px", type: "string", direction: 0 },
-    { name: "ttl", left: "490px", type: "number", direction: 0 },
-    { name: "value", left: "580px", type: "string", direction: 0 }
+    { name: "name", left: "70px", type: "string", direction: 0, search: true },
+    { name: "type", left: "405px", type: "string", direction: 0, search: true },
+    { name: "ttl", left: "490px", type: "number", direction: 0, search: true },
+    { name: "value", left: "580px", type: "string", direction: 0, search: true }
 ];
 
 export default class Domain extends Component<DomainProps, DomainState> {
@@ -71,7 +73,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
         replace: "",
         anySelected: false,
         domainName: "",
-        changedRecords: 0
+        changedRecords: 0,
+        useRegex: true
     };
     list: any;
     saveRecord = async (i: number) => {
@@ -309,8 +312,21 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
             return m;
         });
+
         const defaultOrder = records.map((e, i) => i);
-        this.setState({ records, ogRecords: cloneDeep(records), meta, defaultOrder, domainName });
+        this.setState({
+            records,
+            ogRecords: cloneDeep(records),
+            meta,
+            defaultOrder,
+            domainName,
+            selectAll: false
+        });
+        if (this.state.search.length) {
+            this.handleSearchAndReplaceChange({
+                target: { name: "search", value: this.state.search }
+            });
+        }
     };
 
     componentDidMount = async () => {
@@ -412,34 +428,42 @@ export default class Domain extends Component<DomainProps, DomainState> {
         }
     };
 
-    handleSearchAndReplaceChange = (e: any) => {
+    handleSearchAndReplaceChange = (e: any, useRegex = this.state.useRegex) => {
         if (e.target.name === "search") {
-            const v = e.target.value;
+            const search = e.target.value;
             this.setState(({ records, meta, defaultOrder }) => {
                 meta = cloneDeep(meta);
+                console.log(useRegex);
 
                 records.forEach((rec, i) => {
                     // reset all
                     meta[i].anySearchMatch = false;
                     meta[i].searchMatch = cloneDeep(l.defaultSearchMatch);
                     // handle first three columns
-                    if (v.length) {
+                    if (search.length) {
                         {
-                            const match = rec.name.match(v);
+                            const match = useRegex
+                                ? rec.name.match(RegExp(search, "g"))
+                                : rec.name.indexOf(search) > -1;
+
                             if (match) {
                                 meta[i].searchMatch.name = !!match;
                                 meta[i].anySearchMatch = true;
                             }
                         }
                         {
-                            const match = rec.type.match(v);
+                            const match = useRegex
+                                ? rec.type.match(RegExp(search, "g"))
+                                : rec.type.indexOf(search) > -1;
                             if (match) {
                                 meta[i].searchMatch.type = !!match;
                                 meta[i].anySearchMatch = true;
                             }
                         }
                         {
-                            const match = rec.values[0].ttl.toString().match(v);
+                            const match = useRegex
+                                ? rec.values[0].ttl.toString().match(RegExp(search, "g"))
+                                : rec.values[0].ttl.toString().indexOf(search) > -1;
                             if (match) {
                                 meta[i].searchMatch.ttl = !!match;
                                 meta[i].anySearchMatch = true;
@@ -449,7 +473,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
                         const value = rec.values[0];
 
                         if (value?.value !== undefined) {
-                            const m = value.value.match(v);
+                            const m = useRegex
+                                ? value.value.match(RegExp(search, "g"))
+                                : value.value.indexOf(search) > -1;
                             if (m) {
                                 meta[i].searchMatch.values.value = !!m;
                                 meta[i].anySearchMatch = true;
@@ -460,7 +486,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
                             meta[i].searchMatch.values = { [rec.type]: {} };
 
                             for (let ii = 0; ii < fieldValues.length; ii++) {
-                                const m = fieldValues[ii].toString().match(v);
+                                const m = useRegex
+                                    ? fieldValues[ii].toString().match(RegExp(search, "g"))
+                                    : fieldValues[ii].toString().indexOf(search) > -1;
                                 if (m) {
                                     meta[i].searchMatch.values[fields[ii]] = !!m;
                                     meta[i].anySearchMatch = true;
@@ -475,11 +503,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 });
                 combine = sortBy(combine, [
                     key => {
-                        if (!v.length) return key[2];
+                        if (!search.length) return key[2];
                         return key[1].anySearchMatch;
                     }
                 ]);
-                if (v.length) combine.reverse();
+                if (search.length) combine.reverse();
                 combine.forEach((e, i) => {
                     records[i] = combine[i][0];
                     meta[i] = combine[i][1];
@@ -487,7 +515,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 });
                 this.list.recomputeRowHeights();
 
-                return { records, meta, search: v };
+                return { records, meta, search: search };
             });
         } else {
             this.setState(prevState => ({
@@ -498,13 +526,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
     };
 
     handleReplaceClick = () => {
-        this.setState(({ meta, search, replace, records, domainName }) => {
+        this.setState(({ meta, search, replace, records, domainName, useRegex }) => {
             records = cloneDeep(records);
-            const regex = true;
             meta.forEach((m, recordIndex) => {
                 if (!m.anySearchMatch) return;
                 if (m.searchMatch.name) {
-                    const replaced = regex
+                    const replaced = useRegex
                         ? records[recordIndex].name.replaceAll(RegExp(search, "g"), replace)
                         : records[recordIndex].name.replaceAll(search, replace);
 
@@ -518,7 +545,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     }
                 }
                 if (m.searchMatch.type) {
-                    const replaced = regex
+                    const replaced = useRegex
                         ? (records[recordIndex].type.replaceAll(
                               RegExp(search, "g"),
                               replace
@@ -531,7 +558,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     }
                 }
                 if (m.searchMatch.ttl) {
-                    const replaced = regex
+                    const replaced = useRegex
                         ? parseInt(
                               records[recordIndex].values[0].ttl
                                   .toString()
@@ -550,7 +577,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     const type = records[recordIndex].type;
                     const value = records[recordIndex].values[0];
                     if (value?.value !== undefined) {
-                        const replaced = regex
+                        const replaced = useRegex
                             ? value.value.replaceAll(RegExp(search, "g"), replace)
                             : value.value.replaceAll(search, replace);
                         records[recordIndex].values[0].value = replaced;
@@ -564,7 +591,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                                 const fieldValue = value[smKeys[ii]];
                                 if (!fieldValue || typeof fieldValue !== "string") break;
 
-                                const replaced = regex
+                                const replaced = useRegex
                                     ? fieldValue.replaceAll(RegExp(search, "g"), replace)
                                     : fieldValue.replaceAll(search, replace);
                                 /*@ts-ignore*/
@@ -631,6 +658,28 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 defaultOrder: [newDefaultOrder, ...defaultOrder]
             };
         });
+    };
+    handleRegexClick = () => {
+        const newUseRegex = !this.state.useRegex;
+        this.setState({ useRegex: newUseRegex });
+        if (this.state.search.length) {
+            this.handleSearchAndReplaceChange(
+                {
+                    target: { name: "search", value: this.state.search }
+                },
+                newUseRegex
+            );
+        }
+    };
+    handleClearSearchClick = () => {
+        this.setState({ search: "", replace: "" });
+        this.handleSearchAndReplaceChange({
+            target: { name: "search", value: "" }
+        });
+    };
+    handleReloadClick = async () => {
+        const records = await l.getRecords(this.props.config, this.props.match.params.domainName);
+        this.initData(records, this.props.match.params.domainName);
     };
 
     rowRenderer = (r: {
@@ -751,7 +800,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 }}
             >
                 <TextField
-                    style={{ paddingRight: "20px" }}
+                    style={{ paddingRight: "10px" }}
                     color="secondary"
                     variant="standard"
                     type="text"
@@ -760,6 +809,21 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     value={this.state.search}
                     onChange={this.handleSearchAndReplaceChange}
                 />
+                <IconButton
+                    onClick={this.handleRegexClick}
+                    style={{
+                        paddingTop: "7px",
+                        marginRight: "15px",
+                        background: this.state.useRegex ? "var(--a2-darkest)" : "",
+                        color: this.state.useRegex ? "var(--a2-lighter)" : "",
+                        borderRadius: "0px"
+                    }}
+                    title="Use Regex"
+                    size="small"
+                >
+                    <VscRegex></VscRegex>
+                </IconButton>
+
                 <TextField
                     variant="standard"
                     type="text"
@@ -769,14 +833,26 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     value={this.state.replace}
                     onChange={this.handleSearchAndReplaceChange}
                 />
-                <IconButton
-                    disabled={this.state.search.length ? false : true}
-                    onClick={this.handleReplaceClick}
-                    style={{ paddingTop: "7px" }}
-                    size="small"
+                <span style={{ marginTop: "7px", marginRight: "40px" }}>
+                    <IconButton
+                        disabled={this.state.search.length ? false : true}
+                        onClick={this.handleReplaceClick}
+                        size="small"
+                    >
+                        <VscReplaceAll></VscReplaceAll>
+                    </IconButton>
+                </span>
+                <span
+                    style={{
+                        top: "22px",
+                        right: "15px",
+                        position: "absolute"
+                    }}
                 >
-                    <VscReplaceAll></VscReplaceAll>
-                </IconButton>
+                    <IconButton onClick={this.handleClearSearchClick} size="small">
+                        <Close></Close>
+                    </IconButton>
+                </span>
             </span>
         );
     };
@@ -799,10 +875,15 @@ export default class Domain extends Component<DomainProps, DomainState> {
                         ""
                     ) : (
                         <Fragment>
-                            <IconButton onClick={this.handleAddClick}>{<AddCircle />}</IconButton>
-                            <IconButton onClick={this.handleDeleteClick}>{<Delete />}</IconButton>
-                            <IconButton>{<Flare />}</IconButton>
-                            <IconButton>{<Map />}</IconButton>
+                            <IconButton title="Refresh list" onClick={this.handleReloadClick}>
+                                {<Refresh />}
+                            </IconButton>
+                            <IconButton title="New Record" onClick={this.handleAddClick}>
+                                {<AddCircle />}
+                            </IconButton>
+                            <IconButton title="Delete selected" onClick={this.handleDeleteClick}>
+                                {<Delete />}
+                            </IconButton>
                         </Fragment>
                     )}
 

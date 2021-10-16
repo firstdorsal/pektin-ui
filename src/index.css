@@ -8,6 +8,7 @@
     --a2-light: #6ddab5;
     --a2-lighter: #dcfff5;
     --a2-darker: #00d4a6;
+    --a2-darkest: #009b79;
     --f1: white;
     --f2: black;
     --error: #f44336;
@@ -16,7 +17,7 @@
     --light: whitesmoke;
     --aside-padding: 15px;
     --aside-width: 270px;
-
+    list-style: none;
     padding: 0;
     margin: 0;
     font-family: "Inter", sans-serif;
@@ -29,7 +30,24 @@ body {
     width: 100vw;
     overflow: hidden;
     user-select: none;
+
     /*color: var(--f1);*/
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    background: var(--b);
+    direction: rtl;
+}
+*::-webkit-scrollbar-thumb {
+    width: 8px;
+    background: var(--b1);
+}
+
+ul,
+li {
+    padding: 0px;
+    margin: 0px;
 }
 
 #root {
@@ -113,7 +131,8 @@ aside {
     resize: horizontal;
     float: left;
     color: var(--f1);
-    box-sizing: -box;
+    box-sizing: border-box;
+    padding-bottom: 50px;
 }
 
 aside > * {
@@ -125,6 +144,13 @@ aside > h1 {
     margin-right: 15px;
     font-weight: 900;
     text-transform: uppercase;
+}
+aside > ul {
+    margin-left: 0px;
+}
+
+aside > ul::-webkit-scrollbar {
+    display: none;
 }
 
 .rowWrapper {
@@ -285,4 +311,8 @@ button.warning:hover {
 button.ok,
 button.ok:hover {
     background: var(--ok);
+}
+
+button:active {
+    transform: rotate(20);
 }

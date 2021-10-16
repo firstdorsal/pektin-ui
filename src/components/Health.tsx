@@ -49,7 +49,7 @@ export default class Health extends Component<HealthProps, HealthState> {
                 }}
             >
                 {apps.map((app, i) => {
-                    let color = "var(--f1)";
+                    let color = "var(--f2)";
                     let message = "";
                     if (this.props.health && this.props.health[app.id]) {
                         color =

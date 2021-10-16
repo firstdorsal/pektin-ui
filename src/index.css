@@ -1,27 +1,62 @@
 * {
     --b: white;
-    --b1: #868686;
+    --b1: white;
     --a1: #1b1c20;
     --a1-light: #282a31;
     --a1-lighter: #444a5f;
-    --a2: #00ffc8;
-    --a2-light: #6ddab5;
-    --a2-lighter: #dcfff5;
-    --a2-darker: #00d4a6;
-    --a2-darkest: #009b79;
-    --f1: white;
-    --f2: black;
+    --a2: #df004a;
+    --a2-light: #d35a88;
+    --a2-lighter: #df9fb7;
+    --a2-darker: #b60046;
+    --a2-darkest: #b60046;
+    --f1: black;
+    --f2: white;
     --error: #f44336;
     --warning: #ffa632;
-    --ok: rgb(19, 212, 52);
-    --light: whitesmoke;
+    --ok: #13d434;
     --aside-padding: 15px;
     --aside-width: 270px;
+    --border-bottom: lightgrey;
+    --checkbox: var(--a2);
+    --dimmed: rgba(0, 0, 0, 0.5);
+    --disabled-color: rgba(0, 0, 0, 0.3);
+    --disabled-background: rgba(0, 0, 0, 0.12);
+    --scrollbar-background: lightgrey;
+    --scrollbar-thumb: #6e6e6e;
     list-style: none;
     padding: 0;
     margin: 0;
     font-family: "Inter", sans-serif;
     box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+    * {
+        --b: #282a31;
+        --b1: #444a5f;
+        --a1: #1b1c20;
+        --a1-light: #282a31;
+        --a1-lighter: #444a5f;
+        --a2: #ff0055;
+        --a2-light: #d35a88;
+        --a2-lighter: #df9fb7;
+        --a2-darker: #b60046;
+        --a2-darkest: #b60046;
+        --f1: white;
+        --f2: white;
+        --error: #f44336;
+        --warning: #ffa632;
+        --ok: #13d434;
+        --aside-padding: 15px;
+        --aside-width: 270px;
+        --border-bottom: #353535;
+        --checkbox: var(--a2);
+        --dimmed: rgba(255, 255, 255, 0.6);
+        --disabled-color: rgba(255, 255, 255, 0.3);
+        --disabled-background: rgba(255, 255, 255, 0.12);
+        --scrollbar-background: #464850;
+        --scrollbar-thumb: white;
+    }
 }
 
 html,
@@ -30,18 +65,24 @@ body {
     width: 100vw;
     overflow: hidden;
     user-select: none;
-
-    /*color: var(--f1);*/
+    background: var(--b);
+}
+.tableHead,
+input,
+select,
+p,
+.columnTitles svg {
+    color: var(--f1) !important;
 }
 
 *::-webkit-scrollbar {
     width: 8px;
-    background: var(--b);
+    background: var(--scrollbar-background);
     direction: rtl;
 }
 *::-webkit-scrollbar-thumb {
     width: 8px;
-    background: var(--b1);
+    background: var(--scrollbar-thumb);
 }
 
 ul,
@@ -80,7 +121,7 @@ h1 {
 .cardHead span {
     transform: translate(5px, -6px);
     display: inline-block;
-    color: var(--f2);
+    color: var(--f1);
 }
 .MuiTabs-root {
     padding-top: 10px;
@@ -130,7 +171,7 @@ aside {
     background: var(--a1);
     resize: horizontal;
     float: left;
-    color: var(--f1);
+    color: var(--f2);
     box-sizing: border-box;
     padding-bottom: 50px;
 }
@@ -311,8 +352,4 @@ button.warning:hover {
 button.ok,
 button.ok:hover {
     background: var(--ok);
-}
-
-button:active {
-    transform: rotate(20);
 }

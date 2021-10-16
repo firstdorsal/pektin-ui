@@ -246,7 +246,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
             "0 0 0";
 
         const backgroundColor = this.props.config.local?.synesthesia ? `rgba(${color},0.2)` : "";
-        const borderBottom = this.props.config.local?.synesthesia ? "" : "1px solid lightgrey";
+        const borderBottom = this.props.config.local?.synesthesia
+            ? ""
+            : "1px solid var(--border-bottom)";
         const opacity = this.props.meta?.anySearchMatch || this.props.search?.length === 0 ? 1 : 1;
         return (
             <div
@@ -377,6 +379,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         ""
                     ) : (
                         <span
+                            className="applyChanges"
                             style={{
                                 width: "50px",
                                 position: "absolute",

@@ -730,10 +730,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
     tableHead = () => {
         return (
             <div
+                className="tableHead"
                 style={{
                     height: "70px",
                     position: "relative",
-                    borderBottom: "1px solid var(--b1)",
+                    borderBottom: "1px solid var(--border-bottom)",
                     width: "100%"
                 }}
             >
@@ -757,7 +758,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                                 fontSize: "14px",
                                 cursor: item.name !== "value" ? "pointer" : "default"
                             }}
-                            className="caps"
+                            className="caps columnTitles"
                             key={item.name}
                             onClick={() =>
                                 item.name !== "value" ? this.sortColumns(item.name) : ""
@@ -835,6 +836,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 />
                 <span style={{ marginTop: "7px", marginRight: "40px" }}>
                     <IconButton
+                        title="Replace All"
                         disabled={this.state.search.length ? false : true}
                         onClick={this.handleReplaceClick}
                         size="small"
@@ -849,7 +851,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                         position: "absolute"
                     }}
                 >
-                    <IconButton onClick={this.handleClearSearchClick} size="small">
+                    <IconButton title="Clear" onClick={this.handleClearSearchClick} size="small">
                         <Close></Close>
                     </IconButton>
                 </span>
@@ -863,6 +865,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
 
                 <div
+                    className="actionBar"
                     style={{
                         height: "55px",
                         width: "100%",

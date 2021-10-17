@@ -24,6 +24,9 @@
     --search-match-bg-color: yellow;
     --search-match-color: #171d26;
     --aside-hover-color: #363947;
+
+    --select-hover: lightgrey;
+    --select-active: darkgrey;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -50,13 +53,15 @@
         --dimmed: #ffffff99;
         --disabled-color: #ffffff4d;
         --disabled-background: #ffffff1f;
-        --scrollbar-background: #464850;
-        --scrollbar-thumb: white;
+        --scrollbar-background: #444a5f;
+        --scrollbar-thumb: #7d8294;
         --button-color: white;
         --action-bar-color: #0f131ac5;
         --search-match-bg-color: #ffe6004f;
         --search-match-color: white;
         --aside-hover-color: #444a5f4d;
+        --select-hover: #444a5f4d;
+        --select-active: #171d26;
     }
 }
 
@@ -81,6 +86,10 @@ p,
 .actionBar input::placeholder,
 .actionBar input {
     color: var(--action-bar-color);
+}
+
+.applyChanges button {
+    color: black;
 }
 
 .MuiInput-underline:before {
@@ -287,11 +296,16 @@ h2 {
 .link:hover {
     background: var(--aside-hover-color);
 }
+
 .navActive {
     background: var(--bg-color-lighter);
 }
-.navActive:hover {
-    background: var(--bg-color-lighter);
+.MuiListItem-button:hover {
+    background: var(--select-hover);
+}
+
+.Mui-selected {
+    background: var(--select-active) !important;
 }
 
 aside h2 {
@@ -400,3 +414,17 @@ button.ok,
 button.ok:hover {
     background: var(--ok);
 }
+
+/*
+TODO: beim über die inputs hovern andere underline farbe als wenn input aktiv ist
+
+einige css/color probleme bei import
+
+underlines fehlen 
+
+select all button ist nicht aktiviert
+
+
+accept all color ist weiß sollte aber schwarz sein
+
+*/

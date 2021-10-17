@@ -148,6 +148,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
     handleRecordChange = (
         record: t.DisplayRecord,
+        ogRecord: t.DisplayRecord,
         rrIndex: number,
         fieldName: string,
         fieldChildName: string,
@@ -164,7 +165,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
         } else if (fieldName === "type") {
             record.type = v;
             record.values = [];
-            record.values[0] = l.rrTemplates[v as t.RRType].template;
+            if (v === ogRecord.type) {
+                record.values[0] = ogRecord.values[0];
+            } else {
+                record.values[0] = l.rrTemplates[v as t.RRType].template;
+            }
         } else if (fieldName === "rrField" && record.values[rrIndex] !== undefined) {
             if (record.values[rrIndex]?.value !== undefined) {
                 record.values[rrIndex].value = v;
@@ -175,7 +180,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 record.values[rrIndex][fieldChildName] = isNumber ? parseInt(v) : v;
             }
         }
-        return record;
+        return [record, ogRecord];
     };
     addRRValue = (recordIndex: number) => {
         this.setState(({ records, meta }) => {
@@ -223,9 +228,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
         if (!fullName || !newValue === undefined) return;
         const [recordIndex, fieldName, rrIndex, fieldChildName] = fullName.split(":");
 
-        this.setState(({ records, meta, domainName }) => {
-            records[recordIndex] = this.handleRecordChange(
+        this.setState(({ records, meta, domainName, ogRecords }) => {
+            [records[recordIndex], ogRecords[recordIndex]] = this.handleRecordChange(
                 records[recordIndex],
+                ogRecords[recordIndex],
                 parseInt(rrIndex),
                 fieldName,
                 fieldChildName,
@@ -245,7 +251,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 this.state.ogRecords[recordIndex]
             );
 
-            return { meta, records, domainName };
+            return { meta, records, domainName, ogRecords };
         });
     };
 
@@ -776,6 +782,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 }
             });
         });
+        console.log(changed);
+
         return [changed as t.FieldsChanged, anyChanged];
     };
 
@@ -867,8 +875,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     style={{
                         paddingTop: "7px",
                         marginRight: "15px",
-                        background: this.state.useRegex ? "var(--a2-darker)" : "",
-
+                        background: this.state.useRegex ? "#FFF9" : "",
+                        color: "white",
                         borderRadius: "0px"
                     }}
                     title="Use Regex"

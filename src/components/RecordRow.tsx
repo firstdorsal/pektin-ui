@@ -307,6 +307,11 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             value={record.name}
                             placeholder={this.props.domainName}
                             title={this.props.meta.validity?.name?.message}
+                            className={(() => {
+                                let c = this.props.meta.searchMatch.name ? "searchMatch" : "";
+                                c += this.props.meta.changed.name ? " changed" : "";
+                                return c;
+                            })()}
                         />
                     </span>
                     <span
@@ -315,7 +320,11 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             left: "390px",
                             top: "18px"
                         }}
-                        className={this.props.meta?.searchMatch?.type ? "searchMatch" : ""}
+                        className={(() => {
+                            let c = this.props.meta.searchMatch.type ? "searchMatch" : "";
+                            c += this.props.meta.changed.type ? " changed" : "";
+                            return c;
+                        })()}
                     >
                         {record.type === "SOA" ? (
                             <Input disabled={!editable} value={record.type} />
@@ -353,7 +362,11 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             left: "490px",
                             top: "18px"
                         }}
-                        className={this.props.meta.searchMatch.ttl ? "searchMatch" : ""}
+                        className={(() => {
+                            let c = this.props.meta.searchMatch.ttl ? "searchMatch" : "";
+                            c += this.props.meta.changed.values[0].ttl ? " changed" : "";
+                            return c;
+                        })()}
                     >
                         <Input
                             onInput={e => this.props.handleChange(e)}

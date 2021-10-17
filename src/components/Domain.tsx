@@ -3,7 +3,6 @@ import { Checkbox, Fab, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
 import { AddCircle, Check, Close, Delete, Refresh } from "@material-ui/icons";
 import * as l from "./lib";
-import isEqual from "lodash/isEqual";
 import cloneDeep from "lodash/cloneDeep";
 import sortBy from "lodash/sortBy";
 import { RouteComponentProps } from "react-router-dom";
@@ -245,7 +244,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 records[recordIndex],
                 this.state.ogRecords[recordIndex]
             );
-            console.log(meta[recordIndex].changed);
 
             return { meta, records, domainName };
         });
@@ -312,7 +310,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 m.selected = true;
             }
             m.validity = this.validateRecord(record, domainName);
-            [m.changed, m.anyChanged] = this.hasRecordChanged(record, record);
+            [m.changed, m.anyChanged] = this.hasRecordChanged(record, "no");
             return m;
         });
 
@@ -765,8 +763,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
             changed.values.push({});
             const fieldKeys = Object.keys(recordValue);
             fieldKeys.forEach((fieldKey: string) => {
-                /*@ts-ignore*/
-                if (recordValue[fieldKey] !== ogRecord.values[i][fieldKey]) {
+                if (
+                    /*@ts-ignore*/
+                    recordValue[fieldKey] !==
+                    /*@ts-ignore*/
+                    (ogRecord.values[i] ? ogRecord.values[i][fieldKey] : false)
+                ) {
                     changed.values[i][fieldKey] = true;
                     anyChanged = true;
                 } else {

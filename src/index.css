@@ -4,7 +4,7 @@
     --bg-color-dark: #171d26;
     --bg-color-lighter: #444a5f;
     --a2: darkorange;
-    --font-color: 171d26;
+    --font-color: #171d26;
     --f2: white;
     --error: #f44336;
     --warning: #ffa632;
@@ -13,16 +13,16 @@
     --aside-width: 270px;
     --border-bottom-color: lightgrey;
     --checkbox: var(--a2);
-    --dimmed: rgba(0, 0, 0, 0.5);
-    --disabled-color: rgba(0, 0, 0, 0.3);
-    --disabled-background: rgba(0, 0, 0, 0.12);
+    --dimmed: #00000080;
+    --disabled-color: #0000004d;
+    --disabled-background: #0000001f;
     --scrollbar-background: lightgrey;
     --scrollbar-thumb: #6e6e6e;
-    --button-color: 171d26;
+    --button-color: #171d26;
     --action-bar-color: #171d26;
 
     --search-match-bg-color: yellow;
-    --search-match-color: 171d26;
+    --search-match-color: #171d26;
     --aside-hover-color: #363947;
     list-style: none;
     padding: 0;
@@ -47,9 +47,9 @@
         --aside-width: 270px;
         --border-bottom-color: #353535;
         --checkbox: var(--a2);
-        --dimmed: rgba(255, 255, 255, 0.6);
-        --disabled-color: rgba(255, 255, 255, 0.3);
-        --disabled-background: rgba(255, 255, 255, 0.12);
+        --dimmed: #ffffff99;
+        --disabled-color: #ffffff4d;
+        --disabled-background: #ffffff1f;
         --scrollbar-background: #464850;
         --scrollbar-thumb: white;
         --button-color: white;
@@ -358,6 +358,9 @@ input[value*="tick"] {
 
 .changed .MuiInput-underline:before {
     border-bottom: 2px solid var(--ok) !important;
+}
+.changed label {
+    color: var(--ok) !important;
 }
 
 .error .MuiInput-underline:before {

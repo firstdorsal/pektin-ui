@@ -20,7 +20,8 @@ export const defaultSearchMatch = {
 export const defaultMeta = {
     selected: false,
     expanded: false,
-    changed: false,
+    changed: {} as t.FieldValidity,
+    anyChanged: false,
     searchMatch: defaultSearchMatch,
     anySearchMatch: false
 };
@@ -321,7 +322,7 @@ export const rrTemplates: any = {
             ttl: 3600
         },
         fields: {
-            ip_addr: {
+            value: {
                 placeholder: "1:see:bad:c0de",
                 name: "ip",
                 inputType: "text",
@@ -339,7 +340,7 @@ export const rrTemplates: any = {
             ttl: 3600
         },
         fields: {
-            legacy_addr: {
+            value: {
                 placeholder: "127.0.0.1",
                 name: "legacy ip",
                 inputType: "text",
@@ -357,7 +358,7 @@ export const rrTemplates: any = {
             ttl: 3600
         },
         fields: {
-            name: {
+            value: {
                 placeholder: "ns1.example.com.",
                 inputType: "text",
                 name: "nameserver",
@@ -376,7 +377,7 @@ export const rrTemplates: any = {
             ttl: 3600
         },
         fields: {
-            name: {
+            value: {
                 placeholder: "example.com.",
                 inputType: "text",
                 name: "canonical name",
@@ -395,7 +396,7 @@ export const rrTemplates: any = {
             ttl: 3600
         },
         fields: {
-            name: {
+            value: {
                 placeholder: "example.com.",
                 inputType: "text",
                 name: "pointer",
@@ -523,7 +524,7 @@ export const rrTemplates: any = {
             ttl: 3600
         },
         fields: {
-            text: {
+            value: {
                 placeholder: "this is some text",
                 inputType: "text",
                 name: "text",
@@ -687,7 +688,7 @@ export const rrTemplates: any = {
             ttl: 3600
         },
         fields: {
-            key: {
+            value: {
                 placeholder: "99020d046104063e...",
                 name: "public key",
                 inputType: "text",

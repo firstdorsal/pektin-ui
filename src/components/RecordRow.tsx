@@ -78,6 +78,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                     ? this.props.meta.validity.values[rrIndex][fieldName]
                                     : undefined;
 
+                            const changed = this.props.meta.changed.values[rrIndex]
+                                ? this.props.meta.changed.values[rrIndex][fieldName]
+                                : false;
                             return (
                                 <Grid
                                     key={`${p.recordIndex}:rrField:${rrIndex}:${fieldName}`}
@@ -90,7 +93,11 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                         style={{
                                             width: "100%"
                                         }}
-                                        className={verify !== undefined ? verify?.type : ""}
+                                        className={(() => {
+                                            let c = verify !== undefined ? " " + verify?.type : "";
+                                            c += changed ? " changed" : "";
+                                            return c;
+                                        })()}
                                         onChange={e => this.props.handleChange(e)}
                                         placeholder={field.placeholder.toString()}
                                         title={verify ? verify.message : ""}
@@ -130,6 +137,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
         };
         if (record.type === "SOA") {
             const v = rr[0] as t.SOA;
+            const changed = this.props.meta.changed.values[0];
             return (
                 <Fragment>
                     <div className={this.props.meta.validity?.values[0].mname?.type}>
@@ -144,6 +152,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             placeholder="ns1.example.com"
                             name={`${p.recordIndex}:rrField:0:mname`}
                             value={v.mname + ""}
+                            className={changed["mname"] ? " changed" : ""}
                         />
                     </div>
                     <div className={this.props.meta.validity?.values[0].rname?.type}>
@@ -157,6 +166,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             placeholder="hostmaster.example.com"
                             name={`${p.recordIndex}:rrField:0:rname`}
                             value={v.rname + ""}
+                            className={changed["rname"] ? " changed" : ""}
                         />
                     </div>
                 </Fragment>
@@ -192,6 +202,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     const verify = this.props.meta.validity
                         ? this.props.meta.validity.values[0][fieldName]
                         : undefined;
+                    const changed = this.props.meta.changed.values[0]
+                        ? this.props.meta.changed.values[0][fieldName]
+                        : false;
 
                     return (
                         <Grid key={fieldName} xs={field.width} item>
@@ -203,7 +216,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 }}
                                 className={(() => {
                                     let c = isSearchMatch ? "searchMatch " : "";
-                                    c += " " + verify !== undefined ? verify?.type : "";
+                                    c += verify !== undefined ? " " + verify?.type : "";
+                                    c += changed ? " changed" : "";
                                     return c;
                                 })()}
                                 onChange={e => this.props.handleChange(e)}
@@ -390,7 +404,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             <Fab
                                 onClick={() => this.props.saveRecord(p.recordIndex)}
                                 disabled={(() => {
-                                    if (!this.props.meta?.changed) return true;
+                                    if (!this.props.meta?.anyChanged) return true;
 
                                     const v = this.props.meta.validity?.totalValidity;
                                     if (v === "error") return true;

@@ -86,10 +86,21 @@ export interface SearchMatch {
     values: ValueSearchMatch;
 }
 
+export interface ValueFieldChanged {
+    [key: string]: boolean | any;
+}
+
+export interface FieldsChanged {
+    name: boolean;
+    type: boolean;
+    values: ValueFieldChanged[];
+}
+
 export interface DomainMeta {
     selected: boolean;
     expanded: boolean;
-    changed: boolean;
+    changed: FieldsChanged;
+    anyChanged: boolean;
     searchMatch: SearchMatch;
     anySearchMatch: boolean;
     validity?: FieldValidity;

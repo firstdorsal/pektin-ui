@@ -94,7 +94,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 ogRecords[i] = cloneDeep(record);
                 records[i] = cloneDeep(record);
                 meta[i].validity = this.validateRecord(record, this.state.domainName);
-                meta[i].changed = false;
+                [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(record, record);
                 return { meta, ogRecords, records };
             });
         };
@@ -189,7 +189,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 records[recordIndex],
                 this.state.domainName
             );
-            meta[recordIndex].changed = !isEqual(
+            [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
                 records[recordIndex],
                 this.state.ogRecords[recordIndex]
             );
@@ -208,7 +208,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 records[recordIndex],
                 this.state.domainName
             );
-            meta[recordIndex].changed = !isEqual(
+            [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
                 records[recordIndex],
                 this.state.ogRecords[recordIndex]
             );
@@ -241,10 +241,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 records[recordIndex],
                 this.state.domainName
             );
-            meta[recordIndex].changed = !isEqual(
+            [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
                 records[recordIndex],
                 this.state.ogRecords[recordIndex]
             );
+            console.log(meta[recordIndex].changed);
+
             return { meta, records, domainName };
         });
     };
@@ -304,12 +306,13 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
     initData = (records: t.DisplayRecord[], domainName: string) => {
         const meta = records.map(record => {
+            /*@ts-ignore*/
             const m: t.DomainMeta = cloneDeep(l.defaultMeta);
             if (this.props.variant === "import") {
                 m.selected = true;
             }
             m.validity = this.validateRecord(record, domainName);
-
+            [m.changed, m.anyChanged] = this.hasRecordChanged(record, record);
             return m;
         });
 
@@ -605,7 +608,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     records[recordIndex],
                     this.state.domainName
                 );
-                meta[recordIndex].changed = !isEqual(
+                [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
                     records[recordIndex],
                     this.state.ogRecords[recordIndex]
                 );
@@ -639,11 +642,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 type: "AAAA",
                 values: [cloneDeep(l.rrTemplates.AAAA.template)]
             };
+            /*@ts-ignore*/
             const newMeta: t.DomainMeta = cloneDeep(l.defaultMeta);
-            newMeta.changed = true;
+            [newMeta.changed, newMeta.anyChanged] = this.hasRecordChanged(newRecord, "yes");
 
             newMeta.validity = this.validateRecord(newRecord, this.state.domainName);
-
             const newOgData: t.DisplayRecord = {
                 name: "",
                 type: "NEW",
@@ -727,6 +730,53 @@ export default class Domain extends Component<DomainProps, DomainState> {
             return <FaSortNumericDownAlt style={style} />;
         }
     };
+
+    hasRecordChanged = (
+        record: t.DisplayRecord,
+        ogRecord: t.DisplayRecord | "yes" | "no"
+    ): [t.FieldsChanged, boolean] => {
+        const changed = { name: false, type: false, values: [] as Array<any> };
+        let anyChanged = false;
+        if (ogRecord === "yes" || ogRecord === "no") {
+            const valid = ogRecord === "yes";
+            changed.name = valid;
+            changed.type = valid;
+            record.values.forEach((recordValue: t.RRVal, i: number) => {
+                changed.values.push({});
+                const fieldKeys = Object.keys(recordValue);
+                fieldKeys.forEach((fieldKey: string) => {
+                    /*@ts-ignore*/
+                    changed.values[i][fieldKey] = valid;
+                });
+            });
+            return [changed as t.FieldsChanged, valid];
+        }
+
+        if (record.name !== ogRecord.name) {
+            changed.name = true;
+            anyChanged = true;
+        }
+        if (record.type !== ogRecord.type) {
+            changed.type = true;
+            anyChanged = true;
+        }
+
+        record.values.forEach((recordValue: t.RRVal, i: number) => {
+            changed.values.push({});
+            const fieldKeys = Object.keys(recordValue);
+            fieldKeys.forEach((fieldKey: string) => {
+                /*@ts-ignore*/
+                if (recordValue[fieldKey] !== ogRecord.values[i][fieldKey]) {
+                    changed.values[i][fieldKey] = true;
+                    anyChanged = true;
+                } else {
+                    changed.values[i][fieldKey] = false;
+                }
+            });
+        });
+        return [changed as t.FieldsChanged, anyChanged];
+    };
+
     tableHead = () => {
         return (
             <div

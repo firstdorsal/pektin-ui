@@ -349,11 +349,15 @@ input[value*="tick"] {
 }
 
 .rowWrapper .Mui-focused.MuiInput-underline:after {
+    border-bottom: 2px solid var(--font-color);
+}
+
+.rowWrapper .changed .Mui-focused.MuiInput-underline:after {
     border-bottom: 2px solid var(--ok);
 }
-.ok .Mui-focused.MuiFormHelperText-root,
-label.Mui-focused {
-    color: var(--ok) !important;
+
+.changed .MuiInput-underline:before {
+    border-bottom: 2px solid var(--ok) !important;
 }
 
 .error .MuiInput-underline:before {

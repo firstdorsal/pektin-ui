@@ -1,28 +1,29 @@
 * {
-    --b: white;
-    --b1: white;
-    --a1: #1b1c20;
-    --a1-light: #282a31;
-    --a1-lighter: #444a5f;
-    --a2: #df004a;
-    --a2-light: #d35a88;
-    --a2-lighter: #df9fb7;
-    --a2-darker: #b60046;
-    --a2-darkest: #b60046;
-    --f1: black;
+    --bg-color: white;
+    --bg-color-light: white;
+    --bg-color-dark: #171d26;
+    --bg-color-lighter: #444a5f;
+    --a2: darkorange;
+    --font-color: 171d26;
     --f2: white;
     --error: #f44336;
     --warning: #ffa632;
     --ok: #13d434;
     --aside-padding: 15px;
     --aside-width: 270px;
-    --border-bottom: lightgrey;
+    --border-bottom-color: lightgrey;
     --checkbox: var(--a2);
     --dimmed: rgba(0, 0, 0, 0.5);
     --disabled-color: rgba(0, 0, 0, 0.3);
     --disabled-background: rgba(0, 0, 0, 0.12);
     --scrollbar-background: lightgrey;
     --scrollbar-thumb: #6e6e6e;
+    --button-color: 171d26;
+    --action-bar-color: #171d26;
+
+    --search-match-bg-color: yellow;
+    --search-match-color: 171d26;
+    --aside-hover-color: #363947;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -32,30 +33,30 @@
 
 @media (prefers-color-scheme: dark) {
     * {
-        --b: #282a31;
-        --b1: #444a5f;
-        --a1: #1b1c20;
-        --a1-light: #282a31;
-        --a1-lighter: #444a5f;
-        --a2: #ff0055;
-        --a2-light: #d35a88;
-        --a2-lighter: #df9fb7;
-        --a2-darker: #b60046;
-        --a2-darkest: #b60046;
-        --f1: white;
-        --f2: white;
+        --bg-color: #0f131a;
+        --bg-color-light: #171d26;
+        --bg-color-dark: #171d26;
+        --bg-color-lighter: #444a5f;
+        --a2: darkorange;
+        --a2-light: #444a5f;
+        --font-color: white;
         --error: #f44336;
         --warning: #ffa632;
         --ok: #13d434;
         --aside-padding: 15px;
         --aside-width: 270px;
-        --border-bottom: #353535;
+        --border-bottom-color: #353535;
         --checkbox: var(--a2);
         --dimmed: rgba(255, 255, 255, 0.6);
         --disabled-color: rgba(255, 255, 255, 0.3);
         --disabled-background: rgba(255, 255, 255, 0.12);
         --scrollbar-background: #464850;
         --scrollbar-thumb: white;
+        --button-color: white;
+        --action-bar-color: #0f131ac5;
+        --search-match-bg-color: #ffe6004f;
+        --search-match-color: white;
+        --aside-hover-color: #444a5f4d;
     }
 }
 
@@ -65,14 +66,29 @@ body {
     width: 100vw;
     overflow: hidden;
     user-select: none;
-    background: var(--b);
+    background: var(--bg-color);
 }
 .tableHead,
 input,
 select,
 p,
 .columnTitles svg {
-    color: var(--f1) !important;
+    color: var(--font-color);
+}
+
+.actionBar .MuiSvgIcon-root,
+.actionBar svg,
+.actionBar input::placeholder,
+.actionBar input {
+    color: var(--action-bar-color);
+}
+
+.MuiInput-underline:before {
+    border-bottom: var(--font-color);
+}
+
+.MuiFormLabel-root {
+    color: var(--dimmed) !important;
 }
 
 *::-webkit-scrollbar {
@@ -121,7 +137,7 @@ h1 {
 .cardHead span {
     transform: translate(5px, -6px);
     display: inline-block;
-    color: var(--f1);
+    color: var(--font-color);
 }
 .MuiTabs-root {
     padding-top: 10px;
@@ -145,7 +161,10 @@ h1 {
 }
 
 .searchMatch > div {
-    background: yellow;
+    background: var(--search-match-bg-color);
+}
+.searchMatch input {
+    color: var(--search-match-color) !important;
 }
 
 pre {
@@ -168,7 +187,7 @@ code * {
 aside {
     height: 100%;
     width: var(--aside-width);
-    background: var(--a1);
+    background: var(--bg-color-dark);
     resize: horizontal;
     float: left;
     color: var(--f2);
@@ -215,6 +234,7 @@ aside > ul::-webkit-scrollbar {
 }
 
 .rowWrapper input:disabled {
+    color: var(--disabled-color) !important;
     cursor: text;
 }
 
@@ -265,13 +285,13 @@ h2 {
 }
 
 .link:hover {
-    background: var(--a1-light);
+    background: var(--aside-hover-color);
 }
 .navActive {
-    background: var(--a1-lighter);
+    background: var(--bg-color-lighter);
 }
 .navActive:hover {
-    background: var(--a1-lighter);
+    background: var(--bg-color-lighter);
 }
 
 aside h2 {
@@ -316,6 +336,26 @@ input[value*="tick"] {
     font-weight: 600;
 }
 
+.actionBar * {
+    color: var(--action-bar-color) !important;
+}
+
+.actionBar .MuiInput-underline:before {
+    border-bottom: 2px solid var(--action-bar-color) !important;
+}
+
+.advancedRow .MuiInput-underline:before {
+    border-bottom: 2px solid var(--font-color) !important;
+}
+
+.rowWrapper .Mui-focused.MuiInput-underline:after {
+    border-bottom: 2px solid var(--ok);
+}
+.ok .Mui-focused.MuiFormHelperText-root,
+label.Mui-focused {
+    color: var(--ok) !important;
+}
+
 .error .MuiInput-underline:before {
     border-bottom: 2px solid var(--error) !important;
 }
@@ -325,7 +365,7 @@ input[value*="tick"] {
     color: var(--error) !important;
 }
 .error .MuiInput-underline:after {
-    border-bottom-color: var(--error);
+    border-bottom-color: var(--error) !important;
 }
 button.error,
 button.error:hover {
@@ -342,7 +382,7 @@ button.error:hover {
     color: var(--warning) !important;
 }
 .warning .MuiInput-underline:after {
-    border-bottom-color: var(--warning);
+    border-bottom-color: var(--warning) !important;
 }
 button.warning,
 button.warning:hover {

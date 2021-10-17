@@ -39,7 +39,7 @@ MuiTabs
     color: var(--a2);
 }
 .MuiSvgIcon-colorSecondary {
-    color: var(--a1);
+    color: var(--bg-color-dark);
 }
 .MuiSvgIcon-colorAction {
     color: var(--dimmed);
@@ -130,7 +130,7 @@ MuiTabs
 @-webkit-keyframes mui-auto-fill-cancel {
 }
 .MuiInputBase-root {
-    color: var(--f1);
+    color: var(--font-color);
     cursor: text;
     display: inline-flex;
     position: relative;
@@ -260,7 +260,7 @@ label + .MuiInput-formControl {
     margin-top: 16px;
 }
 .MuiInput-colorSecondary.MuiInput-underline:after {
-    border-bottom-color: var(--a1);
+    border-bottom-color: var(--bg-color-dark);
 }
 .MuiInput-underline:after {
     left: 0;
@@ -291,7 +291,7 @@ label + .MuiInput-formControl {
     pointer-events: none;
 }
 .MuiInput-underline:hover:not(.Mui-disabled):before {
-    border-bottom: 2px solid var(--f1);
+    border-bottom: 2px solid var(--font-color);
 }
 .MuiInput-underline.Mui-disabled:before {
     border-bottom-style: dotted;
@@ -321,7 +321,7 @@ label + .MuiInput-formControl {
     color: var(--error);
 }
 .MuiFormLabel-colorSecondary.Mui-focused {
-    color: var(--a1);
+    color: var(--bg-color-dark);
 }
 .MuiFormLabel-asterisk.Mui-error {
     color: var(--error);
@@ -422,9 +422,9 @@ label + .MuiInput-formControl {
 }
 
 .MuiPaper-root {
-    color: var(--f1);
+    color: var(--font-color);
     transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-    background-color: var(--b1);
+    background-color: var(--bg-color-light);
 }
 .MuiPaper-rounded {
     border-radius: 4px;
@@ -638,7 +638,7 @@ label + .MuiInput-formControl {
 
 .MuiIconButton-root {
     flex: 0 0 auto;
-    color: var(--dimmed);
+    color: var(--button-color);
     padding: 12px;
     overflow: visible;
     font-size: 1.5rem;
@@ -685,7 +685,7 @@ label + .MuiInput-formControl {
     }
 }
 .MuiIconButton-colorSecondary {
-    color: var(--a1);
+    color: var(--bg-color-dark);
 }
 .MuiIconButton-colorSecondary:hover {
     background-color: rgba(245, 0, 87, 0.04);
@@ -748,7 +748,7 @@ label + .MuiInput-formControl {
 }
 .MuiSelect-select:not([multiple]) option,
 .MuiSelect-select:not([multiple]) optgroup {
-    background-color: var(--b1);
+    background-color: var(--bg-color-light);
 }
 .MuiSelect-select.MuiSelect-select {
     padding-right: 24px;
@@ -980,10 +980,10 @@ label + .MuiInput-formControl {
     color: var(--a2);
 }
 .MuiTypography-colorSecondary {
-    color: var(--a1);
+    color: var(--bg-color-dark);
 }
 .MuiTypography-colorTextPrimary {
-    color: var(--f1);
+    color: var(--font-color);
 }
 .MuiTypography-colorTextSecondary {
     color: var(--dimmed);
@@ -1012,7 +1012,7 @@ label + .MuiInput-formControl {
     color: var(--error);
 }
 .MuiStepIcon-text {
-    fill: var(--b1);
+    fill: var(--bg-color-light);
     font-size: 0.75rem;
     font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
@@ -1031,11 +1031,11 @@ label + .MuiInput-formControl {
     color: var(--dimmed);
 }
 .MuiStepLabel-label.MuiStepLabel-active {
-    color: var(--f1);
+    color: var(--font-color);
     font-weight: 500;
 }
 .MuiStepLabel-label.MuiStepLabel-completed {
-    color: var(--f1);
+    color: var(--font-color);
     font-weight: 500;
 }
 .MuiStepLabel-label.MuiStepLabel-alternativeLabel {
@@ -1142,7 +1142,7 @@ label + .MuiInput-formControl {
 }
 
 .MuiButton-root {
-    color: var(--f1);
+    color: var(--font-color);
     padding: 6px 16px;
     font-size: 0.875rem;
     min-width: 64px;
@@ -1193,7 +1193,7 @@ label + .MuiInput-formControl {
     }
 }
 .MuiButton-textSecondary {
-    color: var(--a1);
+    color: var(--bg-color-dark);
 }
 .MuiButton-textSecondary:hover {
     background-color: rgba(245, 0, 87, 0.04);
@@ -1224,11 +1224,11 @@ label + .MuiInput-formControl {
     }
 }
 .MuiButton-outlinedSecondary {
-    color: var(--a1);
-    border: 1px solid var(--a1);
+    color: var(--bg-color-dark);
+    border: 1px solid var(--bg-color-dark);
 }
 .MuiButton-outlinedSecondary:hover {
-    border: 1px solid var(--a1);
+    border: 1px solid var(--bg-color-dark);
     background-color: rgba(245, 0, 87, 0.04);
 }
 .MuiButton-outlinedSecondary.Mui-disabled {
@@ -1240,7 +1240,7 @@ label + .MuiInput-formControl {
     }
 }
 .MuiButton-contained {
-    color: var(--f1);
+    color: var(--font-color);
     box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14),
         0px 1px 5px 0px var(--disabled-background);
     background-color: #e0e0e0;
@@ -1274,7 +1274,7 @@ label + .MuiInput-formControl {
     background-color: var(--disabled-background);
 }
 .MuiButton-containedPrimary {
-    color: var(--b1);
+    color: var(--bg-color-light);
     background-color: var(--a2);
 }
 .MuiButton-containedPrimary:hover {
@@ -1286,15 +1286,15 @@ label + .MuiInput-formControl {
     }
 }
 .MuiButton-containedSecondary {
-    color: var(--b1);
-    background-color: var(--a1);
+    color: var(--bg-color-light);
+    background-color: var(--bg-color-dark);
 }
 .MuiButton-containedSecondary:hover {
-    background-color: var(--a1-light);
+    background-color: var(--bg-color);
 }
 @media (hover: none) {
     .MuiButton-containedSecondary:hover {
-        background-color: var(--a1);
+        background-color: var(--bg-color-dark);
     }
 }
 .MuiButton-disableElevation {
@@ -1961,7 +1961,7 @@ label + .MuiInput-formControl {
     color: var(--dimmed);
 }
 .MuiTab-textColorSecondary.Mui-selected {
-    color: var(--a1);
+    color: var(--bg-color-dark);
 }
 .MuiTab-textColorSecondary.Mui-disabled {
     color: rgba(0, 0, 0, 0.38);
@@ -2176,12 +2176,12 @@ label + .MuiInput-formControl {
     vertical-align: inherit;
 }
 .MuiTableCell-head {
-    color: var(--f1);
+    color: var(--font-color);
     font-weight: 500;
     line-height: 1.5rem;
 }
 .MuiTableCell-body {
-    color: var(--f1);
+    color: var(--font-color);
 }
 .MuiTableCell-footer {
     color: var(--dimmed);
@@ -2264,7 +2264,7 @@ label + .MuiInput-formControl {
 }
 
 .MuiFab-root {
-    color: var(--f1);
+    color: var(--font-color);
     width: 56px;
     height: 56px;
     padding: 0;
@@ -2317,7 +2317,7 @@ label + .MuiInput-formControl {
     justify-content: inherit;
 }
 .MuiFab-primary {
-    color: var(--b1);
+    color: var(--bg-color-light);
     background-color: #3f51b5;
 }
 .MuiFab-primary:hover {
@@ -2329,7 +2329,7 @@ label + .MuiInput-formControl {
     }
 }
 .MuiFab-secondary {
-    color: var(--b1);
+    color: var(--bg-color-light);
     background-color: var(--checkbox);
 }
 .MuiFab-secondary:hover {

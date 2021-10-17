@@ -75,7 +75,7 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
                 </ul>
 
                 <NavLink
-                    style={{ background: "var(--a1)" }}
+                    style={{ background: "var(--bg-color-dark)" }}
                     exact
                     className="link config"
                     activeClassName="navActive"

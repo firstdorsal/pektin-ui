@@ -734,7 +734,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 style={{
                     height: "70px",
                     position: "relative",
-                    borderBottom: "1px solid var(--border-bottom)",
+                    borderBottom: "1px solid var(--border-bottom-color)",
                     width: "100%"
                 }}
             >
@@ -815,8 +815,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     style={{
                         paddingTop: "7px",
                         marginRight: "15px",
-                        background: this.state.useRegex ? "var(--a2-darkest)" : "",
-                        color: this.state.useRegex ? "var(--a2-lighter)" : "",
+                        background: this.state.useRegex ? "var(--a2-darker)" : "",
+
                         borderRadius: "0px"
                     }}
                     title="Use Regex"

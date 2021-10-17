@@ -36,7 +36,9 @@ export class ContextMenu extends Component<ContextMenuProps, ContextMenuState> {
                             target.type === "number" && isNaN(parseInt(e.value)) ? "nan" : false;
                         if (target.disabled) disabled = "disabled";
 
-                        const style = disabled ? { color: "var(--b1)" } : { cursor: "pointer" };
+                        const style = disabled
+                            ? { color: "var(--disabled-color)" }
+                            : { cursor: "pointer" };
                         let title =
                             disabled === "nan"
                                 ? `"${e.value}" can't be used here as it cannot be casted into a number`
@@ -83,7 +85,7 @@ export class ContextMenu extends Component<ContextMenuProps, ContextMenuState> {
                         position: "fixed",
                         left: this.state.contextMenu.clientX,
                         top: cm.clientY,
-                        background: "var(--b)",
+                        background: "var(--bg-color)",
                         zIndex: 10,
                         padding: "10px"
                     }}

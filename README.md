@@ -28,7 +28,7 @@ xn--aaa-sla.example
 xn--dj-kia8a.vu.example
 xn--efran-2sa.example
 xn--and-6ma2c.example
-foo.xn--bcdf-9na9b.example
+foo.xn--bg-colorcdf-9na9b.example
 xn--4gbrim.xn----ymcbaaajlc6dj7bxne2c.xn--wgbh1c
 
 SHOULD NOT MATCH

@@ -80,37 +80,37 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
     list: any;
 
-    saveSuccessState = async (setRecord: t.DisplayRecord, i: number) => {
-        let record = setRecord;
-        try {
-            record = (await l.getRecords(this.props.config, this.state.domainName)).filter(
-                dbRecord => {
-                    return (
-                        dbRecord.name.toLowerCase().replaceAll(/\s+/g, "") ===
-                            setRecord.name.toLowerCase().replaceAll(/\s+/g, "") &&
-                        dbRecord.type === setRecord.type
-                    );
-                }
-            )[0];
-        } catch (e) {}
-        if (!record) {
-            return;
-        }
-
-        this.setState(({ meta, ogRecords, records, changedRecords }) => {
-            meta = cloneDeep(meta);
-            records = cloneDeep(records);
-            ogRecords[i] = cloneDeep(record);
-            records[i] = cloneDeep(record);
-            meta[i].validity = this.validateRecord(record, this.state.domainName);
-            [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(record, "no");
-            changedRecords = meta.filter(m => m.anyChanged).length;
-
-            return { meta, ogRecords, records, changedRecords };
-        });
-    };
-
     saveRecord = async (i: number) => {
+        const saveSuccessState = async (setRecord: t.DisplayRecord, i: number) => {
+            let record = setRecord;
+            try {
+                record = (await l.getAllRecords(this.props.config, this.state.domainName)).filter(
+                    dbRecord => {
+                        return (
+                            dbRecord.name.toLowerCase().replaceAll(/\s+/g, "") ===
+                                setRecord.name.toLowerCase().replaceAll(/\s+/g, "") &&
+                            dbRecord.type === setRecord.type
+                        );
+                    }
+                )[0];
+            } catch (e) {}
+            if (!record) {
+                return;
+            }
+
+            this.setState(({ meta, ogRecords, records, changedRecords }) => {
+                meta = cloneDeep(meta);
+                records = cloneDeep(records);
+                ogRecords[i] = cloneDeep(record);
+                records[i] = cloneDeep(record);
+                meta[i].validity = this.validateRecord(record, this.state.domainName);
+                [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(record, "no");
+                changedRecords = meta.filter(m => m.anyChanged).length;
+
+                return { meta, ogRecords, records, changedRecords };
+            });
+        };
+
         if (
             (this.state.ogRecords[i].name !== this.state.records[i].name ||
                 this.state.ogRecords[i].type !== this.state.records[i].type) &&
@@ -121,12 +121,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
             const setRes = await l.setRecords(this.props.config, [this.state.records[i]]);
             if (setRes && setRes.error !== undefined && setRes.error === false) {
                 l.deleteRecords(this.props.config, [this.state.ogRecords[i]]);
-                await this.saveSuccessState(this.state.records[i], i);
+                await saveSuccessState(this.state.records[i], i);
             }
         } else {
             const res = await l.setRecords(this.props.config, [this.state.records[i]]);
             if (res && res.error !== undefined && res.error === false) {
-                await this.saveSuccessState(this.state.records[i], i);
+                await saveSuccessState(this.state.records[i], i);
             }
         }
     };
@@ -161,11 +161,42 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
             if (setRes && setRes.error !== undefined && setRes.error === false) {
                 await l.deleteRecords(this.props.config, toBeDeleted);
-                this.handleReloadClick();
-                //await this.saveSuccessState(this.state.records[i], i);
+                this.updateRecords(toBeAdded);
             }
+        }
+    };
 
-            //TODO add normal accept all pending records
+    updateRecords = async (toUpdate?: t.DisplayRecord[]) => {
+        if (!toUpdate) {
+            this.handleReloadClick();
+        } else {
+            const updatedRecords = await l.getRecords(this.props.config, toUpdate);
+            this.setState(({ meta, ogRecords, records, changedRecords }) => {
+                meta = cloneDeep(meta);
+                records = cloneDeep(records);
+                records.forEach((record, i) => {
+                    updatedRecords.forEach(updatedRecord => {
+                        if (
+                            updatedRecord.type === record.type &&
+                            updatedRecord.name === record.name
+                        ) {
+                            ogRecords[i] = cloneDeep(updatedRecord);
+                            records[i] = cloneDeep(updatedRecord);
+                            meta[i].validity = this.validateRecord(
+                                updatedRecord,
+                                this.state.domainName
+                            );
+                            [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(
+                                updatedRecord,
+                                "no"
+                            );
+                        }
+                    });
+                });
+                changedRecords = meta.filter(m => m.anyChanged).length;
+
+                return { meta, ogRecords, records, changedRecords };
+            });
         }
     };
 
@@ -282,13 +313,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 domainName = records[recordIndex].name;
             }
             meta[recordIndex] = cloneDeep(meta[recordIndex]);
-            meta[recordIndex].validity = this.validateRecord(
-                records[recordIndex],
-                this.state.domainName
-            );
+            meta[recordIndex].validity = this.validateRecord(records[recordIndex], domainName);
             [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
                 records[recordIndex],
-                this.state.ogRecords[recordIndex]
+                ogRecords[recordIndex]
             );
 
             if (meta[recordIndex].validity?.totalValidity !== "ok" && allValid !== "error") {
@@ -405,7 +433,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             this.initData(this.props.records, domainName);
         } else {
             this.setState({ domainName: this.props.match.params.domainName });
-            const records = await l.getRecords(
+            const records = await l.getAllRecords(
                 this.props.config,
                 this.props.match.params.domainName
             );
@@ -416,7 +444,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     componentDidUpdate = async (e: DomainProps) => {
         // replace the current state when the components props change to a new domain page
         if (this.props.match?.params?.domainName !== e.match?.params?.domainName) {
-            const records = await l.getRecords(
+            const records = await l.getAllRecords(
                 this.props.config,
                 this.props.match.params.domainName
             );
@@ -739,7 +767,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
     };
 
     handleReloadClick = async () => {
-        const records = await l.getRecords(this.props.config, this.props.match.params.domainName);
+        const records = await l.getAllRecords(
+            this.props.config,
+            this.props.match.params.domainName
+        );
         this.initData(records, this.props.match.params.domainName);
     };
 
@@ -937,7 +968,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     style={{
                         paddingTop: "7px",
                         marginRight: "15px",
-                        background: this.state.useRegex ? "#FFF9" : "",
+                        background: this.state.useRegex
+                            ? "var(--actionbar-selected-background)"
+                            : "",
                         color: "white",
                         borderRadius: "0px"
                     }}

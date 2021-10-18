@@ -38,7 +38,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
         const fapi = this.props.config.foreignApis[this.state.selectedApi];
         const step1 = () => {
             return (
-                <Container>
+                <Container style={{ marginTop: "50px" }}>
                     <Paper elevation={3} style={{ padding: "30px 20px" }}>
                         <Container>
                             <h2 style={{ display: "inline-block", paddingRight: "10px" }}>
@@ -97,7 +97,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                         })}
                     </Stepper>
                 </div>
-                <div style={{ marginTop: "50px" }}>{steps[this.state.activeStep]()}</div>
+                <div style={{ height: "100%" }}>{steps[this.state.activeStep]()}</div>
             </React.Fragment>
         );
     };

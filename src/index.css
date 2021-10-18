@@ -32,6 +32,8 @@
     --button-color: #171d26;
 
     --action-bar-color: #171d26;
+    --action-bar-disabled-color: #0f131a5b;
+    --actionbar-selected-background: #3f3f3f5b;
 
     --search-match-bg-color: yellow;
     --search-match-color: #171d26;
@@ -74,8 +76,8 @@
 
         --dimmed: #ffffff99;
 
-        --disabled-color: #ffffff4d;
-        --disabled-background: #ffffff1f;
+        --disabled-color: #ffffff28;
+        --disabled-background: #ffffff0e;
 
         --scrollbar-background: #444a5f;
         --scrollbar-thumb: #7d8294;
@@ -83,6 +85,8 @@
         --button-color: white;
 
         --action-bar-color: #0f131ac5;
+        --action-bar-disabled-color: #0f131a5b;
+        --actionbar-selected-background: #3f3f3f5b;
 
         --search-match-bg-color: #ffe6004f;
         --search-match-color: white;
@@ -384,8 +388,8 @@ input[value*="tick"] {
     border-bottom: 2px solid var(--font-color);
 }
 
-.actionBar * {
-    color: var(--action-bar-color) !important;
+.actionBar .Mui-disabled svg {
+    color: var(--action-bar-disabled-color);
 }
 
 .actionBar .MuiInput-underline:before {
@@ -450,8 +454,6 @@ button.ok:hover {
 }
 
 /*
-
-cant edit soa record in import mode
 
 select all search matched
 only search some columns

@@ -218,7 +218,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
         const p = this.props;
         const { record } = p;
         if (!record) return <div>Invalid Record</div>;
-        const editable = record.type === "SOA" ? false : true;
+        const editable = record.type === "SOA" && this.props.variant !== "import" ? false : true;
         const color =
             JSON.stringify(l.rrTemplates[record.type]?.color).replace("[", "").replace("]", "") ||
             "0 0 0";

@@ -114,7 +114,7 @@ export const getDomains = async (config: t.Config): Promise<string[]> => {
     return res.data.map(e => e.split(":")[0]);
 };
 
-export const getRecords = async (config: t.Config, domainName: string) => {
+export const getAllRecords = async (config: t.Config, domainName: string) => {
     const req = await request(config, "get-zone-records", { names: [l.absoluteName(domainName)] });
     const recordKeys = req.data[l.absoluteName(domainName)];
     if (!Array.isArray(recordKeys)) return [];
@@ -133,6 +133,16 @@ export const setRecords = async (config: t.Config, records: t.DisplayRecord[]) =
     return await request(config, "set", {
         records: records.map(record => toRealRecord(config, record))
     });
+};
+export const getRecords = async (config: t.Config, records: t.DisplayRecord[]) => {
+    const recordKeys = records.map(record => toRealRecord(config, record).name);
+    const recordValues = (await request(config, "get", { keys: recordKeys })).data;
+
+    const newRecords: RedisEntry[] = [];
+    recordKeys.forEach((e, i) => {
+        newRecords[i] = { name: e, ...recordValues[i] };
+    });
+    return newRecords.map(record => toDisplayRecord(config, record));
 };
 
 export const deleteRecords = async (config: t.Config, records: t.DisplayRecord[]) => {

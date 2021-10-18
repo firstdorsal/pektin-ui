@@ -77,8 +77,12 @@ export const getDomains = (config: t.Config, format = "pektin") => {
     return pektinApi.getDomains(config);
 };
 
-export const getRecords = (config: t.Config, domainName: string, format = "pektin") => {
-    return pektinApi.getRecords(config, domainName);
+export const getAllRecords = (config: t.Config, domainName: string, format = "pektin") => {
+    return pektinApi.getAllRecords(config, domainName);
+};
+
+export const getRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {
+    return pektinApi.getRecords(config, records);
 };
 
 export const setRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {
@@ -316,6 +320,7 @@ export const validateIp = (
 
 export const rrTemplates: any = {
     AAAA: {
+        sortBy: "value",
         template: {
             value: "",
             ttl: 3600
@@ -326,14 +331,16 @@ export const rrTemplates: any = {
                 name: "ip",
                 inputType: "text",
                 width: 12,
-                validate: (config: t.Config, field: string): t.ValidationResult =>
-                    validateIp(config, field)
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    return validateIp(config, field);
+                }
             }
         },
         color: [43, 255, 0],
         complex: false
     },
     A: {
+        sortBy: "value",
         template: {
             value: "",
             ttl: 3600
@@ -344,14 +351,16 @@ export const rrTemplates: any = {
                 name: "legacy ip",
                 inputType: "text",
                 width: 12,
-                validate: (config: t.Config, field: string): t.ValidationResult =>
-                    validateIp(config, field, "legacy")
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    return validateIp(config, field, "legacy");
+                }
             }
         },
         color: [82, 51, 18],
         complex: false
     },
     NS: {
+        sortBy: "value",
         template: {
             value: "",
             ttl: 3600
@@ -363,14 +372,16 @@ export const rrTemplates: any = {
                 name: "nameserver",
                 width: 12,
                 absolute: true,
-                validate: (config: t.Config, field: string): t.ValidationResult =>
-                    validateDomain(config, field)
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    return validateDomain(config, field);
+                }
             }
         },
         color: [29, 117, 0],
         complex: false
     },
     CNAME: {
+        sortBy: "value",
         template: {
             value: "",
             ttl: 3600
@@ -382,14 +393,16 @@ export const rrTemplates: any = {
                 name: "canonical name",
                 width: 12,
                 absolute: true,
-                validate: (config: t.Config, field: string): t.ValidationResult =>
-                    validateDomain(config, field)
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    return validateDomain(config, field);
+                }
             }
         },
         color: [255, 0, 0],
         complex: false
     },
     PTR: {
+        sortBy: "value",
         template: {
             value: "",
             ttl: 3600
@@ -401,14 +414,16 @@ export const rrTemplates: any = {
                 name: "pointer",
                 width: 12,
                 absolute: true,
-                validate: (config: t.Config, field: string): t.ValidationResult =>
-                    validateDomain(config, field)
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    return validateDomain(config, field);
+                }
             }
         },
         color: [255, 122, 0],
         complex: false
     },
     SOA: {
+        sortBy: "mname",
         template: {
             mname: "",
             rname: "hostmaster.",
@@ -427,8 +442,9 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 6,
                 absolute: true,
-                validate: (config: t.Config, field: string): t.ValidationResult =>
-                    validateDomain(config, field)
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    return validateDomain(config, field);
+                }
             },
             rname: {
                 placeholder: "hostmaster.example.com.",
@@ -468,6 +484,7 @@ export const rrTemplates: any = {
         complex: true
     },
     MX: {
+        sortBy: "exchange",
         template: {
             preference: 10,
             exchange: "",
@@ -518,6 +535,7 @@ export const rrTemplates: any = {
         complex: true
     },
     TXT: {
+        sortBy: "value",
         template: {
             value: "",
             ttl: 3600
@@ -571,6 +589,7 @@ export const rrTemplates: any = {
         complex: false
     },
     SRV: {
+        sortBy: "target",
         template: {
             priority: 1,
             weight: 1,
@@ -607,14 +626,16 @@ export const rrTemplates: any = {
                 inputType: "text",
                 width: 6,
                 absolute: true,
-                validate: (config: t.Config, field: string): t.ValidationResult =>
-                    validateDomain(config, field)
+                validate: (config: t.Config, field: string): t.ValidationResult => {
+                    return validateDomain(config, field);
+                }
             }
         },
         color: [149, 61, 196],
         complex: true
     },
     CAA: {
+        sortBy: "caaValue",
         template: {
             flag: 0,
             tag: "issue",
@@ -682,6 +703,7 @@ export const rrTemplates: any = {
         /* check for quotes in verification*/
     },
     OPENPGPKEY: {
+        sortBy: "value",
         template: {
             value: "",
             ttl: 3600
@@ -698,6 +720,7 @@ export const rrTemplates: any = {
         complex: false
     },
     TLSA: {
+        sortBy: "data",
         template: {
             usage: 3,
             selector: 1,

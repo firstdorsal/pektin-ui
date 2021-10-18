@@ -185,8 +185,6 @@ export default class RecordRow extends Component<RowProps, RowState> {
 
         const fields = l.rrTemplates[type]?.fields;
 
-        const currentSearchField = this.props.meta.searchMatch.values || false;
-
         const fieldNames = Object.keys(fields);
         const fieldValues = Object.values(fields);
         return (
@@ -194,14 +192,13 @@ export default class RecordRow extends Component<RowProps, RowState> {
                 {fieldNames.map((fieldName: any, fieldIndex: number) => {
                     const field: any = fieldValues[fieldIndex];
                     const fieldValue = fieldNames?.length > 1 ? v[fieldName] + "" : v.value + "";
-                    const isSearchMatch =
-                        currentSearchField.value !== undefined
-                            ? currentSearchField
-                            : currentSearchField[fieldName];
 
+                    const isSearchMatch = this.props.meta.searchMatch.values[0]
+                        ? this.props.meta.searchMatch.values[0][fieldName]
+                        : false;
                     const verify = this.props.meta.validity
                         ? this.props.meta.validity.values[0][fieldName]
-                        : undefined;
+                        : false;
                     const changed = this.props.meta.changed.values[0]
                         ? this.props.meta.changed.values[0][fieldName]
                         : false;
@@ -216,7 +213,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                 }}
                                 className={(() => {
                                     let c = isSearchMatch ? "searchMatch " : "";
-                                    c += verify !== undefined ? " " + verify?.type : "";
+                                    c += verify ? " " + verify?.type : "";
                                     c += changed ? " changed" : "";
                                     return c;
                                 })()}
@@ -291,12 +288,6 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             left: "70px",
                             top: "18px"
                         }}
-                        className={(() => {
-                            let c = this.props.meta?.searchMatch.name ? "searchMatch" : "";
-                            const d = this.props.meta.validity?.name;
-                            c += " " + d?.type;
-                            return c;
-                        })()}
                     >
                         <TextField
                             onInput={e => this.props.handleChange(e)}
@@ -310,6 +301,10 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             className={(() => {
                                 let c = this.props.meta.searchMatch.name ? "searchMatch" : "";
                                 c += this.props.meta.changed.name ? " changed" : "";
+                                c +=
+                                    this.props.meta.validity?.name !== undefined
+                                        ? " " + this.props.meta.validity?.name?.type
+                                        : "";
                                 return c;
                             })()}
                         />
@@ -323,6 +318,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         className={(() => {
                             let c = this.props.meta.searchMatch.type ? "searchMatch" : "";
                             c += this.props.meta.changed.type ? " changed" : "";
+
                             return c;
                         })()}
                     >
@@ -363,8 +359,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             top: "18px"
                         }}
                         className={(() => {
-                            let c = this.props.meta.searchMatch.ttl ? "searchMatch" : "";
-                            c += this.props.meta.changed.values[0].ttl ? " changed" : "";
+                            let c = this.props.meta.searchMatch.values[0]?.ttl ? "searchMatch" : "";
+                            c += this.props.meta.changed.values[0]?.ttl ? " changed" : "";
                             return c;
                         })()}
                     >

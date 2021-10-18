@@ -291,15 +291,11 @@ label + .MuiInput-formControl {
     pointer-events: none;
 }
 .MuiInput-underline:hover:not(.Mui-disabled):before {
-    border-bottom: 2px solid var(--font-color);
+    transition: none;
+    border-bottom: 2px solid var(--input-border-bottom-hover-color);
 }
 .MuiInput-underline.Mui-disabled:before {
     border-bottom-style: dotted;
-}
-@media (hover: none) {
-    .MuiInput-underline:hover:not(.Mui-disabled):before {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.42);
-    }
 }
 
 .MuiFormLabel-root {

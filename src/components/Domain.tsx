@@ -1,7 +1,7 @@
 import { Component, Fragment } from "react";
 import { Checkbox, Fab, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
-import { AddCircle, Check, Close, Delete, Refresh } from "@material-ui/icons";
+import { AddCircle, Check, Clear, Close, Delete, Refresh } from "@material-ui/icons";
 import * as l from "./lib";
 import cloneDeep from "lodash/cloneDeep";
 import sortBy from "lodash/sortBy";
@@ -30,6 +30,7 @@ interface DomainState {
     readonly anySelected: boolean;
     readonly domainName: string;
     readonly changedRecords: number;
+    readonly allValid: t.ValidationType;
     readonly useRegex: boolean;
 }
 
@@ -73,30 +74,43 @@ export default class Domain extends Component<DomainProps, DomainState> {
         anySelected: false,
         domainName: "",
         changedRecords: 0,
+        allValid: "ok",
         useRegex: true
     };
-    list: any;
-    saveRecord = async (i: number) => {
-        const successState = async (setRecord: t.DisplayRecord) => {
-            let record = setRecord;
-            try {
-                record = (await l.getRecords(this.props.config, this.state.domainName)).filter(
-                    dbRecord =>
-                        dbRecord.name.toLowerCase() === setRecord.name.toLowerCase() &&
-                        dbRecord.type === setRecord.type
-                )[0];
-            } catch (e) {}
 
-            this.setState(({ meta, ogRecords, records }) => {
-                meta = cloneDeep(meta);
-                records = cloneDeep(records);
-                ogRecords[i] = cloneDeep(record);
-                records[i] = cloneDeep(record);
-                meta[i].validity = this.validateRecord(record, this.state.domainName);
-                [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(record, record);
-                return { meta, ogRecords, records };
-            });
-        };
+    list: any;
+
+    saveSuccessState = async (setRecord: t.DisplayRecord, i: number) => {
+        let record = setRecord;
+        try {
+            record = (await l.getRecords(this.props.config, this.state.domainName)).filter(
+                dbRecord => {
+                    return (
+                        dbRecord.name.toLowerCase().replaceAll(/\s+/g, "") ===
+                            setRecord.name.toLowerCase().replaceAll(/\s+/g, "") &&
+                        dbRecord.type === setRecord.type
+                    );
+                }
+            )[0];
+        } catch (e) {}
+        if (!record) {
+            return;
+        }
+
+        this.setState(({ meta, ogRecords, records, changedRecords }) => {
+            meta = cloneDeep(meta);
+            records = cloneDeep(records);
+            ogRecords[i] = cloneDeep(record);
+            records[i] = cloneDeep(record);
+            meta[i].validity = this.validateRecord(record, this.state.domainName);
+            [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(record, "no");
+            changedRecords = meta.filter(m => m.anyChanged).length;
+
+            return { meta, ogRecords, records, changedRecords };
+        });
+    };
+
+    saveRecord = async (i: number) => {
         if (
             (this.state.ogRecords[i].name !== this.state.records[i].name ||
                 this.state.ogRecords[i].type !== this.state.records[i].type) &&
@@ -107,15 +121,16 @@ export default class Domain extends Component<DomainProps, DomainState> {
             const setRes = await l.setRecords(this.props.config, [this.state.records[i]]);
             if (setRes && setRes.error !== undefined && setRes.error === false) {
                 l.deleteRecords(this.props.config, [this.state.ogRecords[i]]);
-                await successState(this.state.records[i]);
+                await this.saveSuccessState(this.state.records[i], i);
             }
         } else {
             const res = await l.setRecords(this.props.config, [this.state.records[i]]);
             if (res && res.error !== undefined && res.error === false) {
-                await successState(this.state.records[i]);
+                await this.saveSuccessState(this.state.records[i], i);
             }
         }
     };
+
     saveAllChangedRecords = async () => {
         if (this.props.variant === "import") {
             const toBeAdded: t.DisplayRecord[] = [];
@@ -128,6 +143,28 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 this.props.history.push({ pathname: `/domain/${this.state.domainName}` });
             }
         } else {
+            const toBeAdded: t.DisplayRecord[] = [];
+            const toBeDeleted: t.DisplayRecord[] = [];
+            this.state.records.forEach((record, i) => {
+                if (this.state.meta[i].anyChanged) {
+                    toBeAdded.push(record);
+                    if (
+                        (this.state.ogRecords[i].name !== this.state.records[i].name ||
+                            this.state.ogRecords[i].type !== this.state.records[i].type) &&
+                        this.state.ogRecords[i].type !== "NEW"
+                    ) {
+                        toBeDeleted.push(this.state.ogRecords[i]);
+                    }
+                }
+            });
+            const setRes = await l.setRecords(this.props.config, toBeAdded);
+
+            if (setRes && setRes.error !== undefined && setRes.error === false) {
+                await l.deleteRecords(this.props.config, toBeDeleted);
+                this.handleReloadClick();
+                //await this.saveSuccessState(this.state.records[i], i);
+            }
+
             //TODO add normal accept all pending records
         }
     };
@@ -142,6 +179,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 meta[index].expanded = !meta[index].expanded;
                 this.list.recomputeRowHeights();
             }
+
             return { meta, selectAll };
         });
     };
@@ -182,6 +220,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         }
         return [record, ogRecord];
     };
+
     addRRValue = (recordIndex: number) => {
         this.setState(({ records, meta }) => {
             const record = cloneDeep(records[recordIndex]);
@@ -201,6 +240,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             return { records, meta };
         });
     };
+
     removeRRValue = (recordIndex: number, rrIndex: number) => {
         this.setState(({ records, meta }) => {
             const record = cloneDeep(records[recordIndex]);
@@ -228,7 +268,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         if (!fullName || !newValue === undefined) return;
         const [recordIndex, fieldName, rrIndex, fieldChildName] = fullName.split(":");
 
-        this.setState(({ records, meta, domainName, ogRecords }) => {
+        this.setState(({ records, meta, domainName, ogRecords, changedRecords, allValid }) => {
             [records[recordIndex], ogRecords[recordIndex]] = this.handleRecordChange(
                 records[recordIndex],
                 ogRecords[recordIndex],
@@ -251,7 +291,15 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 this.state.ogRecords[recordIndex]
             );
 
-            return { meta, records, domainName, ogRecords };
+            if (meta[recordIndex].validity?.totalValidity !== "ok" && allValid !== "error") {
+                allValid = meta[recordIndex].validity?.totalValidity || "error";
+            } else {
+                allValid = meta[recordIndex].validity?.totalValidity || "error";
+            }
+
+            changedRecords = meta.filter(m => m.anyChanged).length;
+
+            return { meta, records, domainName, ogRecords, changedRecords, allValid };
         });
     };
 
@@ -327,7 +375,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
             meta,
             defaultOrder,
             domainName,
-            selectAll: false
+            selectAll: this.props.variant === "import" ? true : false,
+            allValid: "ok",
+            changedRecords: 0
         });
         if (this.state.search.length) {
             this.handleSearchAndReplaceChange({
@@ -386,10 +436,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
     };
 
     sortColumns = (name: string) => {
-        this.setState(({ records, meta, columnItems, defaultOrder }) => {
-            let combine: [t.DisplayRecord, t.DomainMeta, number][] = records.map((e, i) => {
-                return [records[i], meta[i], defaultOrder[i]];
-            });
+        this.setState(({ records, meta, columnItems, defaultOrder, ogRecords }) => {
+            let combine: [t.DisplayRecord, t.DomainMeta, number, t.DisplayRecord][] = records.map(
+                (e, i) => {
+                    return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
+                }
+            );
 
             let currentSortDirection = 0;
             columnItems = columnItems.map(e => {
@@ -420,9 +472,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 records[i] = combine[i][0];
                 meta[i] = combine[i][1];
                 defaultOrder[i] = combine[i][2];
+                ogRecords[i] = combine[i][3];
             });
             this.list.recomputeRowHeights();
-            return { records, meta, columnItems };
+
+            return { records, meta, columnItems, ogRecords };
         });
     };
 
@@ -438,9 +492,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
     handleSearchAndReplaceChange = (e: any, useRegex = this.state.useRegex) => {
         if (e.target.name === "search") {
             const search = e.target.value;
-            this.setState(({ records, meta, defaultOrder }) => {
+            this.setState(({ records, meta, defaultOrder, ogRecords }) => {
                 meta = cloneDeep(meta);
-                console.log(useRegex);
 
                 records.forEach((rec, i) => {
                     // reset all
@@ -467,47 +520,30 @@ export default class Domain extends Component<DomainProps, DomainState> {
                                 meta[i].anySearchMatch = true;
                             }
                         }
-                        {
-                            const match = useRegex
-                                ? rec.values[0].ttl.toString().match(RegExp(search, "g"))
-                                : rec.values[0].ttl.toString().indexOf(search) > -1;
-                            if (match) {
-                                meta[i].searchMatch.ttl = !!match;
-                                meta[i].anySearchMatch = true;
-                            }
-                        }
-                        // handle values column
-                        const value = rec.values[0];
 
-                        if (value?.value !== undefined) {
-                            const m = useRegex
-                                ? value.value.match(RegExp(search, "g"))
-                                : value.value.indexOf(search) > -1;
-                            if (m) {
-                                meta[i].searchMatch.values.value = !!m;
-                                meta[i].anySearchMatch = true;
-                            }
-                        } else {
+                        // handle values column
+                        meta[i].searchMatch.values = new Array(rec.values.length).fill({});
+                        rec.values.forEach((value, rrIndex) => {
                             const fieldValues = Object.values(value);
                             const fields = Object.keys(value);
-                            meta[i].searchMatch.values = { [rec.type]: {} };
 
                             for (let ii = 0; ii < fieldValues.length; ii++) {
                                 const m = useRegex
                                     ? fieldValues[ii].toString().match(RegExp(search, "g"))
                                     : fieldValues[ii].toString().indexOf(search) > -1;
                                 if (m) {
-                                    meta[i].searchMatch.values[fields[ii]] = !!m;
+                                    meta[i].searchMatch.values[rrIndex][fields[ii]] = !!m;
                                     meta[i].anySearchMatch = true;
                                 }
                             }
-                        }
+                        });
                     }
                 });
 
-                let combine: [t.DisplayRecord, t.DomainMeta, number][] = records.map((e, i) => {
-                    return [records[i], meta[i], defaultOrder[i]];
-                });
+                let combine: [t.DisplayRecord, t.DomainMeta, number, t.DisplayRecord][] =
+                    records.map((e, i) => {
+                        return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
+                    });
                 combine = sortBy(combine, [
                     key => {
                         if (!search.length) return key[2];
@@ -519,10 +555,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     records[i] = combine[i][0];
                     meta[i] = combine[i][1];
                     defaultOrder[i] = combine[i][2];
+                    ogRecords[i] = combine[i][3];
                 });
                 this.list.recomputeRowHeights();
 
-                return { records, meta, search: search };
+                return { records, meta, search, ogRecords };
             });
         } else {
             this.setState(prevState => ({
@@ -533,92 +570,90 @@ export default class Domain extends Component<DomainProps, DomainState> {
     };
 
     handleReplaceClick = () => {
-        this.setState(({ meta, search, replace, records, domainName, useRegex }) => {
-            records = cloneDeep(records);
-            meta.forEach((m, recordIndex) => {
-                if (!m.anySearchMatch) return;
-                if (m.searchMatch.name) {
-                    const replaced = useRegex
-                        ? records[recordIndex].name.replaceAll(RegExp(search, "g"), replace)
-                        : records[recordIndex].name.replaceAll(search, replace);
+        this.setState(
+            ({
+                meta,
+                search,
+                replace,
+                records,
+                domainName,
+                useRegex,
+                allValid,
+                changedRecords,
+                ogRecords
+            }) => {
+                records = cloneDeep(records);
+                meta.forEach((m, recordIndex) => {
+                    if (!m.anySearchMatch) return;
+                    if (m.searchMatch.name) {
+                        const replaced = useRegex
+                            ? records[recordIndex].name.replaceAll(RegExp(search, "g"), replace)
+                            : records[recordIndex].name.replaceAll(search, replace);
 
-                    if (records[recordIndex].type === "SOA") {
-                        if (this.props.variant === "import") {
-                            domainName = replaced;
+                        if (records[recordIndex].type === "SOA") {
+                            if (this.props.variant === "import") {
+                                domainName = replaced;
+                                records[recordIndex].name = replaced;
+                            }
+                        } else {
                             records[recordIndex].name = replaced;
                         }
-                    } else {
-                        records[recordIndex].name = replaced;
                     }
-                }
-                if (m.searchMatch.type) {
-                    const replaced = useRegex
-                        ? (records[recordIndex].type.replaceAll(
-                              RegExp(search, "g"),
-                              replace
-                          ) as t.RRType)
-                        : (records[recordIndex].type.replaceAll(search, replace) as t.RRType);
-
-                    if (records[recordIndex].type !== "SOA") {
-                        records[recordIndex].type = replaced;
-                        records[recordIndex].values = [l.rrTemplates[replaced].template];
-                    }
-                }
-                if (m.searchMatch.ttl) {
-                    const replaced = useRegex
-                        ? parseInt(
-                              records[recordIndex].values[0].ttl
-                                  .toString()
-                                  .replaceAll(RegExp(search, "g"), replace)
-                          )
-                        : parseInt(
-                              records[recordIndex].values[0].ttl
-                                  .toString()
-                                  .replaceAll(search, replace)
-                          );
-
-                    if (!isNaN(replaced) && replaced >= 0)
-                        records[recordIndex].values[0].ttl = replaced;
-                }
-                if (m.searchMatch.values) {
-                    const type = records[recordIndex].type;
-                    const value = records[recordIndex].values[0];
-                    if (value?.value !== undefined) {
+                    if (m.searchMatch.type) {
                         const replaced = useRegex
-                            ? value.value.replaceAll(RegExp(search, "g"), replace)
-                            : value.value.replaceAll(search, replace);
-                        records[recordIndex].values[0].value = replaced;
-                    } else {
-                        let smKeys: any[] = [];
-                        if (m.searchMatch.values[type])
-                            smKeys = Object.keys(m.searchMatch.values[type]);
-                        for (let ii = 0; ii < smKeys.length; ii++) {
-                            if (m.searchMatch.values[type][smKeys[ii]]) {
-                                /*@ts-ignore*/
-                                const fieldValue = value[smKeys[ii]];
-                                if (!fieldValue || typeof fieldValue !== "string") break;
+                            ? (records[recordIndex].type.replaceAll(
+                                  RegExp(search, "g"),
+                                  replace
+                              ) as t.RRType)
+                            : (records[recordIndex].type.replaceAll(search, replace) as t.RRType);
 
-                                const replaced = useRegex
-                                    ? fieldValue.replaceAll(RegExp(search, "g"), replace)
-                                    : fieldValue.replaceAll(search, replace);
-                                /*@ts-ignore*/
-                                records[recordIndex].values[type][smKeys[ii]] = replaced;
-                            }
+                        if (records[recordIndex].type !== "SOA") {
+                            records[recordIndex].type = replaced;
+                            records[recordIndex].values = [l.rrTemplates[replaced].template];
                         }
                     }
-                }
-                meta[recordIndex] = cloneDeep(meta[recordIndex]);
-                meta[recordIndex].validity = this.validateRecord(
-                    records[recordIndex],
-                    this.state.domainName
-                );
-                [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
-                    records[recordIndex],
-                    this.state.ogRecords[recordIndex]
-                );
-            });
-            return { records, meta, domainName };
-        });
+
+                    if (m.searchMatch.values) {
+                        records[recordIndex].values.forEach((value, rrIndex) => {
+                            const fieldValues = Object.values(value);
+                            const fieldNames = Object.keys(value);
+
+                            for (let ii = 0; ii < fieldValues.length; ii++) {
+                                if (m.searchMatch.values[rrIndex][fieldNames[ii]]) {
+                                    /*@ts-ignore*/
+                                    const fieldValue = fieldValues[ii];
+
+                                    const replaced = useRegex
+                                        ? fieldValue.replaceAll(RegExp(search, "g"), replace)
+                                        : fieldValue.replaceAll(search, replace);
+                                    /*@ts-ignore*/
+                                    records[recordIndex].values[rrIndex][fieldNames[ii]] = replaced;
+                                }
+                            }
+                        });
+                    }
+                    meta[recordIndex] = cloneDeep(meta[recordIndex]);
+                    meta[recordIndex].validity = this.validateRecord(
+                        records[recordIndex],
+                        domainName
+                    );
+                    [meta[recordIndex].changed, meta[recordIndex].anyChanged] =
+                        this.hasRecordChanged(records[recordIndex], ogRecords[recordIndex]);
+
+                    if (
+                        meta[recordIndex].validity?.totalValidity !== "ok" &&
+                        allValid !== "error"
+                    ) {
+                        allValid = meta[recordIndex].validity?.totalValidity || "error";
+                    } else {
+                        allValid = meta[recordIndex].validity?.totalValidity || "error";
+                    }
+                });
+                changedRecords = meta.filter(m => m.anyChanged).length;
+
+                return { records, meta, domainName, allValid, changedRecords };
+            }
+        );
     };
 
     handleDeleteClick = async () => {
@@ -635,6 +670,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             });
         }
     };
+
     handleAddClick = () => {
         this.setState(({ records, meta, ogRecords: ogData, defaultOrder }) => {
             //records = cloneDeep(records);
@@ -666,6 +702,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             };
         });
     };
+
     handleRegexClick = () => {
         const newUseRegex = !this.state.useRegex;
         this.setState({ useRegex: newUseRegex });
@@ -678,12 +715,14 @@ export default class Domain extends Component<DomainProps, DomainState> {
             );
         }
     };
+
     handleClearSearchClick = () => {
         this.setState({ search: "", replace: "" });
         this.handleSearchAndReplaceChange({
             target: { name: "search", value: "" }
         });
     };
+
     handleReloadClick = async () => {
         const records = await l.getRecords(this.props.config, this.props.match.params.domainName);
         this.initData(records, this.props.match.params.domainName);
@@ -719,6 +758,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             />
         );
     };
+
     sortDirectionIcon = (columnItem: ColumnItem) => {
         const style = {
             height: "1px",
@@ -756,7 +796,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
             return [changed as t.FieldsChanged, valid];
         }
 
-        if (record.name !== ogRecord.name) {
+        if (
+            record.name.toLowerCase().replaceAll(/\s+/g, "") !==
+            ogRecord.name.toLowerCase().replaceAll(/\s+/g, "")
+        ) {
             changed.name = true;
             anyChanged = true;
         }
@@ -771,9 +814,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             fieldKeys.forEach((fieldKey: string) => {
                 if (
                     /*@ts-ignore*/
-                    recordValue[fieldKey] !==
-                    /*@ts-ignore*/
-                    (ogRecord.values[i] ? ogRecord.values[i][fieldKey] : false)
+                    recordValue[fieldKey] !== ogRecord.values[i][fieldKey]
                 ) {
                     changed.values[i][fieldKey] = true;
                     anyChanged = true;
@@ -782,7 +823,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 }
             });
         });
-        console.log(changed);
 
         return [changed as t.FieldsChanged, anyChanged];
     };
@@ -830,26 +870,33 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     );
                 })}
                 <span
+                    className="applyChanges"
                     style={{
                         width: "50px",
                         position: "absolute",
-                        right: "15px",
+                        right: "8px",
                         top: "13px"
                     }}
                 >
                     <Fab
                         onClick={() => this.saveAllChangedRecords()}
-                        disabled={
-                            this.state.changedRecords === 0 && this.props.variant !== "import"
-                        }
+                        disabled={(() => {
+                            let v = false;
+                            if (this.state.changedRecords === 0 && this.props.variant !== "import")
+                                v = true;
+                            if (this.state.allValid === "error") v = true;
+                            return v;
+                        })()}
                         size="small"
+                        className={this.state.allValid}
                     >
-                        <Check />
+                        {this.state.allValid === "error" ? <Clear /> : <Check />}
                     </Fab>
                 </span>
             </div>
         );
     };
+
     searchAndReplace = () => {
         return (
             <span

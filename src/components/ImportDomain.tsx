@@ -97,7 +97,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                         })}
                     </Stepper>
                 </div>
-                {steps[this.state.activeStep]()}
+                <div style={{ marginTop: "50px" }}>{steps[this.state.activeStep]()}</div>
             </React.Fragment>
         );
     };

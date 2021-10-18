@@ -82,7 +82,6 @@ export interface ValueSearchMatch {
 export interface SearchMatch {
     name: boolean;
     type: boolean;
-    ttl: boolean;
     values: ValueSearchMatch;
 }
 

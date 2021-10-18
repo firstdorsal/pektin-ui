@@ -13,7 +13,6 @@ import punycode from "punycode";
 export const defaultSearchMatch = {
     name: false,
     type: false,
-    ttl: false,
     values: []
 };
 

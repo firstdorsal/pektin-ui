@@ -116,7 +116,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
                             />
                         </Tabs>
                     </div>
-                    <div style={{ overflowY: "scroll", maxHeight: "460px" }} className="tabs">
+                    <div style={{ overflowY: "auto", maxHeight: "460px" }} className="tabs">
                         {tabs[this.state.activeTab]}
                     </div>
                 </Paper>

@@ -3,30 +3,45 @@
     --bg-color-light: white;
     --bg-color-dark: #171d26;
     --bg-color-lighter: #444a5f;
+
     --a2: darkorange;
+
     --font-color: #171d26;
     --f2: white;
+
     --error: #f44336;
     --warning: #ffa632;
     --ok: #13d434;
+
     --aside-padding: 15px;
     --aside-width: 270px;
+    --aside-hover-color: #363947;
+
     --border-bottom-color: lightgrey;
+
     --checkbox: var(--a2);
+
     --dimmed: #00000080;
+
     --disabled-color: #0000004d;
     --disabled-background: #0000001f;
+
     --scrollbar-background: lightgrey;
     --scrollbar-thumb: #6e6e6e;
+
     --button-color: #171d26;
+
     --action-bar-color: #171d26;
 
     --search-match-bg-color: yellow;
     --search-match-color: #171d26;
-    --aside-hover-color: #363947;
 
     --select-hover: lightgrey;
     --select-active: darkgrey;
+
+    --input-border-bottom-hover-color: darkgrey;
+    --apply-changes-button-color: black;
+
     list-style: none;
     padding: 0;
     margin: 0;
@@ -40,28 +55,43 @@
         --bg-color-light: #171d26;
         --bg-color-dark: #171d26;
         --bg-color-lighter: #444a5f;
+
         --a2: darkorange;
-        --a2-light: #444a5f;
+
         --font-color: white;
+
         --error: #f44336;
         --warning: #ffa632;
         --ok: #13d434;
+
         --aside-padding: 15px;
         --aside-width: 270px;
+        --aside-hover-color: #444a5f4d;
+
         --border-bottom-color: #353535;
+
         --checkbox: var(--a2);
+
         --dimmed: #ffffff99;
+
         --disabled-color: #ffffff4d;
         --disabled-background: #ffffff1f;
+
         --scrollbar-background: #444a5f;
         --scrollbar-thumb: #7d8294;
+
         --button-color: white;
+
         --action-bar-color: #0f131ac5;
+
         --search-match-bg-color: #ffe6004f;
         --search-match-color: white;
-        --aside-hover-color: #444a5f4d;
+
         --select-hover: #444a5f4d;
         --select-active: #171d26;
+
+        --input-border-bottom-hover-color: darkgrey;
+        --apply-changes-button-color: black;
     }
 }
 
@@ -89,7 +119,7 @@ p,
 }
 
 .applyChanges button {
-    color: black;
+    color: var(--apply-changes-button-color);
 }
 
 .MuiInput-underline:before {
@@ -226,10 +256,6 @@ aside > ul::-webkit-scrollbar {
     content-visibility: auto;
 }
 
-.recRow .MuiInput-underline:before {
-    border: none;
-}
-
 .rowWrapper .MuiSelect-root {
     padding-left: 25px;
 }
@@ -263,6 +289,10 @@ aside > ul::-webkit-scrollbar {
 .advancedRow {
     height: 600px;
     overflow-y: hidden;
+}
+
+.recRow .MuiInput-underline:before {
+    border: none;
 }
 
 .MuiSelect-select {
@@ -350,6 +380,10 @@ input[value*="tick"] {
     font-weight: 600;
 }
 
+.MuiInput-underline:before {
+    border-bottom: 2px solid var(--font-color);
+}
+
 .actionBar * {
     color: var(--action-bar-color) !important;
 }
@@ -391,7 +425,7 @@ input[value*="tick"] {
 button.error,
 button.error:hover {
     background: var(--error) !important;
-    color: inherit !important;
+    color: var(--apply-changes-button-color) !important;
     cursor: default;
 }
 
@@ -416,15 +450,30 @@ button.ok:hover {
 }
 
 /*
-TODO: beim über die inputs hovern andere underline farbe als wenn input aktiv ist
 
-einige css/color probleme bei import
+accept all button sollte validity widerspiegeln
 
-underlines fehlen 
+wenn man was sucht sollte automatisch hochgescrollt werden
 
-select all button ist nicht aktiviert
+cant edit soa record in import mode
 
+t§ick.y.gy. is valid for some reason
 
-accept all color ist weiß sollte aber schwarz sein
+auswählen eines records wenn er als searchMatch markiert ist deaktiviert die markierung
+
+select all search matched
+only search some columns
+search through secondary values
+expand record if secondary value was matched
+switch betweens instant search and search on button click
+
+sort columns by primary value 
+
+right click menu 
+insert variable 
+
+config
+use variable replacement
+
 
 */

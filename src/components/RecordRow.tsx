@@ -238,7 +238,6 @@ export default class RecordRow extends Component<RowProps, RowState> {
                     borderLeft: `5px solid rgb(${color})`,
                     opacity
                 }}
-                //title={`${this.props.index + 1}/${this.props.totalRows}`}
             >
                 <div className="recRow" style={{ position: "relative" }}>
                     <span style={{ left: "10px", top: "10px" }}>

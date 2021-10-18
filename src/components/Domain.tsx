@@ -8,7 +8,7 @@ import sortBy from "lodash/sortBy";
 import { RouteComponentProps } from "react-router-dom";
 import RecordRow from "./RecordRow";
 import { AutoSizer, List } from "react-virtualized";
-import "react-virtualized/styles.css"; // only needs to be imported once
+import "react-virtualized/styles.css";
 import {
     FaSortAlphaDownAlt,
     FaSortAlphaDown,
@@ -774,53 +774,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
         this.initData(records, this.props.match.params.domainName);
     };
 
-    rowRenderer = (r: {
-        key: any;
-        index: number;
-        style: any;
-        //record: t.DisplayRecord;
-        //meta: t.DomainMeta;
-        //totalRows: number;
-    }) => {
-        const { key, index, style } = r;
-
-        return (
-            <RecordRow
-                style={style}
-                config={this.props.config}
-                handleChange={this.handleChange}
-                saveRecord={this.saveRecord}
-                changeMeta={this.changeMeta}
-                search={this.state.search}
-                key={key}
-                recordIndex={index}
-                record={this.state.records[index]}
-                meta={this.state.meta[index]}
-                totalRows={this.state.records.length}
-                domainName={this.state.domainName}
-                variant={this.props.variant}
-                addRRValue={this.addRRValue}
-                removeRRValue={this.removeRRValue}
-            />
-        );
-    };
-
-    sortDirectionIcon = (columnItem: ColumnItem) => {
-        const style = {
-            height: "1px",
-            transform: "translate(4px,-5px) scale(20)"
-        };
-        if (columnItem.direction === 0) return;
-        if (columnItem.direction === 1) {
-            if (columnItem.type === "string") return <FaSortAlphaDown style={style} />;
-            return <FaSortNumericDown style={style} />;
-        }
-        if (columnItem.direction === 2) {
-            if (columnItem.type === "string") return <FaSortAlphaDownAlt style={style} />;
-            return <FaSortNumericDownAlt style={style} />;
-        }
-    };
-
     hasRecordChanged = (
         record: t.DisplayRecord,
         ogRecord: t.DisplayRecord | "yes" | "no"
@@ -871,6 +824,53 @@ export default class Domain extends Component<DomainProps, DomainState> {
         });
 
         return [changed as t.FieldsChanged, anyChanged];
+    };
+
+    rowRenderer = (r: {
+        key: any;
+        index: number;
+        style: any;
+        //record: t.DisplayRecord;
+        //meta: t.DomainMeta;
+        //totalRows: number;
+    }) => {
+        const { key, index, style } = r;
+
+        return (
+            <RecordRow
+                style={style}
+                config={this.props.config}
+                handleChange={this.handleChange}
+                saveRecord={this.saveRecord}
+                changeMeta={this.changeMeta}
+                search={this.state.search}
+                key={key}
+                recordIndex={index}
+                record={this.state.records[index]}
+                meta={this.state.meta[index]}
+                totalRows={this.state.records.length}
+                domainName={this.state.domainName}
+                variant={this.props.variant}
+                addRRValue={this.addRRValue}
+                removeRRValue={this.removeRRValue}
+            />
+        );
+    };
+
+    sortDirectionIcon = (columnItem: ColumnItem) => {
+        const style = {
+            height: "1px",
+            transform: "translate(4px,-5px) scale(20)"
+        };
+        if (columnItem.direction === 0) return;
+        if (columnItem.direction === 1) {
+            if (columnItem.type === "string") return <FaSortAlphaDown style={style} />;
+            return <FaSortNumericDown style={style} />;
+        }
+        if (columnItem.direction === 2) {
+            if (columnItem.type === "string") return <FaSortAlphaDownAlt style={style} />;
+            return <FaSortNumericDownAlt style={style} />;
+        }
     };
 
     tableHead = () => {
@@ -1078,15 +1078,3 @@ export default class Domain extends Component<DomainProps, DomainState> {
         );
     };
 }
-
-/*
-props =>
-                                    this.rowRenderer({
-                                        ...props,
-                                        record: this.state.records[props.index],
-                                        meta: this.state.meta[props.index],
-                                        totalRows: this.state.records.length
-                                    })
-                                
-
-*/

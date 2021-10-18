@@ -1,6 +1,6 @@
 import * as l from "./lib";
 import * as t from "./types";
-import { Component, Fragment } from "react";
+import { Component } from "react";
 import {
     Collapse,
     IconButton,
@@ -50,7 +50,6 @@ interface RowState {
 export default class RecordRow extends Component<RowProps, RowState> {
     advancedView = (record: t.DisplayRecord) => {
         const p = this.props;
-        const rr = record.values;
         const recordValue = (record: t.DisplayRecord, rrIndex: number) => {
             let v: any = record.values[rrIndex];
             const { type } = record;
@@ -73,6 +72,10 @@ export default class RecordRow extends Component<RowProps, RowState> {
                             const fieldValue =
                                 fieldNames?.length > 1 ? v[fieldName] + "" : v?.value + "";
 
+                            const isSearchMatch = this.props.meta.searchMatch.values[rrIndex]
+                                ? this.props.meta.searchMatch.values[rrIndex][fieldName]
+                                : false;
+
                             const verify =
                                 this.props.meta.validity && this.props.meta.validity.values[rrIndex]
                                     ? this.props.meta.validity.values[rrIndex][fieldName]
@@ -94,7 +97,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                                             width: "100%"
                                         }}
                                         className={(() => {
-                                            let c = verify !== undefined ? " " + verify?.type : "";
+                                            let c = isSearchMatch ? "searchMatch " : "";
+                                            c += verify ? " " + verify?.type : "";
                                             c += changed ? " changed" : "";
                                             return c;
                                         })()}
@@ -135,47 +139,10 @@ export default class RecordRow extends Component<RowProps, RowState> {
                 </div>
             );
         };
-        if (record.type === "SOA") {
-            const v = rr[0] as t.SOA;
-            const changed = this.props.meta.changed.values[0];
-            return (
-                <Fragment>
-                    <div className={this.props.meta.validity?.values[0].mname?.type}>
-                        <br />
-                        <div className="tfName">mname</div>
-                        <div className="tfHelper">
-                            {l.rrTemplates["SOA"].fields.mname.helperText}
-                        </div>
-                        <TextField
-                            onChange={e => this.props.handleChange(e)}
-                            helperText={this.props.meta.validity?.values[0].mname?.message || " "}
-                            placeholder="ns1.example.com"
-                            name={`${p.recordIndex}:rrField:0:mname`}
-                            value={v.mname + ""}
-                            className={changed["mname"] ? " changed" : ""}
-                        />
-                    </div>
-                    <div className={this.props.meta.validity?.values[0].rname?.type}>
-                        <div className="tfName">rname</div>
-                        <div className="tfHelper">
-                            {l.rrTemplates["SOA"].fields.rname.helperText}
-                        </div>
-                        <TextField
-                            onChange={e => this.props.handleChange(e)}
-                            helperText={this.props.meta.validity?.values[0].rname?.message || " "}
-                            placeholder="hostmaster.example.com"
-                            name={`${p.recordIndex}:rrField:0:rname`}
-                            value={v.rname + ""}
-                            className={changed["rname"] ? " changed" : ""}
-                        />
-                    </div>
-                </Fragment>
-            );
-        } else {
-            return this.props.record.values.map((value, rrIndex) => {
-                return recordValue(this.props.record, rrIndex);
-            });
-        }
+
+        return this.props.record.values.map((value, rrIndex) => {
+            return recordValue(this.props.record, rrIndex);
+        });
     };
     simpleView = (record: t.DisplayRecord) => {
         const p = this.props;

@@ -522,18 +522,32 @@ export default class Domain extends Component<DomainProps, DomainState> {
                         }
 
                         // handle values column
-                        meta[i].searchMatch.values = new Array(rec.values.length).fill({});
+                        meta[i].searchMatch.values = [];
+
                         rec.values.forEach((value, rrIndex) => {
                             const fieldValues = Object.values(value);
-                            const fields = Object.keys(value);
-
-                            for (let ii = 0; ii < fieldValues.length; ii++) {
+                            const fieldNames = Object.keys(value);
+                            meta[i].searchMatch.values.push({});
+                            for (
+                                let fieldIndex = 0;
+                                fieldIndex < fieldValues.length;
+                                fieldIndex++
+                            ) {
                                 const m = useRegex
-                                    ? fieldValues[ii].toString().match(RegExp(search, "g"))
-                                    : fieldValues[ii].toString().indexOf(search) > -1;
+                                    ? fieldValues[fieldIndex].toString().match(RegExp(search, "g"))
+                                    : fieldValues[fieldIndex].toString().indexOf(search) > -1;
+
                                 if (m) {
-                                    meta[i].searchMatch.values[rrIndex][fields[ii]] = !!m;
+                                    meta[i].searchMatch.values[rrIndex][fieldNames[fieldIndex]] =
+                                        true;
+                                    if (rrIndex > 0) {
+                                        meta[i].expanded = true;
+                                    }
+
                                     meta[i].anySearchMatch = true;
+                                } else {
+                                    meta[i].searchMatch.values[rrIndex][fieldNames[fieldIndex]] =
+                                        false;
                                 }
                             }
                         });
@@ -558,6 +572,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     ogRecords[i] = combine[i][3];
                 });
                 this.list.recomputeRowHeights();
+                this.list.scrollToPosition(0);
 
                 return { records, meta, search, ogRecords };
             });

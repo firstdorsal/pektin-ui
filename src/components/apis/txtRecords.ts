@@ -1,5 +1,6 @@
 import { regex } from "../lib";
 import * as t from "../types";
+import * as l from "../lib";
 
 export const SPF1QualifierNames = ["Pass", "Fail", "SoftFail", "Neutral"];
 
@@ -103,7 +104,7 @@ const checkSPF1Macros = (string: string): false | t.ValidationResult => {
     return false;
 };
 
-const parseSPF1 = (value: string): ParsedSPF1 | t.ValidationResult => {
+const parseSPF1 = (config: t.Config, value: string): ParsedSPF1 | t.ValidationResult => {
     const v = value.replaceAll(/\s+/g, " ").toLowerCase();
 
     const split = v.split(" ");
@@ -138,7 +139,7 @@ const parseSPF1 = (value: string): ParsedSPF1 | t.ValidationResult => {
             const rest = r.toString();
 
             if (type === "exists" || type === "include" || type === "ptr") {
-                if (rest.match(regex.domainName)) {
+                if (l.validateDomain(config, rest).type !== "error") {
                     mechanism.type = type;
                     mechanism.domain = rest;
                 } else {
@@ -157,7 +158,7 @@ const parseSPF1 = (value: string): ParsedSPF1 | t.ValidationResult => {
                 }
             } else if (type === "mx" || type === "a") {
                 if (rest.indexOf("/") <= -1) {
-                    if (rest.match(regex.domainName)) {
+                    if (l.validateDomain(config, rest).type !== "error") {
                         mechanism.type = type;
                         mechanism.domain = rest;
                     } else {
@@ -168,7 +169,7 @@ const parseSPF1 = (value: string): ParsedSPF1 | t.ValidationResult => {
                     }
                 } else {
                     const [domain, prefixLength] = splitFirstAndRest(rest, "/");
-                    if (domain.match(regex.domainName)) {
+                    if (l.validateDomain(config, rest).type !== "error") {
                         if (checkPrefixLength(prefixLength)) {
                             mechanism.type = type;
                             mechanism.domain = domain;
@@ -281,8 +282,8 @@ const parseSPF1 = (value: string): ParsedSPF1 | t.ValidationResult => {
     return parsed;
 };
 
-const validateSPF1 = (string: string): t.ValidationResult => {
-    const parsedSpf = parseSPF1(string) as ParsedSPF1;
+const validateSPF1 = (config: t.Config, string: string): t.ValidationResult => {
+    const parsedSpf = parseSPF1(config, string) as ParsedSPF1;
 
     if ((parsedSpf as t.ValidationResult).type === "error") {
         return parsedSpf as t.ValidationResult;

@@ -451,29 +451,19 @@ button.ok:hover {
 
 /*
 
-accept all button sollte validity widerspiegeln
-
-wenn man was sucht sollte automatisch hochgescrollt werden
-
 cant edit soa record in import mode
-
-t§ick.y.gy. is valid for some reason
-
-auswählen eines records wenn er als searchMatch markiert ist deaktiviert die markierung
 
 select all search matched
 only search some columns
-search through secondary values
-expand record if secondary value was matched
 switch betweens instant search and search on button click
 
 sort columns by primary value 
 
 right click menu 
-insert variable 
+    insert variable 
 
 config
-use variable replacement
+    use variable replacement?
 
 
 */

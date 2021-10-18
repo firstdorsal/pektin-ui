@@ -531,7 +531,7 @@ export const rrTemplates: any = {
                 validate: (config: t.Config, field: string): t.ValidationResult => {
                     field = variablesToValues(config, field);
                     if (field.startsWith(txt.txtRecords.SPF1.identifier)) {
-                        return txt.txtRecords.SPF1.validate(field);
+                        return txt.txtRecords.SPF1.validate(config, field);
                     }
                     if (field.startsWith(txt.txtRecords.DKIM1.identifier)) {
                         return txt.txtRecords.DKIM1.validate(field);

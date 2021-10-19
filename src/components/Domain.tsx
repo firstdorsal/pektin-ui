@@ -28,6 +28,7 @@ import {
 import { ContextMenu } from "./ContextMenu";
 import { VscRegex, VscReplaceAll } from "react-icons/vsc";
 import { MdFlashOn } from "react-icons/md";
+import { HotKeys } from "react-hotkeys";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -94,6 +95,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
   };
 
   list: any;
+  papa: any;
+  searchElement: any;
+  replaceElement: any;
 
   saveRecord = async (i: number) => {
     const saveSuccessState = async (setRecord: t.DisplayRecord, i: number) => {
@@ -928,6 +932,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             top: "10px",
             position: "absolute",
           }}
+          title="Select All: ctrl+a"
         >
           <Checkbox checked={this.state.selectAll} onChange={this.selectAll} />
         </span>
@@ -965,6 +970,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
         <span
           className="applyChanges"
+          title="Apply All Changes ctrl+s"
           style={{
             width: "50px",
             position: "absolute",
@@ -1003,11 +1009,13 @@ export default class Domain extends Component<DomainProps, DomainState> {
         }}
       >
         <TextField
+          inputRef={(ref) => (this.searchElement = ref)}
           style={{ paddingRight: "5px" }}
           color="secondary"
           variant="standard"
           type="text"
           name="search"
+          title="Search ctrl+f"
           placeholder="Search"
           value={this.state.search}
           onChange={this.handleSearchAndReplaceChange}
@@ -1056,6 +1064,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             return (
               <span
                 className="column"
+                key={columnItem.name}
                 onClick={(e) => {
                   this.setState(({ columnItems }) => {
                     columnItems[i].search = !columnItems[i].search;
@@ -1116,6 +1125,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
         </IconButton>
 
         <TextField
+          title="Replace All ctrl+h"
+          inputRef={(ref) => (this.replaceElement = ref)}
           variant="standard"
           type="text"
           color="secondary"
@@ -1151,7 +1162,44 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
   render = () => {
     return (
-      <div style={{ height: "100%", ...this.props.style }}>
+      <HotKeys
+        /*@ts-ignore*/
+        innerRef={(c) => (this.papa = c)}
+        style={{ height: "100%", ...this.props.style }}
+        handlers={{
+          SELECT_ALL: (e) => {
+            /*@ts-ignore*/
+            if (e?.target?.nodeName !== "INPUT") {
+              e?.preventDefault();
+              this.selectAll();
+            }
+          },
+          RELOAD: (e) => {
+            e?.preventDefault();
+            this.handleReloadClick();
+          },
+          DELETE: this.handleDeleteClick,
+          NEW: (e) => {
+            e?.preventDefault();
+            this.handleAddClick();
+          },
+          SAVE: (e) => {
+            e?.preventDefault();
+            if (this.state.changedRecords) this.saveAllChangedRecords();
+          },
+          ESCAPE: (e) => {
+            this.papa.focus();
+          },
+          SEARCH: (e) => {
+            e?.preventDefault();
+            this.searchElement?.focus();
+          },
+          REPLACE: (e) => {
+            e?.preventDefault();
+            this.replaceElement?.focus();
+          },
+        }}
+      >
         <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
 
         <div
@@ -1168,13 +1216,13 @@ export default class Domain extends Component<DomainProps, DomainState> {
             ""
           ) : (
             <Fragment>
-              <IconButton title="Refresh list" onClick={this.handleReloadClick}>
+              <IconButton title="Refresh List ctrl+r" onClick={this.handleReloadClick}>
                 {<Refresh />}
               </IconButton>
-              <IconButton title="New Record" onClick={this.handleAddClick}>
+              <IconButton title="New Record shift+a" onClick={this.handleAddClick}>
                 {<AddCircle />}
               </IconButton>
-              <IconButton title="Delete selected" onClick={this.handleDeleteClick}>
+              <IconButton title="Delete Selected" onClick={this.handleDeleteClick}>
                 {<Delete />}
               </IconButton>
             </Fragment>
@@ -1209,7 +1257,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             )}
           </AutoSizer>
         </div>
-      </div>
+      </HotKeys>
     );
   };
 }

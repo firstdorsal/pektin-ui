@@ -1,3 +1,21 @@
+# features
+
+select all search matched
+only search some columns
+switch betweens instant search and search on button click
+
+sort columns by primary value
+
+right click menu
+insert variable
+
+config
+use variable replacement?
+
+# bugs
+
+replace domain name in import: old name gets recognized as domain name
+
 # IMPORTANT
 
 use the install script to install node modules

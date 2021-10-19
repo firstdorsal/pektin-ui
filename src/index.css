@@ -453,19 +453,6 @@ button.ok:hover {
     background: var(--ok);
 }
 
-/*
-
-select all search matched
-only search some columns
-switch betweens instant search and search on button click
-
-sort columns by primary value 
-
-right click menu 
-    insert variable 
-
-config
-    use variable replacement?
-
-
-*/
+.MuiStepIcon-root {
+    color: var(--disabled-color);
+}

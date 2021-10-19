@@ -30,7 +30,8 @@ interface DomainState {
     readonly anySelected: boolean;
     readonly domainName: string;
     readonly changedRecords: number;
-    readonly allValid: t.ValidationType;
+    readonly warningRecords: number;
+    readonly errorRecords: number;
     readonly useRegex: boolean;
 }
 
@@ -74,7 +75,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
         anySelected: false,
         domainName: "",
         changedRecords: 0,
-        allValid: "ok",
+        warningRecords: 0,
+        errorRecords: 0,
         useRegex: true
     };
 
@@ -299,36 +301,58 @@ export default class Domain extends Component<DomainProps, DomainState> {
         if (!fullName || !newValue === undefined) return;
         const [recordIndex, fieldName, rrIndex, fieldChildName] = fullName.split(":");
 
-        this.setState(({ records, meta, domainName, ogRecords, changedRecords, allValid }) => {
-            [records[recordIndex], ogRecords[recordIndex]] = this.handleRecordChange(
-                records[recordIndex],
-                ogRecords[recordIndex],
-                parseInt(rrIndex),
-                fieldName,
-                fieldChildName,
-                newValue
-            );
+        this.setState(
+            ({
+                records,
+                meta,
+                domainName,
+                ogRecords,
+                changedRecords,
+                warningRecords,
+                errorRecords
+            }) => {
+                [records[recordIndex], ogRecords[recordIndex]] = this.handleRecordChange(
+                    records[recordIndex],
+                    ogRecords[recordIndex],
+                    parseInt(rrIndex),
+                    fieldName,
+                    fieldChildName,
+                    newValue
+                );
 
-            if (records[recordIndex].type === "SOA" && fieldName === "name") {
-                domainName = records[recordIndex].name;
+                if (records[recordIndex].type === "SOA" && fieldName === "name") {
+                    domainName = records[recordIndex].name;
+                    meta = cloneDeep(meta);
+                    meta.forEach((m, i) => {
+                        m.validity = this.validateRecord(records[i], domainName);
+                    });
+                } else {
+                    meta[recordIndex] = cloneDeep(meta[recordIndex]);
+                    meta[recordIndex].validity = this.validateRecord(
+                        records[recordIndex],
+                        domainName
+                    );
+                }
+                [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
+                    records[recordIndex],
+                    ogRecords[recordIndex]
+                );
+
+                changedRecords = meta.filter(m => m.anyChanged).length;
+                warningRecords = meta.filter(m => m.validity?.totalValidity === "warning").length;
+                errorRecords = meta.filter(m => m.validity?.totalValidity === "error").length;
+
+                return {
+                    meta,
+                    records,
+                    domainName,
+                    ogRecords,
+                    changedRecords,
+                    warningRecords,
+                    errorRecords
+                };
             }
-            meta[recordIndex] = cloneDeep(meta[recordIndex]);
-            meta[recordIndex].validity = this.validateRecord(records[recordIndex], domainName);
-            [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
-                records[recordIndex],
-                ogRecords[recordIndex]
-            );
-
-            if (meta[recordIndex].validity?.totalValidity !== "ok" && allValid !== "error") {
-                allValid = meta[recordIndex].validity?.totalValidity || "error";
-            } else {
-                allValid = meta[recordIndex].validity?.totalValidity || "error";
-            }
-
-            changedRecords = meta.filter(m => m.anyChanged).length;
-
-            return { meta, records, domainName, ogRecords, changedRecords, allValid };
-        });
+        );
     };
 
     validateRecord = (record: t.DisplayRecord, domainName: string): t.FieldValidity => {
@@ -404,7 +428,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
             defaultOrder,
             domainName,
             selectAll: this.props.variant === "import" ? true : false,
-            allValid: "ok",
+            errorRecords: 0,
+            warningRecords: 0,
             changedRecords: 0
         });
         if (this.state.search.length) {
@@ -621,9 +646,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 records,
                 domainName,
                 useRegex,
-                allValid,
                 changedRecords,
-                ogRecords
+                ogRecords,
+                warningRecords,
+                errorRecords
             }) => {
                 records = cloneDeep(records);
                 meta.forEach((m, recordIndex) => {
@@ -675,6 +701,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
                             }
                         });
                     }
+                });
+
+                meta.forEach((m, recordIndex) => {
                     meta[recordIndex] = cloneDeep(meta[recordIndex]);
                     meta[recordIndex].validity = this.validateRecord(
                         records[recordIndex],
@@ -682,19 +711,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     );
                     [meta[recordIndex].changed, meta[recordIndex].anyChanged] =
                         this.hasRecordChanged(records[recordIndex], ogRecords[recordIndex]);
-
-                    if (
-                        meta[recordIndex].validity?.totalValidity !== "ok" &&
-                        allValid !== "error"
-                    ) {
-                        allValid = meta[recordIndex].validity?.totalValidity || "error";
-                    } else {
-                        allValid = meta[recordIndex].validity?.totalValidity || "error";
-                    }
                 });
                 changedRecords = meta.filter(m => m.anyChanged).length;
+                warningRecords = meta.filter(m => m.validity?.totalValidity === "warning").length;
+                errorRecords = meta.filter(m => m.validity?.totalValidity === "error").length;
 
-                return { records, meta, domainName, allValid, changedRecords };
+                return { records, meta, domainName, warningRecords, errorRecords, changedRecords };
             }
         );
     };
@@ -813,7 +835,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
             fieldKeys.forEach((fieldKey: string) => {
                 if (
                     /*@ts-ignore*/
-                    recordValue[fieldKey] !== ogRecord.values[i][fieldKey]
+                    recordValue[fieldKey] !==
+                    /*@ts-ignore*/
+                    (ogRecord.values[i] ? ogRecord.values[i][fieldKey] : false)
                 ) {
                     changed.values[i][fieldKey] = true;
                     anyChanged = true;
@@ -930,13 +954,19 @@ export default class Domain extends Component<DomainProps, DomainState> {
                             let v = false;
                             if (this.state.changedRecords === 0 && this.props.variant !== "import")
                                 v = true;
-                            if (this.state.allValid === "error") v = true;
+                            if (this.state.errorRecords) v = true;
                             return v;
                         })()}
                         size="small"
-                        className={this.state.allValid}
+                        className={
+                            this.state.errorRecords
+                                ? "error"
+                                : this.state.warningRecords
+                                ? "warning"
+                                : ""
+                        }
                     >
-                        {this.state.allValid === "error" ? <Clear /> : <Check />}
+                        {this.state.errorRecords ? <Clear /> : <Check />}
                     </Fab>
                 </span>
             </div>

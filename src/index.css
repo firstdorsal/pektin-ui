@@ -1,13 +1,66 @@
 * {
-    --bg-color: white;
-    --bg-color-light: white;
+  --bg-color: white;
+  --bg-color-light: white;
+  --bg-color-dark: #171d26;
+  --bg-color-lighter: #444a5f;
+
+  --a2: darkorange;
+
+  --font-color: #171d26;
+  --f2: white;
+
+  --error: #f44336;
+  --warning: #ffa632;
+  --ok: #13d434;
+
+  --aside-padding: 15px;
+  --aside-width: 270px;
+  --aside-hover-color: #363947;
+
+  --border-bottom-color: lightgrey;
+
+  --checkbox: var(--a2);
+
+  --dimmed: #00000080;
+
+  --disabled-color: #0000004d;
+  --disabled-background: #0000001f;
+
+  --scrollbar-background: lightgrey;
+  --scrollbar-thumb: #6e6e6e;
+
+  --button-color: #171d26;
+
+  --action-bar-color: #171d26;
+  --action-bar-disabled-color: #0f131a5b;
+  --action-bar-selected-background: #3f3f3f5b;
+
+  --search-match-bg-color: yellow;
+  --search-match-color: #171d26;
+
+  --select-hover: lightgrey;
+  --select-active: darkgrey;
+
+  --input-border-bottom-hover-color: darkgrey;
+  --apply-changes-button-color: black;
+
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  * {
+    --bg-color: #0f131a;
+    --bg-color-light: #171d26;
     --bg-color-dark: #171d26;
     --bg-color-lighter: #444a5f;
 
     --a2: darkorange;
 
-    --font-color: #171d26;
-    --f2: white;
+    --font-color: white;
 
     --error: #f44336;
     --warning: #ffa632;
@@ -15,360 +68,307 @@
 
     --aside-padding: 15px;
     --aside-width: 270px;
-    --aside-hover-color: #363947;
+    --aside-hover-color: #444a5f4d;
 
-    --border-bottom-color: lightgrey;
+    --border-bottom-color: #353535;
 
     --checkbox: var(--a2);
 
-    --dimmed: #00000080;
+    --dimmed: #ffffff99;
 
-    --disabled-color: #0000004d;
-    --disabled-background: #0000001f;
+    --disabled-color: #ffffff28;
+    --disabled-background: #ffffff0e;
 
-    --scrollbar-background: lightgrey;
-    --scrollbar-thumb: #6e6e6e;
+    --scrollbar-background: #444a5f;
+    --scrollbar-thumb: #7d8294;
 
-    --button-color: #171d26;
+    --button-color: white;
 
-    --action-bar-color: #171d26;
+    --action-bar-color: #0f131ac5;
     --action-bar-disabled-color: #0f131a5b;
-    --action-bar-selected-background: #3f3f3f5b;
+    --action-bar-selected-background: #4e4e4e49;
 
-    --search-match-bg-color: yellow;
-    --search-match-color: #171d26;
+    --search-match-bg-color: #ffe6004f;
+    --search-match-color: white;
 
-    --select-hover: lightgrey;
-    --select-active: darkgrey;
+    --select-hover: #444a5f4d;
+    --select-active: #171d26;
 
     --input-border-bottom-hover-color: darkgrey;
     --apply-changes-button-color: black;
-
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-family: "Inter", sans-serif;
-    box-sizing: border-box;
-}
-
-@media (prefers-color-scheme: dark) {
-    * {
-        --bg-color: #0f131a;
-        --bg-color-light: #171d26;
-        --bg-color-dark: #171d26;
-        --bg-color-lighter: #444a5f;
-
-        --a2: darkorange;
-
-        --font-color: white;
-
-        --error: #f44336;
-        --warning: #ffa632;
-        --ok: #13d434;
-
-        --aside-padding: 15px;
-        --aside-width: 270px;
-        --aside-hover-color: #444a5f4d;
-
-        --border-bottom-color: #353535;
-
-        --checkbox: var(--a2);
-
-        --dimmed: #ffffff99;
-
-        --disabled-color: #ffffff28;
-        --disabled-background: #ffffff0e;
-
-        --scrollbar-background: #444a5f;
-        --scrollbar-thumb: #7d8294;
-
-        --button-color: white;
-
-        --action-bar-color: #0f131ac5;
-        --action-bar-disabled-color: #0f131a5b;
-        --action-bar-selected-background: #4e4e4e49;
-
-        --search-match-bg-color: #ffe6004f;
-        --search-match-color: white;
-
-        --select-hover: #444a5f4d;
-        --select-active: #171d26;
-
-        --input-border-bottom-hover-color: darkgrey;
-        --apply-changes-button-color: black;
-    }
+  }
 }
 
 html,
 body {
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    user-select: none;
-    background: var(--bg-color);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  user-select: none;
+  background: var(--bg-color);
 }
 .tableHead,
 input,
 select,
 p,
 .columnTitles svg {
-    color: var(--font-color);
+  color: var(--font-color);
 }
 
 .actionBar .MuiSvgIcon-root,
 .actionBar svg,
 .actionBar input::placeholder,
 .actionBar input {
-    color: var(--action-bar-color);
+  color: var(--action-bar-color);
 }
 
 .applyChanges button {
-    color: var(--apply-changes-button-color);
+  color: var(--apply-changes-button-color);
 }
 
 .MuiInput-underline:before {
-    border-bottom: var(--font-color);
+  border-bottom: var(--font-color);
 }
 
 .MuiFormLabel-root {
-    color: var(--dimmed) !important;
+  color: var(--dimmed) !important;
 }
 
 *::-webkit-scrollbar {
-    width: 8px;
-    background: var(--scrollbar-background);
-    direction: rtl;
+  width: 8px;
+  background: var(--scrollbar-background);
+  direction: rtl;
 }
 *::-webkit-scrollbar-thumb {
-    width: 8px;
-    background: var(--scrollbar-thumb);
+  width: 8px;
+  background: var(--scrollbar-thumb);
 }
 
 ul,
 li {
-    padding: 0px;
-    margin: 0px;
+  padding: 0px;
+  margin: 0px;
 }
 
 #root {
-    height: 100%;
-    width: 100%;
+  height: 100%;
+  width: 100%;
 }
 
 a {
-    color: inherit;
-    text-decoration: none;
+  color: inherit;
+  text-decoration: none;
 }
 a[rel="noreferrer"] {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 h1 {
-    text-align: center;
-    font-size: 36px;
+  text-align: center;
+  font-size: 36px;
 }
 
 .caps {
-    font-weight: 600;
-    font-size: 14px;
-    text-transform: uppercase;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
 }
 
 .cardHead {
-    padding-top: 20px;
+  padding-top: 20px;
 }
 .cardHead span {
-    transform: translate(5px, -6px);
-    display: inline-block;
-    color: var(--font-color);
+  transform: translate(5px, -6px);
+  display: inline-block;
+  color: var(--font-color);
 }
 .MuiTabs-root {
-    padding-top: 10px;
-    display: block;
-    margin-bottom: -4px;
+  padding-top: 10px;
+  display: block;
+  margin-bottom: -4px;
 }
 
 .MuiTabs-flexContainer > * {
-    min-width: 0px;
-    display: inline-block;
-    width: calc(100% / 5);
-    padding-bottom: 0px;
+  min-width: 0px;
+  display: inline-block;
+  width: calc(100% / 5);
+  padding-bottom: 0px;
 }
 
 .groupName {
-    padding-top: 10px;
+  padding-top: 10px;
 }
 
 .form > div {
-    margin: 15px 0px;
+  margin: 15px 0px;
 }
 
 .searchMatch > div {
-    background: var(--search-match-bg-color);
+  background: var(--search-match-bg-color);
 }
 .searchMatch input {
-    color: var(--search-match-color) !important;
+  color: var(--search-match-color) !important;
 }
 
 pre {
-    user-select: text;
-    cursor: text;
+  user-select: text;
+  cursor: text;
 }
 code *,
 code,
 pre {
-    font-family: monospace;
-    font-size: 14px;
+  font-family: monospace;
+  font-size: 14px;
 }
 code,
 code * {
-    white-space: pre-wrap !important;
-    word-wrap: break-word;
-    pointer-events: none;
+  white-space: pre-wrap !important;
+  word-wrap: break-word;
+  pointer-events: none;
 }
 
 aside {
-    height: 100%;
-    width: var(--aside-width);
-    background: var(--bg-color-dark);
-    resize: horizontal;
-    float: left;
-    color: var(--f2);
-    box-sizing: border-box;
-    padding-bottom: 50px;
+  height: 100%;
+  width: var(--aside-width);
+  background: var(--bg-color-dark);
+  resize: horizontal;
+  float: left;
+  color: var(--f2);
+  box-sizing: border-box;
+  padding-bottom: 50px;
 }
 
 aside > * {
-    margin-left: var(--aside-padding);
+  margin-left: var(--aside-padding);
 }
 
 aside > h1 {
-    padding-top: 20px;
-    margin-right: 15px;
-    font-weight: 900;
-    text-transform: uppercase;
+  padding-top: 20px;
+  margin-right: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 aside > ul {
-    margin-left: 0px;
+  margin-left: 0px;
 }
 
 aside > ul::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .rowWrapper {
-    content-visibility: auto;
+  content-visibility: auto;
 }
 
 .rowWrapper .MuiSelect-root {
-    padding-left: 25px;
+  padding-left: 25px;
 }
 .rowWrapper input[value="SOA"] {
-    padding-left: 25px;
+  padding-left: 25px;
 }
 
 .rowWrapper .MuiSvgIcon-root.MuiSelect-icon {
-    display: absolute;
-    left: 0px;
+  display: absolute;
+  left: 0px;
 }
 
 .rowWrapper input:disabled {
-    color: var(--disabled-color) !important;
-    cursor: text;
+  color: var(--disabled-color) !important;
+  cursor: text;
 }
 
 .recRow {
-    height: 70px;
-    overflow: hidden;
+  height: 70px;
+  overflow: hidden;
 }
 .recRow > span {
-    position: absolute;
+  position: absolute;
 }
 
 .recRow input,
 .advancedRow input {
-    font-family: monospace;
+  font-family: monospace;
 }
 
 .advancedRow {
-    height: 600px;
-    overflow-y: hidden;
+  height: 600px;
+  overflow-y: hidden;
 }
 
 .recRow .MuiInput-underline:before {
-    border: none;
+  border: none;
 }
 
 .MuiSelect-select {
-    padding-right: unset !important;
+  padding-right: unset !important;
 }
 .MuiSelect-select:focus {
-    background: none;
+  background: none;
 }
 
 main {
-    float: left;
-    width: calc(100% - 270px);
-    height: 100%;
+  float: left;
+  width: calc(100% - 270px);
+  height: 100%;
 }
 
 h2 {
-    font-size: 18px;
-    font-weight: 500;
-    margin-top: 10px;
-    margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 500;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .link {
-    display: block;
-    margin-left: 0px;
-    padding: 3px;
-    padding-left: var(--aside-padding);
-    border: 2px solid transparent;
+  display: block;
+  margin-left: 0px;
+  padding: 3px;
+  padding-left: var(--aside-padding);
+  border: 2px solid transparent;
 }
 
 .link:hover {
-    background: var(--aside-hover-color);
+  background: var(--aside-hover-color);
 }
 
 .navActive {
-    background: var(--bg-color-lighter);
+  background: var(--bg-color-lighter);
 }
 .MuiListItem-button:hover {
-    background: var(--select-hover);
+  background: var(--select-hover);
 }
 
 .Mui-selected {
-    background: var(--select-active) !important;
+  background: var(--select-active) !important;
 }
 
 aside h2 {
-    margin-top: 7px;
-    margin-bottom: 7px;
+  margin-top: 7px;
+  margin-bottom: 7px;
 }
 
 .linkText {
-    display: inline;
-    font-size: 16px;
-    font-weight: 500;
-    vertical-align: 5px;
-    padding-left: 10px;
+  display: inline;
+  font-size: 16px;
+  font-weight: 500;
+  vertical-align: 5px;
+  padding-left: 10px;
 }
 
 .link.config {
-    position: absolute;
-    width: var(--aside-width);
-    padding-top: 5px;
-    bottom: 10px;
+  position: absolute;
+  width: var(--aside-width);
+  padding-top: 5px;
+  bottom: 10px;
 }
 
 .cmOverlay {
-    position: fixed;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    top: 0px;
-    z-index: 2;
+  position: fixed;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  top: 0px;
+  z-index: 2;
 }
 /*
 input[value*="tick"] {
@@ -378,89 +378,92 @@ input[value*="tick"] {
 
 .tfName,
 .tfHelper {
-    font-size: 13px;
+  font-size: 13px;
 }
 .tfName {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 .MuiInput-underline:before {
-    border-bottom: 2px solid var(--font-color);
+  border-bottom: 2px solid var(--font-color);
 }
 
 .actionBar .Mui-disabled svg {
-    color: var(--action-bar-disabled-color);
+  color: var(--action-bar-disabled-color);
 }
 
 .actionBar .MuiInput-underline:before {
-    border-bottom: 2px solid var(--action-bar-color) !important;
+  border-bottom: 2px solid var(--action-bar-color) !important;
 }
 
 .advancedRow .MuiInput-underline:before {
-    border-bottom: 2px solid var(--font-color) !important;
+  border-bottom: 2px solid var(--font-color) !important;
 }
 
 .rowWrapper .Mui-focused.MuiInput-underline:after {
-    border-bottom: 2px solid var(--font-color);
+  border-bottom: 2px solid var(--font-color);
 }
 
 .rowWrapper .changed .Mui-focused.MuiInput-underline:after {
-    border-bottom: 2px solid var(--ok);
+  border-bottom: 2px solid var(--ok);
 }
 
 .changed .MuiInput-underline:before {
-    border-bottom: 2px solid var(--ok) !important;
+  border-bottom: 2px solid var(--ok) !important;
 }
 .changed label {
-    color: var(--ok) !important;
+  color: var(--ok) !important;
 }
 
 .error .MuiInput-underline:before {
-    border-bottom: 2px solid var(--error) !important;
+  border-bottom: 2px solid var(--error) !important;
 }
 
 .error .MuiFormHelperText-root,
 .error label {
-    color: var(--error) !important;
+  color: var(--error) !important;
 }
 .error .MuiInput-underline:after {
-    border-bottom-color: var(--error) !important;
+  border-bottom-color: var(--error) !important;
 }
 button.error,
 button.error:hover {
-    background: var(--error) !important;
-    color: var(--apply-changes-button-color) !important;
-    cursor: default;
+  background: var(--error) !important;
+  color: var(--apply-changes-button-color) !important;
+  cursor: default;
 }
 
 .warning .MuiInput-underline:before {
-    border-bottom: 2px solid var(--warning) !important;
+  border-bottom: 2px solid var(--warning) !important;
 }
 .warning .MuiFormHelperText-root,
 .warning label {
-    color: var(--warning) !important;
+  color: var(--warning) !important;
 }
 .warning .MuiInput-underline:after {
-    border-bottom-color: var(--warning) !important;
+  border-bottom-color: var(--warning) !important;
 }
 button.warning,
 button.warning:hover {
-    background: var(--warning);
+  background: var(--warning);
 }
 
 button.ok,
 button.ok:hover {
-    background: var(--ok);
+  background: var(--ok);
 }
 
 .MuiStepIcon-root {
-    color: var(--disabled-color);
+  color: var(--disabled-color);
+}
+
+.selectColumns {
+  cursor: pointer;
 }
 
 .selectColumns .column:hover {
-    opacity: 0.9;
-    cursor: pointer;
+  opacity: 0.9;
 }
 .selectColumns .column {
-    transition: all 0.2s;
+  transition: all 0.2s;
 }

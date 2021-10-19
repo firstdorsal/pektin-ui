@@ -267,6 +267,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
       meta[recordIndex] = cloneDeep(meta[recordIndex]);
       meta[recordIndex].validity = this.validateRecord(records[recordIndex], this.state.domainName);
+
       [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
         records[recordIndex],
         this.state.ogRecords[recordIndex]
@@ -284,6 +285,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
       meta[recordIndex] = cloneDeep(meta[recordIndex]);
       meta[recordIndex].validity = this.validateRecord(records[recordIndex], this.state.domainName);
+
       [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
         records[recordIndex],
         this.state.ogRecords[recordIndex]
@@ -321,6 +323,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
           meta[recordIndex] = cloneDeep(meta[recordIndex]);
           meta[recordIndex].validity = this.validateRecord(records[recordIndex], domainName);
         }
+
         [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
           records[recordIndex],
           ogRecords[recordIndex]
@@ -576,7 +579,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
                         ? fieldValues[fieldIndex].toString().match(RegExp(search, "g"))
                         : fieldValues[fieldIndex].toString().indexOf(search) > -1;
 
-                      if (m) {
+                      if (
+                        m &&
+                        ((fieldNames[fieldIndex] === "ttl" && columnItems[2].search) ||
+                          (fieldNames[fieldIndex] !== "ttl" && columnItems[3].search))
+                      ) {
                         meta[i].searchMatch.values[rrIndex][fieldNames[fieldIndex]] = true;
                         if (rrIndex > 0) {
                           meta[i].expanded = true;
@@ -1033,16 +1040,28 @@ export default class Domain extends Component<DomainProps, DomainState> {
             display: "inline-flex",
             verticalAlign: "middle",
           }}
+          onDoubleClick={(e) => {
+            this.setState(({ columnItems }) => {
+              columnItems = columnItems.map((columnItem) => {
+                columnItem.search = true;
+                return columnItem;
+              });
+
+              return { columnItems };
+            });
+            this.handleSearchAndReplaceChange(e, this.state.useRegex, true);
+          }}
         >
           {this.state.columnItems.map((columnItem, i) => {
             return (
               <span
                 className="column"
-                onClick={() => {
+                onClick={(e) => {
                   this.setState(({ columnItems }) => {
                     columnItems[i].search = !columnItems[i].search;
                     return { columnItems };
                   });
+                  this.handleSearchAndReplaceChange(e, this.state.useRegex, true);
                 }}
                 title={`Search through column ${columnItem.name}`}
                 style={{
@@ -1083,7 +1102,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
           title="Instant Search"
           size="small"
         >
-          <MdFlashOn />
+          <MdFlashOn style={{ transform: "scale(1.2)" }} />
         </IconButton>
         <IconButton
           onClick={this.handleSelectSearchResultsClick}

@@ -1,0 +1,193 @@
+definitions:
+  SOA:
+    properties:
+      ttl:
+        type: uint32
+      mname:
+        type: string
+      rname:
+        type: string
+  SRV:
+    properties:
+      ttl:
+        type: uint32
+      priority:
+        type: uint32
+      weight:
+        type: uint32
+      port:
+        type: uint32
+      target:
+        type: string
+
+  MX:
+    properties:
+      ttl:
+        type: uint32
+      exchange:
+        type: string
+      preference:
+        type: uint32
+  CAA:
+    properties:
+      ttl:
+        type: uint32
+      tag:
+        enum:
+          - issue
+          - issuewild
+          - iodef
+      value:
+        type: string
+  TLSA:
+    properties:
+      ttl:
+        type: uint32
+      usage:
+        enum:
+          - "0"
+          - "1"
+          - "2"
+          - "3"
+      selector:
+        enum:
+          - "0"
+          - "1"
+      matchingType:
+        enum:
+          - "0"
+          - "1"
+          - "2"
+      data:
+        type: uint32
+  AAAA:
+    properties:
+      ttl:
+        type: uint32
+      value:
+        type: string
+  A:
+    properties:
+      ttl:
+        type: uint32
+      value:
+        type: string
+  CNAME:
+    properties:
+      ttl:
+        type: uint32
+      value:
+        type: string
+  NS:
+    properties:
+      ttl:
+        type: uint32
+      value:
+        type: string
+  PTR:
+    properties:
+      ttl:
+        type: uint32
+      value:
+        type: string
+  TXT:
+    properties:
+      ttl:
+        type: uint32
+      value:
+        type: string
+  OPENPGPKEY:
+    properties:
+      ttl:
+        type: uint32
+      value:
+        type: string
+
+properties:
+  redisEntry:
+    discriminator: type
+    mapping:
+      SOA:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: SOA
+      SRV:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: SRV
+      MX:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: MX
+      CAA:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: CAA
+      TLSA:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: TLSA
+      AAAA:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: AAAA
+      A:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: A
+      CNAME:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: CNAME
+      NS:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: NS
+      PTR:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: PTR
+      TXT:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: TXT
+      OPENPGPKEY:
+        properties:
+          name:
+            type: string
+          rr_set:
+            elements:
+              ref: OPENPGPKEY

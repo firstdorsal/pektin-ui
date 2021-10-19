@@ -1,3 +1,5 @@
+use https://github.com/jsontypedef/json-typedef-codegen for generation of types
+
 # features
 
 sort columns by primary value

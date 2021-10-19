@@ -33,7 +33,7 @@
 
     --action-bar-color: #171d26;
     --action-bar-disabled-color: #0f131a5b;
-    --actionbar-selected-background: #3f3f3f5b;
+    --action-bar-selected-background: #3f3f3f5b;
 
     --search-match-bg-color: yellow;
     --search-match-color: #171d26;
@@ -86,7 +86,7 @@
 
         --action-bar-color: #0f131ac5;
         --action-bar-disabled-color: #0f131a5b;
-        --actionbar-selected-background: #3f3f3f5b;
+        --action-bar-selected-background: #3f3f3f5b;
 
         --search-match-bg-color: #ffe6004f;
         --search-match-color: white;
@@ -455,4 +455,12 @@ button.ok:hover {
 
 .MuiStepIcon-root {
     color: var(--disabled-color);
+}
+
+.selectColumns .column:hover {
+    opacity: 0.9;
+    cursor: pointer;
+}
+.selectColumns .column {
+    transition: all 0.2s;
 }

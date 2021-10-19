@@ -1,7 +1,21 @@
 import { Component, Fragment } from "react";
 import { Checkbox, Fab, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
-import { AddCircle, Check, Clear, Close, Delete, Refresh } from "@material-ui/icons";
+import {
+    AddCircle,
+    ArrowRight,
+    ArrowRightAlt,
+    ArrowRightRounded,
+    Check,
+    CheckBox,
+    ChevronRight,
+    Clear,
+    Close,
+    Delete,
+    KeyboardArrowUp,
+    Refresh,
+    Search
+} from "@material-ui/icons";
 import * as l from "./lib";
 import cloneDeep from "lodash/cloneDeep";
 import sortBy from "lodash/sortBy";
@@ -17,6 +31,8 @@ import {
 } from "react-icons/fa";
 import { ContextMenu } from "./ContextMenu";
 import { VscRegex, VscReplaceAll } from "react-icons/vsc";
+import { MdFlashOn, MdSearch } from "react-icons/md";
+import { ETIME } from "constants";
 
 interface DomainState {
     readonly records: t.DisplayRecord[];
@@ -33,6 +49,7 @@ interface DomainState {
     readonly warningRecords: number;
     readonly errorRecords: number;
     readonly useRegex: boolean;
+    readonly instantSearch: boolean;
 }
 
 interface RouteParams {
@@ -77,7 +94,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
         changedRecords: 0,
         warningRecords: 0,
         errorRecords: 0,
-        useRegex: true
+        useRegex: true,
+        instantSearch: true
     };
 
     list: any;
@@ -542,98 +560,105 @@ export default class Domain extends Component<DomainProps, DomainState> {
         }
     };
 
-    handleSearchAndReplaceChange = (e: any, useRegex = this.state.useRegex) => {
-        if (e.target.name === "search") {
-            const search = e.target.value;
-            this.setState(({ records, meta, defaultOrder, ogRecords }) => {
-                meta = cloneDeep(meta);
-
-                records.forEach((rec, i) => {
-                    // reset all
-                    meta[i].anySearchMatch = false;
-                    meta[i].searchMatch = cloneDeep(l.defaultSearchMatch);
-                    // handle first three columns
-                    if (search.length) {
-                        {
-                            const match = useRegex
-                                ? rec.name.match(RegExp(search, "g"))
-                                : rec.name.indexOf(search) > -1;
-
-                            if (match) {
-                                meta[i].searchMatch.name = !!match;
-                                meta[i].anySearchMatch = true;
-                            }
-                        }
-                        {
-                            const match = useRegex
-                                ? rec.type.match(RegExp(search, "g"))
-                                : rec.type.indexOf(search) > -1;
-                            if (match) {
-                                meta[i].searchMatch.type = !!match;
-                                meta[i].anySearchMatch = true;
-                            }
-                        }
-
-                        // handle values column
-                        meta[i].searchMatch.values = [];
-
-                        rec.values.forEach((value, rrIndex) => {
-                            const fieldValues = Object.values(value);
-                            const fieldNames = Object.keys(value);
-                            meta[i].searchMatch.values.push({});
-                            for (
-                                let fieldIndex = 0;
-                                fieldIndex < fieldValues.length;
-                                fieldIndex++
-                            ) {
-                                const m = useRegex
-                                    ? fieldValues[fieldIndex].toString().match(RegExp(search, "g"))
-                                    : fieldValues[fieldIndex].toString().indexOf(search) > -1;
-
-                                if (m) {
-                                    meta[i].searchMatch.values[rrIndex][fieldNames[fieldIndex]] =
-                                        true;
-                                    if (rrIndex > 0) {
-                                        meta[i].expanded = true;
-                                    }
-
-                                    meta[i].anySearchMatch = true;
-                                } else {
-                                    meta[i].searchMatch.values[rrIndex][fieldNames[fieldIndex]] =
-                                        false;
-                                }
-                            }
-                        });
-                    }
-                });
-
-                let combine: [t.DisplayRecord, t.DomainMeta, number, t.DisplayRecord][] =
-                    records.map((e, i) => {
-                        return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
-                    });
-                combine = sortBy(combine, [
-                    key => {
-                        if (!search.length) return key[2];
-                        return key[1].anySearchMatch;
-                    }
-                ]);
-                if (search.length) combine.reverse();
-                combine.forEach((e, i) => {
-                    records[i] = combine[i][0];
-                    meta[i] = combine[i][1];
-                    defaultOrder[i] = combine[i][2];
-                    ogRecords[i] = combine[i][3];
-                });
-                this.list.recomputeRowHeights();
-                this.list.scrollToPosition(0);
-
-                return { records, meta, search, ogRecords };
-            });
-        } else {
+    handleSearchAndReplaceChange = (e: any, useRegex = this.state.useRegex, searchNow = false) => {
+        if (e.target.name === "replace") {
             this.setState(prevState => ({
                 ...prevState,
                 [e.target.name]: e.target.value.toString()
             }));
+        } else {
+            this.setState(({ records, meta, defaultOrder, ogRecords, instantSearch, search }) => {
+                if (!searchNow) search = e.target.value;
+
+                if (instantSearch || searchNow) {
+                    meta = cloneDeep(meta);
+
+                    records.forEach((rec, i) => {
+                        // reset all
+                        meta[i].anySearchMatch = false;
+                        meta[i].expanded = false;
+                        meta[i].searchMatch = cloneDeep(l.defaultSearchMatch);
+                        // handle first three columns
+                        if (search.length) {
+                            {
+                                const match = useRegex
+                                    ? rec.name.match(RegExp(search, "g"))
+                                    : rec.name.indexOf(search) > -1;
+
+                                if (match) {
+                                    meta[i].searchMatch.name = !!match;
+                                    meta[i].anySearchMatch = true;
+                                }
+                            }
+                            {
+                                const match = useRegex
+                                    ? rec.type.match(RegExp(search, "g"))
+                                    : rec.type.indexOf(search) > -1;
+                                if (match) {
+                                    meta[i].searchMatch.type = !!match;
+                                    meta[i].anySearchMatch = true;
+                                }
+                            }
+
+                            // handle values column
+                            meta[i].searchMatch.values = [];
+
+                            rec.values.forEach((value, rrIndex) => {
+                                const fieldValues = Object.values(value);
+                                const fieldNames = Object.keys(value);
+                                meta[i].searchMatch.values.push({});
+                                for (
+                                    let fieldIndex = 0;
+                                    fieldIndex < fieldValues.length;
+                                    fieldIndex++
+                                ) {
+                                    const m = useRegex
+                                        ? fieldValues[fieldIndex]
+                                              .toString()
+                                              .match(RegExp(search, "g"))
+                                        : fieldValues[fieldIndex].toString().indexOf(search) > -1;
+
+                                    if (m) {
+                                        meta[i].searchMatch.values[rrIndex][
+                                            fieldNames[fieldIndex]
+                                        ] = true;
+                                        if (rrIndex > 0) {
+                                            meta[i].expanded = true;
+                                        }
+
+                                        meta[i].anySearchMatch = true;
+                                    } else {
+                                        meta[i].searchMatch.values[rrIndex][
+                                            fieldNames[fieldIndex]
+                                        ] = false;
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    let combine: [t.DisplayRecord, t.DomainMeta, number, t.DisplayRecord][] =
+                        records.map((e, i) => {
+                            return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
+                        });
+                    combine = sortBy(combine, [
+                        key => {
+                            if (!search.length) return key[2];
+                            return key[1].anySearchMatch;
+                        }
+                    ]);
+                    if (search.length) combine.reverse();
+                    combine.forEach((e, i) => {
+                        records[i] = combine[i][0];
+                        meta[i] = combine[i][1];
+                        defaultOrder[i] = combine[i][2];
+                        ogRecords[i] = combine[i][3];
+                    });
+                    this.list.recomputeRowHeights();
+                    this.list.scrollToPosition(0);
+                }
+                return { records, meta, search, ogRecords };
+            });
         }
     };
 
@@ -850,6 +875,32 @@ export default class Domain extends Component<DomainProps, DomainState> {
         return [changed as t.FieldsChanged, anyChanged];
     };
 
+    handleCollapseAllClick = () => {
+        this.setState(({ meta }) => {
+            meta = cloneDeep(meta).map(m => {
+                m.expanded = false;
+                return m;
+            });
+            this.list.recomputeRowHeights();
+
+            return { meta };
+        });
+    };
+
+    handleInstantSearchClick = () => {
+        this.setState(({ instantSearch }) => ({ instantSearch: !instantSearch }));
+    };
+
+    handleSelectSearchResultsClick = () => {
+        this.setState(({ meta }) => {
+            meta = cloneDeep(meta).map(m => {
+                m.selected = m.anySearchMatch;
+                return m;
+            });
+            return { meta };
+        });
+    };
+
     rowRenderer = (r: {
         key: any;
         index: number;
@@ -940,6 +991,22 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     );
                 })}
                 <span
+                    style={{
+                        position: "absolute",
+                        right: "67px",
+                        top: "20px"
+                    }}
+                >
+                    <IconButton
+                        size="small"
+                        title="Collapse All"
+                        onClick={this.handleCollapseAllClick}
+                    >
+                        <KeyboardArrowUp />
+                    </IconButton>
+                </span>
+
+                <span
                     className="applyChanges"
                     style={{
                         width: "50px",
@@ -984,7 +1051,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 }}
             >
                 <TextField
-                    style={{ paddingRight: "10px" }}
+                    style={{ paddingRight: "5px" }}
                     color="secondary"
                     variant="standard"
                     type="text"
@@ -992,22 +1059,95 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     placeholder="Search"
                     value={this.state.search}
                     onChange={this.handleSearchAndReplaceChange}
+                    onKeyDown={e => {
+                        if (e.key === "Enter") {
+                            this.handleSearchAndReplaceChange(e, this.state.useRegex, true);
+                        }
+                    }}
                 />
+                <IconButton
+                    style={{
+                        marginRight: "10px"
+                    }}
+                    title="Search"
+                    size="small"
+                    onKeyDown={e => {
+                        if (e.key === "Enter") {
+                            this.handleSearchAndReplaceChange(e, this.state.useRegex, true);
+                        }
+                    }}
+                    onClick={e => this.handleSearchAndReplaceChange(e, this.state.useRegex, true)}
+                >
+                    <Search />
+                </IconButton>
+                <span
+                    className="selectColumns"
+                    style={{ marginRight: "5px", display: "inline-flex", verticalAlign: "middle" }}
+                >
+                    {this.state.columnItems.map((columnItem, i) => {
+                        return (
+                            <span
+                                className="column"
+                                onClick={() => {
+                                    this.setState(({ columnItems }) => {
+                                        columnItems[i].search = !columnItems[i].search;
+                                        return { columnItems };
+                                    });
+                                }}
+                                title={`Search through column ${columnItem.name}`}
+                                style={{
+                                    height: "28px",
+                                    width: "8px",
+                                    marginRight: "2px",
+                                    background: columnItem.search
+                                        ? "var(--action-bar-color)"
+                                        : "var(--action-bar-selected-background)",
+                                    display: "inline-flex"
+                                }}
+                            ></span>
+                        );
+                    })}
+                </span>
+
                 <IconButton
                     onClick={this.handleRegexClick}
                     style={{
                         paddingTop: "7px",
-                        marginRight: "15px",
+                        marginRight: "5px",
                         background: this.state.useRegex
-                            ? "var(--actionbar-selected-background)"
+                            ? "var(--action-bar-selected-background)"
                             : "",
-                        color: "white",
                         borderRadius: "0px"
                     }}
                     title="Use Regex"
                     size="small"
                 >
-                    <VscRegex></VscRegex>
+                    <VscRegex />
+                </IconButton>
+                <IconButton
+                    onClick={this.handleInstantSearchClick}
+                    style={{
+                        marginRight: "5px",
+                        background: this.state.instantSearch
+                            ? "var(--action-bar-selected-background)"
+                            : "",
+                        borderRadius: "0px",
+                        height: "28px"
+                    }}
+                    title="Instant Search"
+                    size="small"
+                >
+                    <MdFlashOn />
+                </IconButton>
+                <IconButton
+                    onClick={this.handleSelectSearchResultsClick}
+                    style={{
+                        marginRight: "25px"
+                    }}
+                    title="Select all search results"
+                    size="small"
+                >
+                    <CheckBox />
                 </IconButton>
 
                 <TextField
@@ -1026,7 +1166,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                         onClick={this.handleReplaceClick}
                         size="small"
                     >
-                        <VscReplaceAll></VscReplaceAll>
+                        <VscReplaceAll />
                     </IconButton>
                 </span>
                 <span
@@ -1037,7 +1177,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     }}
                 >
                     <IconButton title="Clear" onClick={this.handleClearSearchClick} size="small">
-                        <Close></Close>
+                        <Close />
                     </IconButton>
                 </span>
             </span>

@@ -13,7 +13,7 @@ import Auth from "./components/Auth";
 import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
 import cloneDeep from "lodash/cloneDeep";
-import { HotKeys, configure as configureHotkeys } from "react-hotkeys";
+import { HotKeys, configure as configureHotkeys, GlobalHotKeys } from "react-hotkeys";
 
 configureHotkeys({ ignoreTags: [] });
 
@@ -204,7 +204,7 @@ export default class App extends PureComponent<AppProps, AppState> {
           RELOAD: ["ctrl+r"],
           NEW: ["shift+a"],
           SAVE: ["ctrl+s"],
-          DELETE: ["ctrl+d"],
+          DELETE: ["del"],
           ESCAPE: ["esc"],
           G_SETTINGS: ["ctrl+,"],
         }}
@@ -214,6 +214,7 @@ export default class App extends PureComponent<AppProps, AppState> {
           },
         }}
       >
+        <GlobalHotKeys />
         <Router ref={(ref) => (this.router = ref)}>
           {this.state.configError ? <Redirect to="/auth" /> : ""}
           {this.state.g.contextMenu ? (

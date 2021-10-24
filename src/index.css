@@ -218,10 +218,11 @@ h2 {
   color: var(--search-match-color) !important;
 }
 
-pre {
+.selectable {
   user-select: text;
   cursor: text;
 }
+
 code *,
 code,
 pre {
@@ -474,4 +475,53 @@ button.ok:hover {
 }
 .selectColumns .column {
   transition: all 0.2s;
+}
+
+.Helper img {
+  -webkit-filter: drop-shadow(2px 2px 0 white) drop-shadow(-2px 2px 0 white)
+    drop-shadow(2px -2px 0 white) drop-shadow(-2px -2px 0 white);
+
+  filter: drop-shadow(2px 2px 0 white) drop-shadow(-2px 2px 0 white) drop-shadow(2px -2px 0 white)
+    drop-shadow(-2px -2px 0 white);
+  width: 150px;
+}
+
+.Helper,
+.Helper .speechBubble {
+  transition: all 1s ease-in-out;
+}
+
+.Helper * {
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+}
+
+.Helper .speechBubble {
+  position: absolute;
+  bottom: 120px;
+  right: 40px;
+  background: #ffef9c;
+  border-radius: 10px;
+  border: 2px solid black;
+  padding: 10px;
+  width: 220px;
+  text-align: center;
+}
+
+.Helper .speechBubble button {
+  border: 1.5px solid lightgrey;
+  border-radius: 3px;
+  padding: 2px;
+  width: 70px;
+  background: none;
+  margin: 5px;
+  text-align: center;
+  cursor: url("cursor.png"), auto;
+}
+.Helper .speechBubble button span {
+  border: 1px dotted black;
+}
+
+.txtButton * {
+  stroke: white;
 }

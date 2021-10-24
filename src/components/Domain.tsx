@@ -29,6 +29,7 @@ import { ContextMenu } from "./ContextMenu";
 import { VscRegex, VscReplaceAll } from "react-icons/vsc";
 import { MdFlashOn } from "react-icons/md";
 import { HotKeys } from "react-hotkeys";
+import Helper from "../components/Helper";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -46,6 +47,7 @@ interface DomainState {
   readonly errorRecords: number;
   readonly useRegex: boolean;
   readonly instantSearch: boolean;
+  readonly helper: boolean;
 }
 
 interface RouteParams {
@@ -92,12 +94,19 @@ export default class Domain extends Component<DomainProps, DomainState> {
     errorRecords: 0,
     useRegex: true,
     instantSearch: true,
+    helper: false,
   };
 
   list: any;
   papa: any;
   searchElement: any;
   replaceElement: any;
+
+  handleHelper = (method: string) => {
+    if (method === "close") {
+      this.setState({ helper: false });
+    }
+  };
 
   saveRecord = async (i: number) => {
     const saveSuccessState = async (setRecord: t.DisplayRecord, i: number) => {
@@ -307,7 +316,16 @@ export default class Domain extends Component<DomainProps, DomainState> {
     const [recordIndex, fieldName, rrIndex, fieldChildName] = fullName.split(":");
 
     this.setState(
-      ({ records, meta, domainName, ogRecords, changedRecords, warningRecords, errorRecords }) => {
+      ({
+        records,
+        meta,
+        domainName,
+        ogRecords,
+        changedRecords,
+        warningRecords,
+        errorRecords,
+        helper,
+      }) => {
         [records[recordIndex], ogRecords[recordIndex]] = this.handleRecordChange(
           records[recordIndex],
           ogRecords[recordIndex],
@@ -328,6 +346,13 @@ export default class Domain extends Component<DomainProps, DomainState> {
           meta[recordIndex].validity = this.validateRecord(records[recordIndex], domainName);
         }
 
+        if (records[recordIndex].type === "TXT" && this.props.config.local.helper) {
+          const changedValue = records[recordIndex]?.values[rrIndex]?.value;
+          if (changedValue?.startsWith("v=spf")) {
+            helper = true;
+          }
+        }
+
         [meta[recordIndex].changed, meta[recordIndex].anyChanged] = this.hasRecordChanged(
           records[recordIndex],
           ogRecords[recordIndex]
@@ -345,6 +370,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
           changedRecords,
           warningRecords,
           errorRecords,
+          helper,
         };
       }
     );
@@ -426,6 +452,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       warningRecords: 0,
       changedRecords: 0,
     });
+    this.list.recomputeRowHeights();
     if (this.state.search.length) {
       this.handleSearchAndReplaceChange({
         target: { name: "search", value: this.state.search },
@@ -754,6 +781,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
         values: [cloneDeep(l.rrTemplates.AAAA.template)],
       };
       const newDefaultOrder = defaultOrder.length;
+
+      this.list.scrollToPosition(0);
 
       return {
         records: [newRecord, ...records],
@@ -1180,8 +1209,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
           },
           DELETE: this.handleDeleteClick,
           NEW: (e) => {
-            e?.preventDefault();
-            this.handleAddClick();
+            /*@ts-ignore*/
+            if (e?.target?.nodeName !== "INPUT") {
+              e?.preventDefault();
+              this.handleAddClick();
+            }
           },
           SAVE: (e) => {
             e?.preventDefault();
@@ -1200,6 +1232,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
           },
         }}
       >
+        <Helper show={this.state.helper} handleHelper={this.handleHelper}></Helper>
+
         <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
 
         <div

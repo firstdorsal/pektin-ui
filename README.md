@@ -2,10 +2,9 @@ use https://github.com/jsontypedef/json-typedef-codegen for generation of types
 
 # features
 
-sort columns by primary value
+change variable value
 
-right click menu
-insert variable
+sort columns by primary value
 
 config
 use variable replacement?

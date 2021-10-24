@@ -25,7 +25,11 @@ import {
   KeyboardArrowUp,
   RemoveCircle,
 } from "@material-ui/icons";
+
+import { GrDocumentTxt } from "react-icons/gr";
+
 import isEqual from "lodash/isEqual";
+import TxtAssistant from "./TxtAssistant";
 
 interface RowProps {
   readonly handleChange: Function;
@@ -62,7 +66,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
             spacing={2}
             container
             style={{
-              width: "calc(100% - 25px)",
+              width: `calc(100% - 25px${this.props.record.type === "TXT" ? " - 35px" : ""})`,
             }}
           >
             {fieldNames.map((fieldName: any, fieldIndex: number) => {
@@ -117,6 +121,21 @@ export default class RecordRow extends Component<RowProps, RowState> {
               );
             })}
           </Grid>
+          {this.props.record.type === "TXT" ? (
+            <span className="txtButton">
+              <IconButton
+                style={{
+                  position: "absolute",
+                  bottom: "0px",
+                  right: "30px",
+                }}
+              >
+                <GrDocumentTxt />
+              </IconButton>
+            </span>
+          ) : (
+            ""
+          )}
           <span>
             <IconButton
               disabled={record.values.length === 1}
@@ -402,67 +421,62 @@ export default class RecordRow extends Component<RowProps, RowState> {
             borderBottom: this.props.meta?.expanded ? "" : "unset",
           }}
         >
-          <div>
-            <Collapse
-              in={this.props.meta?.expanded}
-              style={{ padding: "10px", paddingTop: "0px", marginTop: "-30px" }}
-              timeout={{ appear: 0, enter: 0, exit: 0 }}
-              unmountOnExit
+          <Collapse
+            in={this.props.meta?.expanded}
+            style={{ padding: "0px 10px", marginTop: "-30px", height: "630px" }}
+            timeout={{ appear: 0, enter: 0, exit: 0 }}
+            unmountOnExit
+          >
+            <Grid
+              container
+              spacing={3}
+              style={{ maxWidth: "100%", margin: "20px 0px", height: "630px" }}
             >
-              <Grid container spacing={3} style={{ maxWidth: "100%", margin: "20px 0px" }}>
-                <Grid item xs={6}>
-                  <Grid item xs={12} style={{ marginBottom: "20px" }}>
-                    <Paper>
-                      <Container style={{ paddingBottom: "20px" }}>
-                        <div className="cardHead">
-                          <Ballot />
-                          <span className="caps label">rrset</span>
+              <Grid item xs={6}>
+                <Grid item xs={12} style={{ marginBottom: "20px" }}>
+                  <Paper elevation={3}>
+                    <Container style={{ paddingBottom: "20px" }}>
+                      <div className="cardHead">
+                        <Ballot />
+                        <span className="caps label">rrset</span>
+                      </div>
+                      {this.advancedView(record)}
+                      {record.type !== "SOA" ? (
+                        <div>
+                          <IconButton
+                            title="Add resource record"
+                            style={{
+                              width: "35px",
+                              height: "35px",
+                              marginTop: "5px",
+                            }}
+                            onClick={() => this.props.addRRValue(this.props.recordIndex)}
+                          >
+                            <AddCircle />
+                          </IconButton>
                         </div>
-                        {this.advancedView(record)}
-                        {record.type !== "SOA" ? (
-                          <div>
-                            <IconButton
-                              title="Add resource record"
-                              style={{
-                                width: "35px",
-                                height: "35px",
-                                marginTop: "5px",
-                              }}
-                              onClick={() => this.props.addRRValue(this.props.recordIndex)}
-                            >
-                              <AddCircle />
-                            </IconButton>
-                          </div>
-                        ) : (
-                          ""
-                        )}
-                      </Container>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Paper>
-                      <Container style={{ paddingBottom: "20px" }}>
-                        <div className="cardHead">
-                          <Info />
-                          <span className="caps label">info</span>
-                        </div>
-                        <div>{l.rrTemplates[record.type]?.info}</div>
-                      </Container>
-                    </Paper>
-                  </Grid>
-                </Grid>
-                <Grid container item xs={6}>
-                  <DataDisplay
-                    style={{ maxHeight: "600px" }}
-                    config={this.props.config}
-                    data={record}
-                  ></DataDisplay>
+                      ) : (
+                        ""
+                      )}
+                    </Container>
+                  </Paper>
+                  <Paper elevation={3} style={{ padding: "10px 20px", marginTop: "10px" }}>
+                    <TxtAssistant></TxtAssistant>
+                  </Paper>
                 </Grid>
               </Grid>
-            </Collapse>
-          </div>
+              <Grid container item xs={6}>
+                <DataDisplay
+                  style={{ maxHeight: "400px" }}
+                  config={this.props.config}
+                  data={record}
+                ></DataDisplay>
+              </Grid>
+            </Grid>
+          </Collapse>
         </div>
       </div>
     );
   };
 }
+//{l.rrTemplates[record.type]?.info}

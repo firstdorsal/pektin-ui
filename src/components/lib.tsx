@@ -78,7 +78,7 @@ export const getDomains = (config: t.Config, format = "pektin") => {
 };
 
 export const getAllRecords = (config: t.Config, domainName: string, format = "pektin") => {
-  return pektinApi.getAllRecords(config, domainName);
+  return pektinApi.getAllZoneRecords(config, domainName);
 };
 
 export const getRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {

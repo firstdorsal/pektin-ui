@@ -34,7 +34,7 @@ type RequestBody =
   | DeleteRequestBody
   | GetZoneRecordsRequestBody;
 
-type RequestType = "set" | "get" | "search" | "delete";
+type RequestType = "set" | "get" | "search" | "delete" | "get-zone-records";
 
 interface PektinResponse {
   error: boolean;
@@ -94,7 +94,9 @@ const request = async (
   body: RequestBody
 ): Promise<PektinResponse> => {
   const { token, endpoint, dev } = await getAuthFromConfig(config);
-  const uri = dev ? "http://" + endpoint : "https://" + endpoint;
+  const uri = ["local", "insecure-online"].includes(dev)
+    ? "http://" + endpoint
+    : "https://" + endpoint;
   const res = await f(`${uri}/${type}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -114,7 +116,7 @@ export const getDomains = async (config: t.Config): Promise<string[]> => {
   return res.data.map((e) => e.split(":")[0]);
 };
 
-export const getAllRecords = async (config: t.Config, domainName: string) => {
+export const getAllZoneRecords = async (config: t.Config, domainName: string) => {
   const req = await request(config, "get-zone-records", { names: [l.absoluteName(domainName)] });
   const recordKeys = req.data[l.absoluteName(domainName)];
   if (!Array.isArray(recordKeys)) return [];

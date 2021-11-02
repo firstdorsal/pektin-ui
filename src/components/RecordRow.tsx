@@ -20,7 +20,6 @@ import {
   Ballot,
   Check,
   Clear,
-  Info,
   KeyboardArrowDown,
   KeyboardArrowUp,
   RemoveCircle,

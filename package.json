@@ -101,7 +101,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider INLINE_RUNTIME_CHUNK=false GENERATE_SOURCEMAP=true react-scripts build",
+    "build": "INLINE_RUNTIME_CHUNK=false GENERATE_SOURCEMAP=true react-scripts build",
     "test": "react-scripts test",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },

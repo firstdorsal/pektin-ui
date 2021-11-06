@@ -93,6 +93,8 @@ export default class App extends PureComponent<AppProps, AppState> {
   init = async (vaultAuth: t.VaultAuth, localConfig?: t.LocalConfig) => {
     const { endpoint, token } = vaultAuth;
     const pektinConfig = await vaultApi.getValue({ endpoint, token, key: "pektin-config" });
+    let recursorAuth = await vaultApi.getValue({ endpoint, token, key: "recursor-auth" });
+    if (recursorAuth) recursorAuth = recursorAuth.basicAuth;
     if (pektinConfig.error) {
       sessionStorage.clear();
       throw Error();
@@ -103,6 +105,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       local: localConfig ? { ...localConfig } : this.state.config.local,
       pektin: pektinConfig,
       vaultAuth,
+      recursorAuth,
     };
     const domains = await l.getDomains(config);
     return { domains, config };

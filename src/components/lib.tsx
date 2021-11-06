@@ -7,9 +7,11 @@ import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
 import * as pektinApi from "./apis/pektin";
 import * as txt from "./apis/txtRecords";
+import { getPektinRecursorEndpoint } from "@pektin/client";
 
 import punycode from "punycode";
 
+const f = fetch;
 export const defaultSearchMatch = {
   name: false,
   type: false,
@@ -34,6 +36,50 @@ export const regex = {
 
   domainName:
     /^(?:[a-z0-9_](?:[a-z0-9-_]{0,61}[a-z0-9_]|[-]{2,}?)?\.)+[a-z0-9-_][a-z0-9-]{0,61}[a-z0-9]{1,61}[.]?$/,
+};
+
+export const loadToluol = async () => {
+  return await import("@pektin/toluol-wasm");
+};
+
+export const dohQuery = async (
+  dohQuery: t.DOHQuery,
+  config: t.Config,
+  toluol: any,
+  httpMethod?: "post" | "get"
+) => {
+  if (!config.pektin || !config.recursorAuth) return false;
+
+  const resolver = getPektinRecursorEndpoint(config.pektin);
+  const post = async (q: Uint8Array) => {
+    const res = await f(`${resolver}/dns-query`, {
+      headers: {
+        "content-type": "application/dns-message",
+        Authorization: config.recursorAuth || "",
+      },
+      credentials: "omit",
+      method: "POST",
+      body: q,
+    });
+    return new Uint8Array(await res.arrayBuffer());
+  };
+
+  const get = async (q: Uint8Array) => {
+    const s = Buffer.from(q).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");
+
+    const res = await f(`${resolver}/dns-query?dns=${s.replace(/=/g, "")}`, {
+      headers: {
+        accept: "application/dns-message",
+        Authorization: config.recursorAuth || "",
+      },
+      credentials: "omit",
+    });
+    return new Uint8Array(await res.arrayBuffer());
+  };
+  //toluol.init_panic_hook();
+  const query = toluol.new_query(dohQuery.name, dohQuery.type);
+  const res = httpMethod === "post" ? await post(query) : await get(query);
+  return toluol.parse_answer(res);
 };
 
 export const variablesToValues = (config: t.Config, input: string) => {
@@ -151,6 +197,7 @@ const defaultLocalConfig: t.LocalConfig = {
 
 export const defaulConfig: t.Config = {
   vaultAuth: defaultVaultAuth,
+  recursorAuth: null,
   foreignApis: [
     {
       name: "Wanderlust",

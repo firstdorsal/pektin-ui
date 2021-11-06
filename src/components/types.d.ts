@@ -1,3 +1,7 @@
+export interface DOHQuery {
+  name: string;
+  type: string;
+}
 export interface ServiceHealth {
   vault: VaultHealth;
 }
@@ -40,21 +44,37 @@ export interface VaultAuth {
 
 export interface Config {
   vaultAuth: VaultAuth;
+  recursorAuth: string | null;
   foreignApis: any[];
   local: LocalConfig;
   pektin: PektinConfig | undefined;
 }
+
 export interface PektinConfig {
   domain: string;
+  nameServers: MainNameServer[];
   uiSubDomain: string;
   apiSubDomain: string;
   vaultSubDomain: string;
-  uiEnabled: boolean;
-  autoRotate: boolean;
-  autoCertificates: boolean;
+  recursorSubDomain: string;
+  enableUi: boolean;
+  enableApi: boolean;
+  enableRecursor: boolean;
+  enableRotate: boolean;
+  createCerts: boolean;
+  letsencryptEmail: string;
   autoConfigureMainDomain: boolean;
-  dev: string | false;
+  proxyConfig: string;
+  createProxy: boolean;
+  buildFromSource: boolean;
+  dev: string;
   insecureDevIp: string;
+}
+
+export interface MainNameServer {
+  subDomain: string;
+  ips: string[];
+  legacyIps: string[];
 }
 
 export interface Variable {

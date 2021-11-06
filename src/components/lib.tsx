@@ -42,6 +42,67 @@ export const loadToluol = async () => {
   return await import("@pektin/toluol-wasm");
 };
 
+export const toluolBodge = (rawAnswer: string): t.DisplayRecord | false => {
+  if (!rawAnswer) return false;
+  rawAnswer = rawAnswer.replaceAll("\t", "");
+  if (rawAnswer.indexOf("Answer Section:\n") < 0) return false;
+  rawAnswer = rawAnswer.substring(rawAnswer.indexOf("Answer Section:\n") + 16);
+  const answerLines = rawAnswer.split("\n");
+
+  const line0 = answerLines[0].split("  ", 5);
+  let name = line0[0];
+  //if (!isSupportedType(line0[3])) return false;
+  let type = line0[3] as t.RRType;
+
+  const values = answerLines.map((line) => {
+    const bananenSplit = line.split("  ", 5);
+    return { ttl: parseInt(bananenSplit[1]), ...textToRRValue(bananenSplit[4], type) };
+  });
+
+  return { name, type, values };
+};
+
+const textToRRValue = (val: string, recordType: t.RRType) => {
+  const t = val.split(" ");
+  switch (recordType) {
+    case "SOA":
+      return {
+        mname: t[0],
+        rname: t[1],
+      };
+    case "MX":
+      return {
+        preference: parseInt(t[0]),
+        exchange: t[1],
+      };
+    case "SRV":
+      return {
+        priority: parseInt(t[0]),
+        weight: parseInt(t[1]),
+        port: parseInt(t[2]),
+        target: t[3],
+      };
+
+    case "CAA":
+      return {
+        flag: parseInt(t[0]),
+        tag: t[1] as "issue" | "issuewild" | "iodef",
+        caaValue: t[2].replaceAll('"', ""),
+      };
+
+    case "TLSA":
+      return {
+        usage: parseInt(t[0]) as 0 | 1 | 2 | 3,
+        selector: parseInt(t[1]) as 0 | 1,
+        matching_type: parseInt(t[2]) as 0 | 1 | 2,
+        data: t[3],
+      };
+
+    default:
+      return { value: val };
+  }
+};
+
 export const dohQuery = async (
   dohQuery: t.DOHQuery,
   config: t.Config,
@@ -77,9 +138,13 @@ export const dohQuery = async (
     return new Uint8Array(await res.arrayBuffer());
   };
   //toluol.init_panic_hook();
-  const query = toluol.new_query(dohQuery.name, dohQuery.type);
-  const res = httpMethod === "post" ? await post(query) : await get(query);
-  return toluol.parse_answer(res);
+  try {
+    const query = toluol.new_query(dohQuery.name, dohQuery.type);
+    const res = httpMethod === "post" ? await post(query) : await get(query);
+    return toluol.parse_answer(res);
+  } catch (e) {
+    return false;
+  }
 };
 
 export const variablesToValues = (config: t.Config, input: string) => {

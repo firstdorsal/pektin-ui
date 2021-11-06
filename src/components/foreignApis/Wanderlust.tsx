@@ -70,10 +70,12 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
 
   componentDidMount = async () => {
     this.setState({ toluol: await l.loadToluol() });
-    console.log(await this.query({ name: "y.gy", type: "A" }));
+    console.log(await this.query({ name: "y.gy", type: "NSEC" }));
   };
   query = async (query: t.DOHQuery) => {
-    return await l.dohQuery(query, this.props.config, this.state.toluol, "post");
+    const a = await l.dohQuery(query, this.props.config, this.state.toluol, "post");
+
+    return l.toluolBodge(a) as any;
   };
 
   render = () => {
@@ -120,52 +122,3 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
     );
   };
 }
-
-// eslint-disable-next-line
-const textToRRValue = (val: any, recordType: t.RRType): t.ResourceRecordValue => {
-  const text = val.data;
-  const ttl = val.ttl;
-  const t = text.split(" ");
-  switch (recordType) {
-    case "SOA":
-      return {
-        mname: t[0],
-        rname: t[1],
-        ttl,
-      };
-    case "MX":
-      return {
-        preference: parseInt(t[0]),
-        exchange: t[1],
-        ttl,
-      };
-    case "SRV":
-      return {
-        priority: parseInt(t[0]),
-        weight: parseInt(t[1]),
-        port: parseInt(t[2]),
-        target: t[3],
-        ttl,
-      };
-
-    case "CAA":
-      return {
-        flag: parseInt(t[0]),
-        tag: t[1] as "issue" | "issuewild" | "iodef",
-        caaValue: t[2].replaceAll('"', ""),
-        ttl,
-      };
-
-    case "TLSA":
-      return {
-        usage: parseInt(t[0]) as 0 | 1 | 2 | 3,
-        selector: parseInt(t[1]) as 0 | 1,
-        matching_type: parseInt(t[2]) as 0 | 1 | 2,
-        data: t[3],
-        ttl,
-      };
-
-    default:
-      return { value: text, ttl };
-  }
-};

@@ -35,7 +35,7 @@ export const regex = {
     /^(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
 
   domainName:
-    /^(?:[a-z0-9_](?:[a-z0-9-_]{0,61}[a-z0-9_]|[-]{2,}?)?\.)+[a-z0-9-_][a-z0-9-]{0,61}[a-z0-9]{1,61}[.]?$/,
+    /^(?:[a-z0-9_](?:[a-z0-9-_]{0,61}[a-z0-9_]|[-]{2,}?)?\.)*[a-z0-9-_][a-z0-9-]{0,61}[a-z0-9]{1,61}[.]?$/,
 };
 
 export const loadToluol = async () => {
@@ -44,6 +44,7 @@ export const loadToluol = async () => {
 
 export const toluolBodge = (rawAnswer: string): t.DisplayRecord | false => {
   if (!rawAnswer) return false;
+
   rawAnswer = rawAnswer.replaceAll("\t", "");
   if (rawAnswer.indexOf("Answer Section:\n") < 0) return false;
   rawAnswer = rawAnswer.substring(rawAnswer.indexOf("Answer Section:\n") + 16);
@@ -56,8 +57,11 @@ export const toluolBodge = (rawAnswer: string): t.DisplayRecord | false => {
 
   const values = answerLines.map((line) => {
     const bananenSplit = line.split("  ", 5);
+
     return { ttl: parseInt(bananenSplit[1]), ...textToRRValue(bananenSplit[4], type) };
   });
+  //@ts-ignore
+  //if (type === "NSEC") values.map((v) => console.log(v));
 
   return { name, type, values };
 };
@@ -139,10 +143,11 @@ export const dohQuery = async (
   };
   //toluol.init_panic_hook();
   try {
-    const query = toluol.new_query(dohQuery.name, dohQuery.type);
+    const query = toluol.new_query(absoluteName(dohQuery.name).slice(0, -1), dohQuery.type);
     const res = httpMethod === "post" ? await post(query) : await get(query);
     return toluol.parse_answer(res);
   } catch (e) {
+    console.error(e);
     return false;
   }
 };
@@ -310,7 +315,6 @@ export const supportedRecords = [
   "AAAA",
   "NS",
   "CNAME",
-  "PTR",
   "SOA",
   "MX",
   "TXT",

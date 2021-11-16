@@ -313,23 +313,13 @@ export default class RecordRow extends Component<RowProps, RowState> {
                 value={record.type}
                 onChange={(e) => this.props.handleChange(e)}
               >
-                {[
-                  "A",
-                  "AAAA",
-                  "NS",
-                  "CNAME",
-                  "PTR",
-                  "MX",
-                  "TXT",
-                  "SRV",
-                  "CAA",
-                  "OPENPGPKEY",
-                  "TLSA",
-                ].map((e) => (
-                  <MenuItem key={e} value={e}>
-                    {e}
-                  </MenuItem>
-                ))}
+                {["A", "AAAA", "NS", "CNAME", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(
+                  (e) => (
+                    <MenuItem key={e} value={e}>
+                      {e}
+                    </MenuItem>
+                  )
+                )}
               </Select>
             )}
           </span>
@@ -459,9 +449,13 @@ export default class RecordRow extends Component<RowProps, RowState> {
                       )}
                     </Container>
                   </Paper>
-                  <Paper elevation={3} style={{ padding: "10px 20px", marginTop: "10px" }}>
-                    <TxtAssistant></TxtAssistant>
-                  </Paper>
+                  {this.props.record.type === "TXT" ? (
+                    <Paper elevation={3} style={{ padding: "10px 20px", marginTop: "10px" }}>
+                      <TxtAssistant></TxtAssistant>
+                    </Paper>
+                  ) : (
+                    ""
+                  )}
                 </Grid>
               </Grid>
               <Grid container item xs={6}>

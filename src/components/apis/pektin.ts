@@ -164,32 +164,18 @@ export const toDisplayRecord = (config: t.Config, record: RedisEntry): t.Display
   const { rr_set } = record;
   const display_values = rr_set.map((rr, i) => {
     if (type === "TXT") {
-      const a = new Uint8Array(rr.value.TXT.txt_data[0]);
-      return { value: l.valuesToVariables(config, Buffer.from(a).toString()), ttl: rr.ttl };
+      return { value: l.valuesToVariables(config, rr.value.TXT), ttl: rr.ttl };
     } else if (type === "OPENPGPKEY") {
-      const a = new Uint8Array(rr.value.OPENPGPKEY.public_key);
-      return { value: l.valuesToVariables(config, Buffer.from(a).toString()), ttl: rr.ttl };
+      return { value: l.valuesToVariables(config, rr.value.OPENPGPKEY), ttl: rr.ttl };
     } else if (type === "TLSA") {
-      const cert_usage = ["CA", "Service", "TrustAnchor", "DomainIssued"];
-      const selector = ["Full", "Spki"];
-      const matching = ["Raw", "Sha256", "Sha512"];
-
-      const a = new Uint8Array(rr.value.TLSA.cert_data);
-
       return {
-        data: l.valuesToVariables(config, Buffer.from(a).toString()),
-        usage: cert_usage.findIndex((e) => e === rr.value.TLSA.cert_usage) + 1,
-        selector: selector.findIndex((e) => e === rr.value.TLSA.selector) + 1,
-        matching_type: matching.findIndex((e) => e === rr.value.TLSA.matching) + 1,
+        data: l.valuesToVariables(config, rr.value.TLSA.cert_data),
+        usage: rr.value.TLSA.cert_usage,
+        selector: rr.value.TLSA.selector,
+        matching_type: rr.value.TLSA.matching,
         ttl: rr.ttl,
       };
-    } else if (
-      type === "A" ||
-      type === "AAAA" ||
-      type === "NS" ||
-      type === "CNAME" ||
-      type === "PTR"
-    ) {
+    } else if (type === "A" || type === "AAAA" || type === "NS" || type === "CNAME") {
       return {
         value: l.valuesToVariables(config, rr.value[type]),
         ttl: rr.ttl,
@@ -197,10 +183,10 @@ export const toDisplayRecord = (config: t.Config, record: RedisEntry): t.Display
     } else if (type === "CAA") {
       const displayValue = { tag: l.valuesToVariables(config, rr.value[type].tag), ttl: rr.ttl };
 
-      if (rr.value[type].tag === "Issue" || rr.value[type].tag === "IssueWild") {
-        displayValue.caaValue = l.valuesToVariables(config, rr.value[type].value.Issuer[0]);
-      } else if (displayValue.tag === "Iodef") {
-        displayValue.caaValue = l.valuesToVariables(config, rr.value[type].value.Url);
+      if (rr.value[type].tag === "issue" || rr.value[type].tag === "issuewild") {
+        displayValue.caaValue = l.valuesToVariables(config, rr.value[type].value);
+      } else if (displayValue.tag === "iodef") {
+        displayValue.caaValue = l.valuesToVariables(config, rr.value[type].value);
       }
       displayValue.tag = displayValue.tag.toLowerCase();
       return displayValue;
@@ -238,7 +224,7 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
         ttl: rr.ttl,
         value: { [record.type]: l.variablesToValues(config, rr.value.replace(/\s+/g, "")) },
       };
-    } else if (record.type === "NS" || record.type === "CNAME" || record.type === "PTR") {
+    } else if (record.type === "NS" || record.type === "CNAME") {
       return {
         ttl: rr.ttl,
         value: {
@@ -248,10 +234,9 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
         },
       };
     } else if (record.type === "TXT") {
-      const buff = Buffer.from(l.variablesToValues(config, rr.value), "utf-8");
       return {
         ttl: rr.ttl,
-        value: { [record.type]: { txt_data: [buff.toJSON().data] } },
+        value: { [record.type]: rr.value },
       };
     } else if (record.type === "CAA") {
       if (rr.tag.toLowerCase() === "issue" || rr.tag.toLowerCase() === "issuewild") {
@@ -260,26 +245,19 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
           value: {
             [record.type]: {
               issuer_critical: true,
-              tag:
-                l.variablesToValues(config, rr.tag).toLowerCase() === "issue"
-                  ? "Issue"
-                  : "IssueWild",
-              value: {
-                Issuer: [l.variablesToValues(config, rr.caaValue.replaceAll(/\s+/g, "")), []],
-              },
+              tag: l.variablesToValues(config, rr.tag).toLowerCase(),
+              value: l.variablesToValues(config, rr.caaValue.replaceAll(/\s+/g, "")),
             },
           },
         };
-      } else if (tag === "iodef") {
+      } else if (rr.tag.toLowerCase() === "iodef") {
         return {
           ttl: rr.ttl,
           value: {
             [record.type]: {
               issuer_critical: true,
-              tag: "Iodef",
-              value: {
-                Url: l.variablesToValues(config, rr.caaValue.replaceAll(/\s+/g, "")),
-              },
+              tag: "iodef",
+              value: l.variablesToValues(config, rr.caaValue.replaceAll(/\s+/g, "")),
             },
           },
         };
@@ -287,22 +265,16 @@ export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEn
         return false;
       }
     } else if (record.type === "OPENPGPKEY") {
-      const buff = Buffer.from(l.variablesToValues(config, rr.value), "utf-8");
-      return { ttl: rr.ttl, value: { [record.type]: { public_key: buff.toJSON().data } } };
+      return { ttl: rr.ttl, value: { [record.type]: rr.value } };
     } else if (record.type === "TLSA") {
-      const cert_usage = ["CA", "Service", "TrustAnchor", "DomainIssued"];
-      const selector = ["Full", "Spki"];
-      const matching = ["Raw", "Sha256", "Sha512"];
-
-      const buff = Buffer.from(l.variablesToValues(config, rr.data), "utf-8");
       return {
         ttl: rr.ttl,
         value: {
           [record.type]: {
-            cert_usage: cert_usage[rr.usage - 1],
-            selector: selector[rr.selector - 1],
-            matching: matching[rr.matching_type - 1],
-            cert_data: buff.toJSON().data,
+            cert_usage: rr.usage,
+            selector: rr.selector,
+            matching: rr.matching_type,
+            cert_data: rr.data,
           },
         },
       };
@@ -381,7 +353,6 @@ type PektinRRTypes =
   | "AAAA"
   | "NS"
   | "CNAME"
-  | "PTR"
   | "SOA"
   | "MX"
   | "TXT"
@@ -417,9 +388,7 @@ interface NS {
 interface CNAME {
   [CNAME: string]: string;
 }
-interface PTR {
-  [PTR: string]: string;
-}
+
 interface SOA {
   [SOA: string]: SOAValue;
 }
@@ -440,10 +409,7 @@ interface MXValue {
   exchange: string;
 }
 interface TXT {
-  [TXT: string]: TXTValue;
-}
-interface TXTValue {
-  txt_data: Array<Array<number>>;
+  [TXT: string]: string;
 }
 
 interface SRV {
@@ -471,12 +437,9 @@ interface Issuer {
 type Url = `https://${string}` | `http://${string}` | `mailto:${string}`;
 
 interface OPENPGPKEY {
-  [OPENPGPKEY: string]: OPENPGPKEYValue;
+  [OPENPGPKEY: string]: string;
 }
 
-interface OPENPGPKEYValue {
-  [public_key: string]: Array<number>;
-}
 interface TLSA {
   [TLSA: string]: TLSAValue;
 }

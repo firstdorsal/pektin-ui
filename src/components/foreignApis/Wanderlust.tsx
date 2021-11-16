@@ -26,9 +26,10 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
     const parseData = (n: string[]) => {
       n = n.splice(1);
       n = n.filter((e: string) => {
-        if (!(e === "NSEC" || e === "RRSIG")) return true;
+        if (e !== "NSEC" && e !== "RRSIG") return true;
         return false;
       });
+
       return n;
     };
     const ogName = l.absoluteName(name);
@@ -38,9 +39,9 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
     for (let i = 0; i < limit; i++) {
       const newNameRes = await this.query({ name: currentName, type: "NSEC" });
 
-      const newNameData = newNameRes.values[0].data.split(" ");
+      const newNameData = newNameRes.values[0].value.split(" ");
 
-      if (newNameRes.typeId !== 47) break;
+      //if (newNameRes.typeId !== 47) break;
       /*eslint no-loop-func: "off"*/
 
       parseData(newNameData).forEach((coveredRecord) => {
@@ -70,7 +71,6 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
 
   componentDidMount = async () => {
     this.setState({ toluol: await l.loadToluol() });
-    console.log(await this.query({ name: "y.gy", type: "NSEC" }));
   };
   query = async (query: t.DOHQuery) => {
     const a = await l.dohQuery(query, this.props.config, this.state.toluol, "post");

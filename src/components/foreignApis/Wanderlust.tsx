@@ -18,16 +18,15 @@ interface WanderlustState {
 
 export default class Wanderlust extends Component<WanderlustProps, WanderlustState> {
   state: WanderlustState = {
-    domainName: "",
+    domainName: "y.gy",
     console: "",
-    limit: 500,
+    limit: 50,
   };
-  walk = async (name: string, limit: number = 100) => {
+  walk = async (name: string, limit: number = 10) => {
     const parseData = (n: string[]) => {
-      n = n.splice(1);
       n = n.filter((e: string) => {
-        if (e !== "NSEC" && e !== "RRSIG") return true;
-        return false;
+        if (e === "NSEC" || e === "RRSIG") return false;
+        return true;
       });
 
       return n;
@@ -38,8 +37,18 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
     const allTypes: string[] = [];
     for (let i = 0; i < limit; i++) {
       const newNameRes = await this.query({ name: currentName, type: "NSEC" });
+      console.log(currentName, newNameRes);
 
-      const newNameData = newNameRes.values[0].value.split(" ");
+      if (!newNameRes) break;
+      if (newNameRes.answers.length > 1) {
+        //newNameRes.answers = newNameRes.answers.filter((a) => a.NONOPT.atype === "NSEC");
+      }
+      if (!newNameRes.answers[0].NONOPT.rdata[1]) {
+        console.error(newNameRes);
+        break;
+      }
+
+      const newNameData = newNameRes.answers[0].NONOPT.rdata[1].split(" ");
 
       //if (newNameRes.typeId !== 47) break;
       /*eslint no-loop-func: "off"*/
@@ -49,14 +58,13 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
         allRecordsRequests.push(this.query({ name: currentName, type: coveredRecord }));
       });
       this.setState({ console: currentName });
-      currentName = newNameData[0];
-      if (newNameData[0] === ogName && i > 0) break;
+
+      currentName = newNameRes.answers[0].NONOPT.rdata[0];
+
+      if (currentName === ogName && i > 0) break;
     }
     const allRecords = await Promise.all(allRecordsRequests);
-    return allRecords.map((record: any) => {
-      if (record.type === "TYPE61") record.type = "OPENPGPKEY";
-      return record;
-    });
+    return allRecords;
   };
   handleChange = (e: any) => {
     this.setState((state) => ({ ...state, [e.target.name]: e.target.value }));
@@ -64,18 +72,20 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
   import = async () => {
     const records = await this.walk(this.state.domainName, this.state.limit);
 
-    console.log(records);
+    console.log(records.map(l.toluolToDisplayRecord));
 
     //this.props.import(records.map(simpleDnsRecordToDisplayRecord).filter(l.isSupportedRecord));
   };
 
   componentDidMount = async () => {
     this.setState({ toluol: await l.loadToluol() });
+    const query = await this.query({ name: "y.gy", type: "NSEC" });
+    if (query) console.log(l.toluolToDisplayRecord(query));
   };
   query = async (query: t.DOHQuery) => {
     const a = await l.dohQuery(query, this.props.config, this.state.toluol, "post");
 
-    return l.toluolBodge(a) as any;
+    return a;
   };
 
   render = () => {

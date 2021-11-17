@@ -42,28 +42,56 @@ export const loadToluol = async () => {
   return await import("@pektin/toluol-wasm");
 };
 
-export const toluolBodge = (rawAnswer: string): t.DisplayRecord | false => {
-  if (!rawAnswer) return false;
+export const dohQuery = async (
+  dohQuery: t.DOHQuery,
+  config: t.Config,
+  toluol: any,
+  httpMethod?: "post" | "get"
+): Promise<false | t.ToluolResponse> => {
+  if (!config.pektin || !config.recursorAuth) return false;
 
-  rawAnswer = rawAnswer.replaceAll("\t", "");
-  if (rawAnswer.indexOf("Answer Section:\n") < 0) return false;
-  rawAnswer = rawAnswer.substring(rawAnswer.indexOf("Answer Section:\n") + 16);
-  const answerLines = rawAnswer.split("\n");
+  const resolver = getPektinRecursorEndpoint(config.pektin);
+  const post = async (q: Uint8Array) => {
+    const res = await f(`${resolver}/dns-query`, {
+      headers: {
+        "content-type": "application/dns-message",
+        Authorization: config.recursorAuth || "",
+      },
+      credentials: "omit",
+      method: "POST",
+      body: q,
+    });
+    return new Uint8Array(await res.arrayBuffer());
+  };
 
-  const line0 = answerLines[0].split("  ", 5);
-  let name = line0[0];
-  //if (!isSupportedType(line0[3])) return false;
-  let type = line0[3] as t.RRType;
+  const get = async (q: Uint8Array) => {
+    const s = Buffer.from(q).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");
 
-  const values = answerLines.map((line) => {
-    const bananenSplit = line.split("  ", 5);
-
-    return { ttl: parseInt(bananenSplit[1]), ...textToRRValue(bananenSplit[4], type) };
-  });
-  //@ts-ignore
-  //if (type === "NSEC") values.map((v) => console.log(v));
-
-  return { name, type, values };
+    const res = await f(`${resolver}/dns-query?dns=${s.replace(/=/g, "")}`, {
+      headers: {
+        accept: "application/dns-message",
+        Authorization: config.recursorAuth || "",
+      },
+      credentials: "omit",
+    });
+    return new Uint8Array(await res.arrayBuffer());
+  };
+  toluol.init_panic_hook();
+  try {
+    const query = toluol.new_query(absoluteName(dohQuery.name).slice(0, -1), dohQuery.type);
+    const res = httpMethod === "post" ? await post(query) : await get(query);
+    const jsonRes = JSON.parse(toluol.parse_answer(res));
+    return jsonRes;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+};
+export const toluolToDisplayRecord = (response: t.ToluolResponse): t.DisplayRecord | false => {
+  const answer = response.answers[0].NONOPT;
+  const rdata = response.answers[0].NONOPT.rdata;
+  const values = [{ ttl: answer.ttl, ...textToRRValue(rdata.join(" "), answer.atype as t.RRType) }];
+  return { name: answer.name, type: answer.atype as t.RRType, values };
 };
 
 const textToRRValue = (val: string, recordType: t.RRType) => {
@@ -104,51 +132,6 @@ const textToRRValue = (val: string, recordType: t.RRType) => {
 
     default:
       return { value: val };
-  }
-};
-
-export const dohQuery = async (
-  dohQuery: t.DOHQuery,
-  config: t.Config,
-  toluol: any,
-  httpMethod?: "post" | "get"
-) => {
-  if (!config.pektin || !config.recursorAuth) return false;
-
-  const resolver = getPektinRecursorEndpoint(config.pektin);
-  const post = async (q: Uint8Array) => {
-    const res = await f(`${resolver}/dns-query`, {
-      headers: {
-        "content-type": "application/dns-message",
-        Authorization: config.recursorAuth || "",
-      },
-      credentials: "omit",
-      method: "POST",
-      body: q,
-    });
-    return new Uint8Array(await res.arrayBuffer());
-  };
-
-  const get = async (q: Uint8Array) => {
-    const s = Buffer.from(q).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");
-
-    const res = await f(`${resolver}/dns-query?dns=${s.replace(/=/g, "")}`, {
-      headers: {
-        accept: "application/dns-message",
-        Authorization: config.recursorAuth || "",
-      },
-      credentials: "omit",
-    });
-    return new Uint8Array(await res.arrayBuffer());
-  };
-  //toluol.init_panic_hook();
-  try {
-    const query = toluol.new_query(absoluteName(dohQuery.name).slice(0, -1), dohQuery.type);
-    const res = httpMethod === "post" ? await post(query) : await get(query);
-    return toluol.parse_answer(res);
-  } catch (e) {
-    console.error(e);
-    return false;
   }
 };
 

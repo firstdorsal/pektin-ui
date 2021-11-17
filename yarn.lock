@@ -1730,10 +1730,10 @@
   dependencies:
     cross-fetch "^3.1.4"
 
-"@pektin/toluol-wasm@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@pektin/toluol-wasm/-/toluol-wasm-0.1.0.tgz#f0cf0a1fd66dde5c52738cac2cd21c308d4592d1"
-  integrity sha512-CeHj3BSWK3SajUjCYMD0phzk1CbnO123WOpth6lwUD6SH2YLcIYpfFRlfyL3Nqov1Q/R9lHed0cWZQaXmhRiRw==
+"@pektin/toluol-wasm@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@pektin/toluol-wasm/-/toluol-wasm-0.2.0.tgz#652fed0c2e77f6abbb70b3fbd2bfc55f3b36d278"
+  integrity sha512-z0OUVwrgt/ovzWIHuYPwZtwtpV2Ptzma4e2ZE9UTkfU+FuyPYYumqgPOINSHxd5N1wGZ3fPVfaZuR4ODt6Yiig==
 
 "@pmmmwh/react-refresh-webpack-plugin@0.4.3":
   version "0.4.3"

@@ -8,7 +8,7 @@ import Wanderlust from "./foreignApis/Wanderlust";
 import * as pektinApi from "./apis/pektin";
 import * as txt from "./apis/txtRecords";
 import { getPektinRecursorEndpoint } from "@pektin/client";
-
+import { ToluolResponse } from "@pektin/client/src/toluol-wasm/types";
 import punycode from "punycode";
 
 const f = fetch;
@@ -47,7 +47,7 @@ export const dohQuery = async (
   config: t.Config,
   toluol: any,
   httpMethod?: "post" | "get"
-): Promise<false | t.ToluolResponse> => {
+): Promise<false | ToluolResponse> => {
   if (!config.pektin || !config.recursorAuth) return false;
 
   const resolver = getPektinRecursorEndpoint(config.pektin);
@@ -87,7 +87,7 @@ export const dohQuery = async (
     return false;
   }
 };
-export const toluolToDisplayRecord = (response: t.ToluolResponse): t.DisplayRecord | false => {
+export const toluolToDisplayRecord = (response: ToluolResponse): t.DisplayRecord | false => {
   const answer = response.answers[0].NONOPT;
   const rdata = response.answers[0].NONOPT.rdata;
   const values = [{ ttl: answer.ttl, ...textToRRValue(rdata.join(" "), answer.atype as t.RRType) }];
@@ -172,38 +172,15 @@ export const isSupportedType = (type: string) => {
   return false;
 };
 
-export const getDomains = (config: t.Config, format = "pektin") => {
-  return pektinApi.getDomains(config);
-};
-
-export const getAllRecords = (config: t.Config, domainName: string, format = "pektin") => {
-  return pektinApi.getAllZoneRecords(config, domainName);
-};
-
-export const getRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {
-  return pektinApi.getRecords(config, records);
-};
-
-export const setRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {
-  return pektinApi.setRecords(config, records);
-};
-export const deleteRecords = (config: t.Config, records: t.DisplayRecord[], format = "pektin") => {
-  return pektinApi.deleteRecords(config, records);
-};
-
-export const addDomain = (config: t.Config, record: t.DisplayRecord, format = "pektin") => {
-  return pektinApi.addDomain(config, [record]);
-};
-
 export const toRealRecord = (
   config: t.Config,
   dData: t.DisplayRecord,
   format = "pektin"
 ): RealData => {
   if (format === "something") {
-    return pektinApi.toRealRecord(config, dData);
+    return pektinApi.toPektinApiRecord(config, dData);
   } else {
-    return pektinApi.toRealRecord(config, dData);
+    return pektinApi.toPektinApiRecord(config, dData);
   }
 };
 

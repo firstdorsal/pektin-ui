@@ -30,6 +30,7 @@
   --scrollbar-thumb: #6e6e6e;
 
   --button-color: #171d26;
+  --glow: black;
 
   --action-bar-color: #171d26;
   --action-bar-disabled-color: #0f131a5b;
@@ -83,6 +84,7 @@
     --scrollbar-thumb: #7d8294;
 
     --button-color: white;
+    --glow: gold;
 
     --action-bar-color: #0f131ac5;
     --action-bar-disabled-color: #0f131a5b;
@@ -391,6 +393,8 @@ input[value*="tick"] {
 }
 .tfName {
   font-weight: 600;
+  padding-bottom: 5px;
+  text-transform: uppercase;
 }
 
 .MuiInput-underline:before {
@@ -460,6 +464,11 @@ button.warning:hover {
 button.ok,
 button.ok:hover {
   background: var(--ok);
+}
+
+button.ok:hover,
+button.warning:hover {
+  opacity: 0.9;
 }
 
 .MuiStepIcon-root {

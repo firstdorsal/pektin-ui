@@ -1,6 +1,6 @@
 import { Fragment, PureComponent } from "react";
 import "@fontsource/inter/900.css";
-import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
 import "@fontsource/inter/400.css";
 import Sidebar from "./components/SideBar";
 import { BrowserRouter as Router, Redirect, Route, Switch } from "react-router-dom";
@@ -14,6 +14,8 @@ import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
 import cloneDeep from "lodash/cloneDeep";
 import { HotKeys, configure as configureHotkeys, GlobalHotKeys } from "react-hotkeys";
+import { PektinClientConnectionConfigOverride, PektinConfig } from "@pektin/client/src/types";
+import { ExtendedPektinApiClient } from "@pektin/client";
 
 configureHotkeys({ ignoreTags: [] });
 
@@ -25,6 +27,7 @@ interface AppState {
   readonly domains: string[];
   readonly configError: boolean;
   readonly health?: t.ServiceHealth;
+  readonly client: ExtendedPektinApiClient | undefined;
 }
 interface AppProps {}
 
@@ -42,6 +45,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       loadDomains: () => {},
     },
     domains: [],
+    client: undefined,
   };
   mounted = true;
   router: any;
@@ -84,30 +88,32 @@ export default class App extends PureComponent<AppProps, AppState> {
   loadDomains = async () => {
     try {
       if (this.state.configLoaded) {
-        const domains = await l.getDomains(this.state.config);
+        if (this.state.client === undefined) throw Error("loadDomains: client is undefined");
+        const domains = await this.state.client.getDomains();
         this.setState({ domains });
       }
     } catch (error) {}
   };
 
-  init = async (vaultAuth: t.VaultAuth, localConfig?: t.LocalConfig) => {
-    const { endpoint, token } = vaultAuth;
-    const pektinConfig = await vaultApi.getValue({ endpoint, token, key: "pektin-config" });
-    let recursorAuth = await vaultApi.getValue({ endpoint, token, key: "recursor-auth" });
-    if (recursorAuth) recursorAuth = recursorAuth.basicAuth;
-    if (pektinConfig.error) {
+  init = async (
+    client: InstanceType<typeof ExtendedPektinApiClient>,
+    localConfig?: t.LocalConfig
+  ) => {
+    try {
+      await client.getPektinConfig();
+    } catch (error: any) {
       sessionStorage.clear();
-      throw Error();
+      throw Error(error);
     }
+    try {
+      await client.getRecursorAuth();
+    } catch (error) {}
 
     const config = {
       ...this.state.config,
       local: localConfig ? { ...localConfig } : this.state.config.local,
-      pektin: pektinConfig,
-      vaultAuth,
-      recursorAuth,
     };
-    const domains = await l.getDomains(config);
+    const domains = await client.getDomains();
     return { domains, config };
   };
 
@@ -121,10 +127,11 @@ export default class App extends PureComponent<AppProps, AppState> {
     await this.initDb();
     const localConfig: t.LocalConfig = (await this.state.db.config.get("localConfig"))?.value;
     try {
-      const ssr = sessionStorage.getItem("vaultAuth");
+      const ssr = sessionStorage.getItem("pcci");
       if (!ssr) throw Error();
-      const vaultAuth = JSON.parse(ssr);
-      const { domains, config } = await this.init(vaultAuth, localConfig);
+      const pcci: PektinClientConnectionConfigOverride = JSON.parse(ssr);
+      const client = new ExtendedPektinApiClient(pcci);
+      const { domains, config } = await this.init(client, localConfig);
 
       // handle custom right click menu
       this.setState(({ g }) => {
@@ -138,6 +145,7 @@ export default class App extends PureComponent<AppProps, AppState> {
           },
           config,
           configError: false,
+          client,
           domains,
         };
       });
@@ -168,9 +176,12 @@ export default class App extends PureComponent<AppProps, AppState> {
     document.removeEventListener("contextmenu", this.handleContextMenu);
   };
 
-  saveAuth = async (vaultAuth: t.VaultAuth) => {
-    sessionStorage.setItem("vaultAuth", JSON.stringify(vaultAuth));
-    const { domains, config } = await this.init(vaultAuth);
+  saveAuth = async (
+    pcci: PektinClientConnectionConfigOverride,
+    client: InstanceType<typeof ExtendedPektinApiClient>
+  ) => {
+    sessionStorage.setItem("pcci", JSON.stringify(pcci));
+    const { domains, config } = await this.init(client);
     this.setState({ config, domains });
   };
 
@@ -256,6 +267,7 @@ export default class App extends PureComponent<AppProps, AppState> {
                         loadDomains={this.loadDomains}
                         g={this.state.g}
                         config={this.state.config}
+                        client={this.state.client}
                       />
                     </main>
                   </Fragment>
@@ -296,7 +308,12 @@ export default class App extends PureComponent<AppProps, AppState> {
                       config={this.state.config}
                     ></Sidebar>
                     <main>
-                      <Domain {...routeProps} g={this.state.g} config={this.state.config} />
+                      <Domain
+                        {...routeProps}
+                        g={this.state.g}
+                        config={this.state.config}
+                        client={this.state.client}
+                      />
                     </main>
                   </Fragment>
                 );

@@ -6,42 +6,6 @@ import * as vaultApi from "./vault";
 import { cloneDeep } from "lodash";
 const f = fetch;
 
-export interface PektinApiAuth {
-  endpoint: string;
-  token: string;
-  dev?: string | false;
-}
-export interface GetRequestBody {
-  keys: string[];
-}
-export interface SearchRequestBody {
-  glob: string;
-}
-export interface SetRequestBody {
-  records: RedisEntry[];
-}
-export interface DeleteRequestBody {
-  keys: string[];
-}
-export interface GetZoneRecordsRequestBody {
-  names: string[];
-}
-
-type RequestBody =
-  | SetRequestBody
-  | GetRequestBody
-  | SearchRequestBody
-  | DeleteRequestBody
-  | GetZoneRecordsRequestBody;
-
-type RequestType = "set" | "get" | "search" | "delete" | "get-zone-records";
-
-interface PektinResponse {
-  error: boolean;
-  data: any;
-  message: string;
-}
-
 const defaultPektinApiEndpoint = "http://127.0.0.1:3001";
 export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
   let endpoint = getDomainFromConfig(config);
@@ -55,7 +19,7 @@ const res = await fetch(endpoint + "/set", {
         token,
         records: 
                 ${JSON.stringify(
-                  records.map((record) => toRealRecord(config, record)),
+                  records.map((record) => toPektinApiRecord(config, record)),
                   null,
                   "    "
                 )}
@@ -86,77 +50,6 @@ export const getAuthFromConfig = async (config: t.Config): Promise<PektinApiAuth
     endpoint: getDomainFromConfig(config),
     dev: config?.pektin?.dev,
   };
-};
-
-const request = async (
-  config: t.Config,
-  type: RequestType,
-  body: RequestBody
-): Promise<PektinResponse> => {
-  const { token, endpoint, dev } = await getAuthFromConfig(config);
-  const uri = ["local", "insecure-online"].includes(dev)
-    ? "http://" + endpoint
-    : "https://" + endpoint;
-  const res = await f(`${uri}/${type}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...body, token }),
-  }).catch((e) => {
-    e = e.toString();
-    e = e.substring(e.indexOf(":") + 2);
-    return { error: e };
-  });
-  if (res.error) return res;
-  return await res.json().catch(() => ({ error: true, message: res.statusText, data: {} }));
-};
-
-export const getDomains = async (config: t.Config): Promise<string[]> => {
-  const res = await request(config, "search", { glob: "*.:SOA" });
-  if (!res.data || !Array.isArray(res.data)) return [];
-  return res.data.map((e) => e.split(":")[0]);
-};
-
-export const getAllZoneRecords = async (config: t.Config, domainName: string) => {
-  const req = await request(config, "get-zone-records", { names: [l.absoluteName(domainName)] });
-  const recordKeys = req.data[l.absoluteName(domainName)];
-  if (!Array.isArray(recordKeys)) return [];
-
-  const recordValues = (await request(config, "get", { keys: recordKeys })).data;
-
-  const records: RedisEntry[] = [];
-  recordKeys.forEach((e, i) => {
-    records[i] = { name: e, ...recordValues[i] };
-  });
-
-  return records.map((record) => toDisplayRecord(config, record));
-};
-
-export const setRecords = async (config: t.Config, records: t.DisplayRecord[]) => {
-  return await request(config, "set", {
-    records: records.map((record) => toRealRecord(config, record)),
-  });
-};
-export const getRecords = async (config: t.Config, records: t.DisplayRecord[]) => {
-  const recordKeys = records.map((record) => toRealRecord(config, record).name);
-  const recordValues = (await request(config, "get", { keys: recordKeys })).data;
-
-  const newRecords: RedisEntry[] = [];
-  recordKeys.forEach((e, i) => {
-    newRecords[i] = { name: e, ...recordValues[i] };
-  });
-  return newRecords.map((record) => toDisplayRecord(config, record));
-};
-
-export const deleteRecords = async (config: t.Config, records: t.DisplayRecord[]) => {
-  return await request(config, "delete", {
-    keys: records.map((record) => toRealRecord(config, record)).map((e) => e.name),
-  });
-};
-
-export const addDomain = async (config: t.Config, records: t.DisplayRecord[]) => {
-  return await request(config, "set", {
-    records: records.map((record) => toRealRecord(config, record)),
-  });
 };
 
 export const toDisplayRecord = (config: t.Config, record: RedisEntry): t.DisplayRecord => {
@@ -216,7 +109,7 @@ export const toDisplayRecord = (config: t.Config, record: RedisEntry): t.Display
   };
 };
 
-export const toRealRecord = (config: t.Config, record: t.DisplayRecord): RedisEntry => {
+export const toPektinApiRecord = (config: t.Config, record: t.DisplayRecord): RedisEntry => {
   record = cloneDeep(record);
   const rr_set: PektinRRset = record.values.map((rr, i) => {
     if (record.type === "A" || record.type === "AAAA") {

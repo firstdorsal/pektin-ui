@@ -1,37 +1,4 @@
-export interface ToluolResponse {
-  additional_answers: ToluolAnswer[];
-  answers: ToluolAnswer[];
-  authoritative_answers: ToluolAnswer[];
-  header: ToluolHeader;
-  questions: ToluolQuestion[];
-}
-
-export interface ToluolAnswer {
-  NONOPT: {
-    atype: string;
-    class: "IN";
-    name: string;
-    rdata: string[];
-    ttl: number;
-  };
-}
-
-export interface ToluolQuestion {
-  qclass: string;
-  qname: string;
-  qtype: string;
-}
-export interface ToluolHeader {
-  ancount: number;
-  arcount: number;
-  flags: { flags: number };
-  msg_id: number;
-  nscount: number;
-  opcode: string;
-  qdcount: number;
-  qr: boolean;
-  rcode: string;
-}
+import { PektinConfig } from "@pektin/client/src/types";
 
 export interface DOHQuery {
   name: string;
@@ -85,33 +52,6 @@ export interface Config {
   pektin: PektinConfig | undefined;
 }
 
-export interface PektinConfig {
-  domain: string;
-  nameServers: MainNameServer[];
-  uiSubDomain: string;
-  apiSubDomain: string;
-  vaultSubDomain: string;
-  recursorSubDomain: string;
-  enableUi: boolean;
-  enableApi: boolean;
-  enableRecursor: boolean;
-  enableRotate: boolean;
-  createCerts: boolean;
-  letsencryptEmail: string;
-  autoConfigureMainDomain: boolean;
-  proxyConfig: string;
-  createProxy: boolean;
-  buildFromSource: boolean;
-  dev: string;
-  insecureDevIp: string;
-}
-
-export interface MainNameServer {
-  subDomain: string;
-  ips: string[];
-  legacyIps: string[];
-}
-
 export interface Variable {
   key: string;
   value: string;
@@ -123,12 +63,6 @@ export interface LocalConfig {
   synesthesia: boolean;
   replaceVariables: boolean;
   helper: boolean;
-}
-
-export interface PektinUiConnectionConfig {
-  username: string;
-  password: string;
-  vaultEndpoint: string;
 }
 
 export interface ValueSearchMatch {

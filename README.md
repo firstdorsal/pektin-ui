@@ -1,5 +1,3 @@
-use https://github.com/jsontypedef/json-typedef-codegen for generation of types
-
 # features
 
 change variable value

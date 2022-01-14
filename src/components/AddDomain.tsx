@@ -7,6 +7,8 @@ import DataDisplay from "../components/DataDisplay";
 import { ContextMenu } from "./ContextMenu";
 import { cloneDeep } from "lodash";
 import { RouteComponentProps } from "react-router-dom";
+import { ExtendedPektinApiClient } from "@pektin/client";
+import { toPektinApiRecord } from "./apis/pektin";
 
 const defaultSOA: t.DisplayRecord = {
   name: "",
@@ -18,6 +20,7 @@ interface AddDomainProps extends RouteComponentProps {
   readonly config: t.Config;
   readonly g: t.Glob;
   readonly loadDomains: Function;
+  readonly client: InstanceType<typeof ExtendedPektinApiClient>;
 }
 
 interface AddDomainState {
@@ -166,7 +169,9 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     color="primary"
                     variant="contained"
                     onClick={async () => {
-                      const req = await l.addDomain(this.props.config, this.state.record);
+                      const req = await this.props.client.set(
+                        [this.state.record].map((r) => toPektinApiRecord(this.props.config, r))
+                      );
                       if (req.error) this.setState({ error: req.message });
                       await this.props.loadDomains();
                       if (this.props.history)

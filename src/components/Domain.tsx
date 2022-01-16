@@ -514,6 +514,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
     }
   };
 
+  // TODO: in production client is undefined on first load
+
   componentDidUpdate = async (e: DomainProps) => {
     const domainName = this.props.match?.params?.domainName;
     // replace the current state when the components props change to a new domain page

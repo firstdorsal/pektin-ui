@@ -3,7 +3,6 @@ import * as t from "../types";
 import * as l from "../lib";
 
 import { cloneDeep } from "lodash";
-const f = fetch;
 
 const defaultPektinApiEndpoint = "http://127.0.0.1:3001";
 export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {

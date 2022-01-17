@@ -513,7 +513,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     }
   };
 
-  // TODO: in production client is undefined on first load
+  // TODO: code style doesnt change on first load of production version
 
   componentDidUpdate = async (e: DomainProps) => {
     const domainName = this.props.match?.params?.domainName;

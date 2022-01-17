@@ -3,6 +3,7 @@ import { Add, ImportExport, Settings, ShoppingCart } from "@material-ui/icons";
 import { Component } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
 import Health from "./Health";
+import PieSpinner from "./small/PieSpinner";
 import * as t from "./types";
 
 interface BaseProps extends Partial<RouteComponentProps> {
@@ -20,6 +21,7 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
         <Health config={this.props.config} health={this.props.health} />
         <br />
         <br />
+        <PieSpinner></PieSpinner>
         <h2>Add Existing Domain</h2>
         <NavLink exact className="link" activeClassName="navActive" to="/add/existing/manual">
           <Add />

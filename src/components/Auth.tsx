@@ -1,8 +1,7 @@
 import { Container, IconButton, Paper, TextField } from "@material-ui/core";
-import React, { Component, ReactElement, Fragment } from "react";
+import React, { Component, ReactElement } from "react";
 import * as t from "./types";
 import * as l from "./lib";
-import * as vaultApi from "./apis/vault";
 import { Refresh, Security } from "@material-ui/icons";
 import HelpPopper from "./HelpPopper";
 import { RouteComponentProps } from "react-router-dom";
@@ -67,6 +66,8 @@ export default class Auth extends Component<AuthProps, AuthState> {
       try {
         client = new ExtendedPektinApiClient(parsed);
         await client.getDomains();
+        value = parsed;
+        authError = false;
       } catch (error) {
         // TODO: more error handling; reimplement vault sealed check
         if (error === "Failed to fetch") {
@@ -86,9 +87,6 @@ export default class Auth extends Component<AuthProps, AuthState> {
           authError = true;
         }
       }
-
-      value = parsed;
-      authError = false;
     }
 
     if (!authError && client !== undefined) {

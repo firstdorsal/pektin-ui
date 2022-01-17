@@ -534,3 +534,7 @@ button.warning:hover {
 .txtButton * {
   stroke: white;
 }
+
+a.url {
+  color: var(--a2) !important;
+}

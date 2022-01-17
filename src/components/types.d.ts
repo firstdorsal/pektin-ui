@@ -34,10 +34,10 @@ export interface ValidateParams {
 
 export interface Glob {
   contextMenu: boolean;
-  changeContextMenu: Function;
+  changeContextMenu: InstanceType<typeof App>["changeContextMenu"];
   cmAction: string;
-  updateLocalConfig: Function;
-  loadDomains: Function;
+  updateLocalConfig: InstanceType<typeof App>["updateLocalConfig"];
+  loadDomains: InstanceType<typeof App>["loadDomains"];
 }
 export interface VaultAuth {
   endpoint: string;

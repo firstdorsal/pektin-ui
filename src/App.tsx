@@ -8,13 +8,12 @@ import AddDomain from "./components/AddDomain";
 import Domain from "./components/Domain";
 import * as t from "./components/types";
 import * as l from "./components/lib";
-import * as vaultApi from "./components/apis/vault";
 import Auth from "./components/Auth";
 import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
 import cloneDeep from "lodash/cloneDeep";
 import { HotKeys, configure as configureHotkeys, GlobalHotKeys } from "react-hotkeys";
-import { PektinClientConnectionConfigOverride, PektinConfig } from "@pektin/client/src/types";
+import { PektinClientConnectionConfigOverride } from "@pektin/client/src/types";
 import { ExtendedPektinApiClient } from "@pektin/client";
 
 configureHotkeys({ ignoreTags: [] });
@@ -95,10 +94,7 @@ export default class App extends PureComponent<AppProps, AppState> {
     } catch (error) {}
   };
 
-  init = async (
-    client: InstanceType<typeof ExtendedPektinApiClient>,
-    localConfig?: t.LocalConfig
-  ) => {
+  init = async (client: ExtendedPektinApiClient, localConfig?: t.LocalConfig) => {
     try {
       await client.getPektinConfig();
     } catch (error: any) {
@@ -107,7 +103,9 @@ export default class App extends PureComponent<AppProps, AppState> {
     }
     try {
       await client.getRecursorAuth();
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
 
     const config = {
       ...this.state.config,
@@ -159,6 +157,7 @@ export default class App extends PureComponent<AppProps, AppState> {
   };
 
   healtChecks = async () => {
+    /*
     let vaultHealth = await vaultApi.healthCheck(this.state.config.vaultAuth);
     if (this.mounted && this.state.configLoaded) {
       let vault: t.VaultHealth = { status: "ok", message: "Online" };
@@ -167,7 +166,7 @@ export default class App extends PureComponent<AppProps, AppState> {
 
       this.setState({ health: { vault } });
     }
-
+*/
     //setTimeout(this.healtChecks, 5000);
   };
 
@@ -178,11 +177,11 @@ export default class App extends PureComponent<AppProps, AppState> {
 
   saveAuth = async (
     pcci: PektinClientConnectionConfigOverride,
-    client: InstanceType<typeof ExtendedPektinApiClient>
+    client: ExtendedPektinApiClient
   ) => {
     sessionStorage.setItem("pcci", JSON.stringify(pcci));
     const { domains, config } = await this.init(client);
-    this.setState({ config, domains });
+    this.setState({ config, domains, client });
   };
 
   handleContextMenuOffClick = (e: any) => {
@@ -291,6 +290,7 @@ export default class App extends PureComponent<AppProps, AppState> {
                         routeProps={routeProps}
                         g={this.state.g}
                         config={this.state.config}
+                        client={this.state.client}
                       />
                     </main>
                   </Fragment>

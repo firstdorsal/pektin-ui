@@ -7,7 +7,6 @@ import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
 import * as pektinApi from "./apis/pektin";
 import * as txt from "./apis/txtRecords";
-import { getPektinRecursorEndpoint } from "@pektin/client";
 import { ToluolResponse } from "@pektin/client/src/toluol-wasm/types";
 import punycode from "punycode";
 
@@ -42,20 +41,22 @@ export const loadToluol = async () => {
   return await import("@pektin/toluol-wasm");
 };
 
+// TODO implement Access-Control-Max-Age
+
 export const dohQuery = async (
   dohQuery: t.DOHQuery,
-  config: t.Config,
   toluol: any,
+  recursorUrl: string,
+  recursorAuth: string,
   httpMethod?: "post" | "get"
 ): Promise<false | ToluolResponse> => {
-  if (!config.pektin || !config.recursorAuth) return false;
+  if (!recursorUrl || !recursorAuth) return false;
 
-  const resolver = getPektinRecursorEndpoint(config.pektin);
   const post = async (q: Uint8Array) => {
-    const res = await f(`${resolver}/dns-query`, {
+    const res = await f(`${recursorUrl}/dns-query`, {
       headers: {
         "content-type": "application/dns-message",
-        Authorization: config.recursorAuth || "",
+        Authorization: recursorAuth,
       },
       credentials: "omit",
       method: "POST",
@@ -67,10 +68,10 @@ export const dohQuery = async (
   const get = async (q: Uint8Array) => {
     const s = Buffer.from(q).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");
 
-    const res = await f(`${resolver}/dns-query?dns=${s.replace(/=/g, "")}`, {
+    const res = await f(`${recursorUrl}/dns-query?dns=${s.replace(/=/g, "")}`, {
       headers: {
         accept: "application/dns-message",
-        Authorization: config.recursorAuth || "",
+        Authorization: recursorAuth,
       },
       credentials: "omit",
     });
@@ -79,7 +80,7 @@ export const dohQuery = async (
   toluol.init_panic_hook();
   try {
     const query = toluol.new_query(absoluteName(dohQuery.name).slice(0, -1), dohQuery.type);
-    const res = httpMethod === "post" ? await post(query) : await get(query);
+    const res = httpMethod === "get" ? await get(query) : await post(query);
     const jsonRes = JSON.parse(toluol.parse_answer(res));
     return jsonRes;
   } catch (e) {
@@ -89,6 +90,7 @@ export const dohQuery = async (
 };
 export const toluolToDisplayRecord = (response: ToluolResponse): t.DisplayRecord | false => {
   const answer = response.answers[0].NONOPT;
+  if (!isSupportedType(answer.atype)) return false;
   const rdata = response.answers[0].NONOPT.rdata;
   const values = [{ ttl: answer.ttl, ...textToRRValue(rdata.join(" "), answer.atype as t.RRType) }];
   return { name: answer.name, type: answer.atype as t.RRType, values };
@@ -167,12 +169,14 @@ export const isSupportedRecord = (record: t.DisplayRecord) => {
   if (supportedRecords.indexOf(record.type) > -1) return true;
   return false;
 };
+
+// TODO use pektin client for this
 export const isSupportedType = (type: string) => {
   if (supportedRecords.indexOf(type) > -1) return true;
   return false;
 };
 
-export const toRealRecord = (
+export const toPektinApiRecord = (
   config: t.Config,
   dData: t.DisplayRecord,
   format = "pektin"
@@ -232,8 +236,16 @@ export const defaulConfig: t.Config = {
     {
       name: "Wanderlust",
       class: Wanderlust,
-      description:
-        "Wanderlust imports a single domain per import with NSEC zone walking. To resolve the records, DNS queries are sent through Google or Cloudflare.",
+      description: (
+        <div>
+          Wanderlust imports a single domain per import with NSEC zone walking using the Pektin
+          recursor. Due to issues with the Content-Security-Policy this may not work with older
+          browsers.{" "}
+          <a href="https://github.com/w3c/webappsec-csp/pull/293" className="url">
+            More
+          </a>
+        </div>
+      ),
     },
     { name: "Pektin Backup", class: PektinBackup, description: "" },
     { name: "PowerDNS", class: PowerDns, description: "" },

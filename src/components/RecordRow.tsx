@@ -29,11 +29,12 @@ import { GrDocumentTxt } from "react-icons/gr";
 
 import isEqual from "lodash/isEqual";
 import TxtAssistant from "./TxtAssistant";
+import Domain from "./Domain";
 
 interface RowProps {
-  readonly handleChange: Function;
+  readonly handleChange: InstanceType<typeof Domain>["handleChange"];
   readonly saveRecord: any;
-  readonly changeMeta: Function;
+  readonly changeMeta: InstanceType<typeof Domain>["changeMeta"];
   readonly recordIndex: number;
   readonly record: t.DisplayRecord;
   readonly meta: t.DomainMeta;
@@ -43,8 +44,8 @@ interface RowProps {
   readonly domainName: string;
   readonly variant?: string;
   readonly totalRows: number;
-  readonly addRRValue: Function;
-  readonly removeRRValue: Function;
+  readonly addRRValue: InstanceType<typeof Domain>["addRRValue"];
+  readonly removeRRValue: InstanceType<typeof Domain>["removeRRValue"];
 }
 interface RowState {}
 

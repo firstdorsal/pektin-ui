@@ -9,6 +9,7 @@ import { cloneDeep } from "lodash";
 import { RouteComponentProps } from "react-router-dom";
 import { ExtendedPektinApiClient } from "@pektin/client";
 import { toPektinApiRecord } from "./apis/pektin";
+import App from "../App";
 
 const defaultSOA: t.DisplayRecord = {
   name: "",
@@ -19,8 +20,8 @@ const defaultSOA: t.DisplayRecord = {
 interface AddDomainProps extends RouteComponentProps {
   readonly config: t.Config;
   readonly g: t.Glob;
-  readonly loadDomains: Function;
-  readonly client: InstanceType<typeof ExtendedPektinApiClient>;
+  readonly loadDomains: InstanceType<typeof App>["loadDomains"];
+  readonly client: ExtendedPektinApiClient;
 }
 
 interface AddDomainState {

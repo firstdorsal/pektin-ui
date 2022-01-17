@@ -1,4 +1,5 @@
 import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
+import { ExtendedPektinApiClient, getPektinRecursorEndpoint } from "@pektin/client";
 import React, { Component } from "react";
 import Domain from "./Domain";
 import * as t from "./types";
@@ -7,6 +8,7 @@ interface ImportDomainProps {
   readonly config: t.Config;
   readonly g: t.Glob;
   readonly routeProps: any;
+  readonly client: ExtendedPektinApiClient | undefined;
 }
 interface ImportDomainState {
   readonly activeStep: number;
@@ -59,9 +61,18 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
             </Container>
             <br />
             <Container>
-              <div style={{ width: "500px" }}>{fapi.description}</div>
+              <div style={{ width: "100%" }}>{fapi.description}</div>
               <br />
-              {React.createElement(fapi.class, { import: this.import, config: this.props.config })}
+              {this.state.selectedApi === 0
+                ? React.createElement(fapi.class, {
+                    import: this.import,
+                    config: this.props.config,
+                    recursorUrl: this.props.client?.pektinConfig
+                      ? getPektinRecursorEndpoint(this.props.client?.pektinConfig)
+                      : "",
+                    recursorAuth: this.props.client?.recursorAuth,
+                  })
+                : ""}
             </Container>
           </Paper>
         </Container>

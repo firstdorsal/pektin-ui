@@ -2,12 +2,15 @@ import { Button, Box, TextField } from "@material-ui/core";
 
 import { ArrowRight } from "@material-ui/icons";
 import { Component } from "react";
+import ImportDomain from "../ImportDomain";
 import * as l from "../lib";
 import * as t from "../types";
 
 interface WanderlustProps {
-  readonly import: any;
+  readonly import: InstanceType<typeof ImportDomain>["import"];
   readonly config: t.Config;
+  readonly recursorUrl: string;
+  readonly recursorAuth: string;
 }
 interface WanderlustState {
   readonly domainName: string;
@@ -72,18 +75,23 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
   import = async () => {
     const records = await this.walk(this.state.domainName, this.state.limit);
 
-    console.log(records.map(l.toluolToDisplayRecord));
+    const displayRecords = records
+      .map(l.toluolToDisplayRecord)
+      .filter((r) => r !== false) as t.DisplayRecord[];
 
-    //this.props.import(records.map(simpleDnsRecordToDisplayRecord).filter(l.isSupportedRecord));
+    this.props.import(displayRecords);
   };
 
   componentDidMount = async () => {
     this.setState({ toluol: await l.loadToluol() });
-    const query = await this.query({ name: "y.gy", type: "NSEC" });
-    if (query) console.log(l.toluolToDisplayRecord(query));
   };
   query = async (query: t.DOHQuery) => {
-    const a = await l.dohQuery(query, this.props.config, this.state.toluol, "post");
+    const a = await l.dohQuery(
+      query,
+      this.state.toluol,
+      this.props.recursorUrl,
+      this.props.recursorAuth
+    );
 
     return a;
   };
@@ -109,7 +117,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
           InputLabelProps={{
             shrink: true,
           }}
-          helperText="Maximum of steps to take"
+          helperText="Maximum steps to take"
           placeholder="100"
           value={this.state.limit}
           onChange={this.handleChange}

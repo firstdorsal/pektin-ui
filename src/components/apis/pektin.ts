@@ -2,7 +2,6 @@
 import * as t from "../types";
 import * as l from "../lib";
 
-import * as vaultApi from "./vault";
 import { cloneDeep } from "lodash";
 const f = fetch;
 

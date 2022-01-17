@@ -62,7 +62,7 @@ interface DomainProps extends RouteComponentProps<RouteParams> {
   readonly variant?: "import";
   readonly records?: t.DisplayRecord[];
   readonly style?: any;
-  readonly client: InstanceType<typeof ExtendedPektinApiClient>;
+  readonly client: ExtendedPektinApiClient;
 }
 
 interface ColumnItem {
@@ -504,12 +504,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
       this.initData(this.props.records, domainName);
     } else {
       this.setState({ domainName: this.props.match.params.domainName });
-      const recordKeys = (
+      const records = (
         await this.props.client.getZoneRecords([this.props.match.params.domainName])
-      ).data[this.state.domainName];
-      const records = (await this.props.client.get(recordKeys)).data.map((r) =>
-        toDisplayRecord(this.props.config, r)
-      );
+      ).data[this.state.domainName].map((r) => toDisplayRecord(this.props.config, r));
       this.initData(records, this.props.match.params.domainName);
     }
   };
@@ -520,10 +517,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
     const domainName = this.props.match?.params?.domainName;
     // replace the current state when the components props change to a new domain page
     if (e.match?.params?.domainName !== domainName) {
-      const recordKeys = (await this.props.client.getZoneRecords([domainName])).data[domainName];
-      const records = (await this.props.client.get(recordKeys)).data.map((r) =>
-        toDisplayRecord(this.props.config, r)
-      );
+      const records = (
+        await this.props.client.getZoneRecords([this.props.match.params.domainName])
+      ).data[this.state.domainName].map((r) => toDisplayRecord(this.props.config, r));
       this.initData(records, domainName);
     }
   };
@@ -854,12 +850,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
   };
 
   handleReloadClick = async () => {
-    const recordKeys = (
+    const records = (
       await this.props.client.getZoneRecords([this.props.match.params.domainName])
-    ).data[this.state.domainName];
-    const records = (await this.props.client.get(recordKeys)).data.map((r) =>
-      toDisplayRecord(this.props.config, r)
-    );
+    ).data[this.state.domainName].map((r) => toDisplayRecord(this.props.config, r));
     this.initData(records, this.props.match.params.domainName);
   };
 
@@ -869,6 +862,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
   ): [t.FieldsChanged, boolean] => {
     const changed = { name: false, type: false, values: [] as Array<any> };
     let anyChanged = false;
+
     if (ogRecord === "yes" || ogRecord === "no") {
       const valid = ogRecord === "yes";
       changed.name = valid;
@@ -877,7 +871,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
         changed.values.push({});
         const fieldKeys = Object.keys(recordValue);
         fieldKeys.forEach((fieldKey: string) => {
-          /*@ts-ignore*/
           changed.values[i][fieldKey] = valid;
         });
       });

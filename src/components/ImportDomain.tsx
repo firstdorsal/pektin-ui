@@ -8,7 +8,7 @@ interface ImportDomainProps {
   readonly config: t.Config;
   readonly g: t.Glob;
   readonly routeProps: any;
-  readonly client: ExtendedPektinApiClient | undefined;
+  readonly client: ExtendedPektinApiClient;
 }
 interface ImportDomainState {
   readonly activeStep: number;
@@ -87,6 +87,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
           style={{ height: "calc(100% - 70px)" }}
           records={this.state.records}
           config={this.props.config}
+          client={this.props.client}
         />
       );
     };

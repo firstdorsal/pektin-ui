@@ -49,6 +49,8 @@ interface RowProps {
 }
 interface RowState {}
 
+// TODO: firefox always shows up/down arrows for number fields chrome shows them only on hover
+
 export default class RecordRow extends Component<RowProps, RowState> {
   advancedView = (record: t.DisplayRecord) => {
     const p = this.props;

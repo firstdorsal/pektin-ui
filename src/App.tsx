@@ -26,7 +26,7 @@ interface AppState {
   readonly domains: string[];
   readonly configError: boolean;
   readonly health?: t.ServiceHealth;
-  readonly client: ExtendedPektinApiClient | undefined;
+  readonly client: ExtendedPektinApiClient;
 }
 interface AppProps {}
 
@@ -44,7 +44,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       loadDomains: () => {},
     },
     domains: [],
-    client: undefined,
+    client: undefined as unknown as ExtendedPektinApiClient,
   };
   mounted = true;
   router: any;

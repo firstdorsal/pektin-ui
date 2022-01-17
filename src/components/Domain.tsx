@@ -503,11 +503,13 @@ export default class Domain extends Component<DomainProps, DomainState> {
       }
       this.initData(this.props.records, domainName);
     } else {
+      const domainName = this.props.match?.params?.domainName;
       this.setState({ domainName: this.props.match.params.domainName });
-      const records = (
-        await this.props.client.getZoneRecords([this.props.match.params.domainName])
-      ).data[this.state.domainName].map((r) => toDisplayRecord(this.props.config, r));
-      this.initData(records, this.props.match.params.domainName);
+      const records = (await this.props.client.getZoneRecords([domainName])).data[domainName];
+      this.initData(
+        records.map((r) => toDisplayRecord(this.props.config, r)),
+        this.props.match.params.domainName
+      );
     }
   };
 
@@ -517,10 +519,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
     const domainName = this.props.match?.params?.domainName;
     // replace the current state when the components props change to a new domain page
     if (e.match?.params?.domainName !== domainName) {
-      const records = (
-        await this.props.client.getZoneRecords([this.props.match.params.domainName])
-      ).data[this.state.domainName].map((r) => toDisplayRecord(this.props.config, r));
-      this.initData(records, domainName);
+      const records = (await this.props.client.getZoneRecords([domainName])).data[domainName];
+
+      this.initData(
+        records.map((r) => toDisplayRecord(this.props.config, r)),
+        domainName
+      );
     }
   };
 
@@ -850,10 +854,14 @@ export default class Domain extends Component<DomainProps, DomainState> {
   };
 
   handleReloadClick = async () => {
-    const records = (
-      await this.props.client.getZoneRecords([this.props.match.params.domainName])
-    ).data[this.state.domainName].map((r) => toDisplayRecord(this.props.config, r));
-    this.initData(records, this.props.match.params.domainName);
+    const records = (await this.props.client.getZoneRecords([this.state.domainName])).data[
+      this.state.domainName
+    ];
+
+    this.initData(
+      records.map((r) => toDisplayRecord(this.props.config, r)),
+      this.props.match.params.domainName
+    );
   };
 
   hasRecordChanged = (

@@ -33,6 +33,7 @@ import Helper from "../components/Helper";
 import { ExtendedPektinApiClient } from "@pektin/client";
 import { toDisplayRecord, toPektinApiRecord } from "./apis/pektin";
 import ContentLoader from "react-content-loader";
+import zIndex from "@material-ui/core/styles/zIndex";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -481,6 +482,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       errorRecords: 0,
       warningRecords: 0,
       changedRecords: 0,
+      itemsLoaded: true,
     });
     this.list.recomputeRowHeights();
     if (this.state.search.length) {
@@ -1237,6 +1239,40 @@ export default class Domain extends Component<DomainProps, DomainState> {
     );
   };
 
+  contentLoader = (height: number, width: number) => {
+    return (
+      <ContentLoader
+        style={{ position: "absolute", top: 75, zIndex: 10 }}
+        height={height}
+        width={width}
+        backgroundColor={"#333"}
+        foregroundColor={"#999"}
+      >
+        {Array(20)
+          .fill(0)
+          .map((e, i) => {
+            const ypos = i * 70 + 20;
+
+            if (ypos > height) {
+              return;
+            }
+            return (
+              <Fragment>
+                <rect x="29" y={ypos - 1} rx="5" ry="5" width="20" height="20" />
+                <rect x="0" y={ypos + 45} rx="1" ry="1" width={width} height="1" />
+                <rect x="70" y={ypos} rx="5" ry="5" width="310" height="20" />
+                <rect x="390" y={ypos} rx="5" ry="5" width="90" height="20" />
+                <rect x="490" y={ypos} rx="5" ry="5" width="75" height="20" />
+                <rect x="580" y={ypos} rx="5" ry="5" width={width - 700} height="20" />
+                <rect x={width - 90} y={ypos - 1} rx="5" ry="5" width="20" height="20" />
+                <circle cx={width - 38} cy={ypos + 8} r="20" />
+              </Fragment>
+            );
+          })}
+      </ContentLoader>
+    );
+  };
+
   render = () => {
     return (
       <HotKeys
@@ -1321,30 +1357,24 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
           <AutoSizer>
             {({ height, width }) =>
-              !this.state.itemsLoaded ? (
-                <List
-                  overscanRowCount={5}
-                  style={{ overflowY: "scroll" }}
-                  ref={(ref) => (this.list = ref)}
-                  height={height}
-                  width={width}
-                  estimatedRowSize={70}
-                  rowHeight={({ index }) => {
-                    return this.state.meta[index]?.expanded ? 670 : 70;
-                  }}
-                  rowRenderer={this.rowRenderer}
-                  rowCount={this.state.records.length}
-                />
+              this.state.itemsLoaded ? (
+                <Fragment>
+                  <List
+                    overscanRowCount={5}
+                    style={{ overflowY: "scroll" }}
+                    ref={(ref) => (this.list = ref)}
+                    height={height}
+                    width={width}
+                    estimatedRowSize={70}
+                    rowHeight={({ index }) => {
+                      return this.state.meta[index]?.expanded ? 670 : 70;
+                    }}
+                    rowRenderer={this.rowRenderer}
+                    rowCount={this.state.records.length}
+                  />
+                </Fragment>
               ) : (
-                <ContentLoader
-                  height={height}
-                  width={width}
-                  backgroundColor={"#333"}
-                  foregroundColor={"#999"}
-                >
-                  <rect x="80" y="17" rx="4" ry="4" width="300" height="13" />
-                  <rect x="80" y="40" rx="3" ry="3" width="250" height="10" />
-                </ContentLoader>
+                this.contentLoader(height, width)
               )
             }
           </AutoSizer>

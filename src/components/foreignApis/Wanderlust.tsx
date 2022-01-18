@@ -19,6 +19,8 @@ interface WanderlustState {
   readonly toluol?: any;
 }
 
+// TODO harden wanderlust against errors
+
 export default class Wanderlust extends Component<WanderlustProps, WanderlustState> {
   state: WanderlustState = {
     domainName: "y.gy",

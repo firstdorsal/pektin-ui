@@ -9,6 +9,7 @@ import * as pektinApi from "./apis/pektin";
 import * as txt from "./apis/txtRecords";
 import { ToluolResponse } from "@pektin/client/src/toluol-wasm/types";
 import punycode from "punycode";
+import { RedisEntry } from "@pektin/client/src/types";
 
 const f = fetch;
 export const defaultSearchMatch = {
@@ -25,8 +26,6 @@ export const defaultMeta = {
   searchMatch: defaultSearchMatch,
   anySearchMatch: false,
 };
-
-export type RealData = pektinApi.RedisEntry;
 
 export const regex = {
   ip: /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/,
@@ -159,10 +158,6 @@ export const valuesToVariables = (config: t.Config, input: string) => {
   return input;
 };
 
-export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
-  return pektinApi.jsTemp(config, records);
-};
-
 export const isSupportedRecord = (record: t.DisplayRecord) => {
   if (supportedRecords.indexOf(record.type) > -1) return true;
   return false;
@@ -176,25 +171,25 @@ export const isSupportedType = (type: string) => {
 
 export const toPektinApiRecord = (
   config: t.Config,
-  dData: t.DisplayRecord,
+  displayRecord: t.DisplayRecord,
   format = "pektin"
-): RealData => {
+): RedisEntry => {
   if (format === "something") {
-    return pektinApi.toPektinApiRecord(config, dData);
+    return pektinApi.toPektinApiRecord(config, displayRecord);
   } else {
-    return pektinApi.toPektinApiRecord(config, dData);
+    return pektinApi.toPektinApiRecord(config, displayRecord);
   }
 };
 
 export const toDisplayRecord = (
   config: t.Config,
-  rData: RealData,
+  redisEntry: RedisEntry,
   format = "pektin"
 ): t.DisplayRecord => {
   if (format === "something") {
-    return pektinApi.toDisplayRecord(config, rData);
+    return pektinApi.toDisplayRecord(config, redisEntry);
   } else {
-    return pektinApi.toDisplayRecord(config, rData);
+    return pektinApi.toDisplayRecord(config, redisEntry);
   }
 };
 

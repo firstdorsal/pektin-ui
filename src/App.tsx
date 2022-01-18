@@ -163,8 +163,6 @@ export default class App extends PureComponent<AppProps, AppState> {
       });
     } catch (e) {
       this.setState(({ g, config }) => ({
-        // TODO: code style doesnt change on first load of production version
-
         configError: true,
         configLoaded: true,
         config: { ...config, local: localConfig },
@@ -180,6 +178,8 @@ export default class App extends PureComponent<AppProps, AppState> {
 
   healtChecks = async () => {
     /*
+    TODO
+
     let vaultHealth = await vaultApi.healthCheck(this.state.config.vaultAuth);
     if (this.mounted && this.state.configLoaded) {
       let vault: t.VaultHealth = { status: "ok", message: "Online" };

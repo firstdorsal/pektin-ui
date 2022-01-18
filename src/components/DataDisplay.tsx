@@ -46,7 +46,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         {toYaml(l.toPektinApiRecord(this.props.config, this.props.data))}
       </SyntaxHighlighter>,
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
-        {l.jsTemp(this.props.config, [this.props.data])}
+        TODO
       </SyntaxHighlighter>,
       <CurlTab client={this.props.client} config={this.props.config} data={this.props.data} />,
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="text">

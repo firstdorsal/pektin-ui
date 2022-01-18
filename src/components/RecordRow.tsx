@@ -30,6 +30,7 @@ import { GrDocumentTxt } from "react-icons/gr";
 import isEqual from "lodash/isEqual";
 import TxtAssistant from "./TxtAssistant";
 import Domain from "./Domain";
+import { ExtendedPektinApiClient } from "@pektin/client";
 
 interface RowProps {
   readonly handleChange: InstanceType<typeof Domain>["handleChange"];
@@ -46,6 +47,7 @@ interface RowProps {
   readonly totalRows: number;
   readonly addRRValue: InstanceType<typeof Domain>["addRRValue"];
   readonly removeRRValue: InstanceType<typeof Domain>["removeRRValue"];
+  readonly client: ExtendedPektinApiClient;
 }
 interface RowState {}
 
@@ -466,6 +468,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                   style={{ maxHeight: "400px" }}
                   config={this.props.config}
                   data={record}
+                  client={this.props.client}
                 ></DataDisplay>
               </Grid>
             </Grid>

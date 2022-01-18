@@ -1,4 +1,4 @@
-import { Fragment, PureComponent } from "react";
+import { Fragment, MouseEvent, PureComponent } from "react";
 import "@fontsource/inter/900.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/400.css";
@@ -66,19 +66,37 @@ export default class App extends PureComponent<AppProps, AppState> {
     }
   };
 
-  updateLocalConfig = (e: any, type: string, i: number) => {
+  updateLocalConfig = ({
+    type,
+    i,
+    e,
+    newVariable,
+  }: {
+    type: string;
+    i?: number;
+    e?: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>;
+    newVariable?: t.Variable;
+  }) => {
     const db = this.state.db;
     this.setState(({ config }) => {
       config = cloneDeep(config);
-      if (type === "codeStyle") config.local = { ...config.local, [e.target.name]: e.target.value };
-      if (type === "newVariable") config.local.variables = [e, ...config.local.variables];
+      if (type === "codeStyle" && e) {
+        config.local = { ...config.local, [e.target.name]: e.target.value };
+      }
 
-      if (type === "updateVariable") {
-        /*@ts-ignore*/
+      if (
+        type === "updateVariable" &&
+        i &&
+        e &&
+        (e.target.name === "key" || e.target.name === "value")
+      ) {
         config.local.variables[i][e.target.name] = e.target.value;
       }
-      if (type === "removeVariable") config.local.variables.splice(e, 1);
 
+      if (type === "removeVariable" && i) config.local.variables.splice(i, 1);
+      if (type === "newVariable" && newVariable) {
+        config.local.variables = [newVariable, ...config.local.variables];
+      }
       db.config.put({ key: "localConfig", value: config.local });
       return { config };
     });
@@ -94,7 +112,7 @@ export default class App extends PureComponent<AppProps, AppState> {
     } catch (error) {}
   };
 
-  init = async (client: ExtendedPektinApiClient, localConfig?: t.LocalConfig) => {
+  initClient = async (client: ExtendedPektinApiClient) => {
     try {
       await client.getPektinConfig();
     } catch (error: any) {
@@ -107,12 +125,8 @@ export default class App extends PureComponent<AppProps, AppState> {
       console.error(error);
     }
 
-    const config = {
-      ...this.state.config,
-      local: localConfig ? { ...localConfig } : this.state.config.local,
-    };
     const domains = await client.getDomains();
-    return { domains, config };
+    return { domains };
   };
 
   componentDidMount = async () => {
@@ -125,14 +139,14 @@ export default class App extends PureComponent<AppProps, AppState> {
     await this.initDb();
     const localConfig: t.LocalConfig = (await this.state.db.config.get("localConfig"))?.value;
     try {
-      const ssr = sessionStorage.getItem("pcci");
+      const ssr = sessionStorage.getItem("pccc");
       if (!ssr) throw Error();
-      const pcci: PektinClientConnectionConfigOverride = JSON.parse(ssr);
-      const client = new ExtendedPektinApiClient(pcci);
-      const { domains, config } = await this.init(client, localConfig);
+      const pccc: PektinClientConnectionConfigOverride = JSON.parse(ssr);
+      const client = new ExtendedPektinApiClient(pccc);
+      const { domains } = await this.initClient(client);
 
       // handle custom right click menu
-      this.setState(({ g }) => {
+      this.setState(({ g, config }) => {
         return {
           configLoaded: true,
           g: {
@@ -141,17 +155,25 @@ export default class App extends PureComponent<AppProps, AppState> {
             updateLocalConfig: this.updateLocalConfig,
             loadDomains: this.loadDomains,
           },
-          config,
+          config: { ...config, local: localConfig },
           configError: false,
           client,
           domains,
         };
       });
     } catch (e) {
-      this.setState(({ config }) => ({
+      this.setState(({ g, config }) => ({
+        // TODO: code style doesnt change on first load of production version
+
         configError: true,
         configLoaded: true,
         config: { ...config, local: localConfig },
+        g: {
+          ...g,
+          changeContextMenu: this.changeContextMenu,
+          updateLocalConfig: this.updateLocalConfig,
+          loadDomains: this.loadDomains,
+        },
       }));
     }
   };
@@ -176,15 +198,16 @@ export default class App extends PureComponent<AppProps, AppState> {
   };
 
   saveAuth = async (
-    pcci: PektinClientConnectionConfigOverride,
+    pccc: PektinClientConnectionConfigOverride,
     client: ExtendedPektinApiClient
   ) => {
-    sessionStorage.setItem("pcci", JSON.stringify(pcci));
-    const { domains, config } = await this.init(client);
-    this.setState({ config, domains, client });
+    sessionStorage.setItem("pccc", JSON.stringify(pccc));
+
+    const { domains } = await this.initClient(client);
+    this.setState({ domains, client });
   };
 
-  handleContextMenuOffClick = (e: any) => {
+  handleContextMenuOffClick = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     this.setState(({ g }) => ({ g: { ...g, contextMenu: false } }));
   };
@@ -200,6 +223,7 @@ export default class App extends PureComponent<AppProps, AppState> {
     e.preventDefault();
     this.setState(({ g }) => ({ g: { ...g, contextMenu: e, cmAction: action } }));
   };
+
   changeContextMenu = (value: any) => {
     return this.setState(({ g }) => ({ g: { ...g, contextMenu: value } }));
   };

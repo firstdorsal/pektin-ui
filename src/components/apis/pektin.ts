@@ -5,6 +5,7 @@ import * as l from "../lib";
 import { cloneDeep } from "lodash";
 
 const defaultPektinApiEndpoint = "http://127.0.0.1:3001";
+// TODO use the code template from client
 export const jsTemp = (config: t.Config, records: t.DisplayRecord[]) => {
   let endpoint = getDomainFromConfig(config);
   if (!endpoint) endpoint = defaultPektinApiEndpoint;
@@ -35,19 +36,6 @@ export const getDomainFromConfig = (config: t.Config): string => {
 
   if (!config?.pektin?.apiSubDomain || !config?.pektin?.domain) return "";
   return config?.pektin?.apiSubDomain + "." + config?.pektin?.domain;
-};
-
-export const getTokenFromConfig = async (config: t.Config): Promise<string> => {
-  const res = await vaultApi.getValue({ ...config.vaultAuth, key: "gss_token" });
-  return res?.token;
-};
-
-export const getAuthFromConfig = async (config: t.Config): Promise<PektinApiAuth> => {
-  return {
-    token: await getTokenFromConfig(config),
-    endpoint: getDomainFromConfig(config),
-    dev: config?.pektin?.dev,
-  };
 };
 
 export const toDisplayRecord = (config: t.Config, record: RedisEntry): t.DisplayRecord => {

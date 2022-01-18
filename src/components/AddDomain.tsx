@@ -193,6 +193,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
               style={{ marginTop: "15px" }}
               config={this.props.config}
               data={this.state.record}
+              client={this.props.client}
             ></DataDisplay>
           </Grid>
         </Grid>

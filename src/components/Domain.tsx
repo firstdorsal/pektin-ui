@@ -32,6 +32,7 @@ import { HotKeys } from "react-hotkeys";
 import Helper from "../components/Helper";
 import { ExtendedPektinApiClient } from "@pektin/client";
 import { toDisplayRecord, toPektinApiRecord } from "./apis/pektin";
+import ContentLoader from "react-content-loader";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -50,6 +51,7 @@ interface DomainState {
   readonly useRegex: boolean;
   readonly instantSearch: boolean;
   readonly helper: boolean;
+  readonly itemsLoaded: boolean;
 }
 
 interface RouteParams {
@@ -98,6 +100,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     useRegex: true,
     instantSearch: true,
     helper: false,
+    itemsLoaded: false,
   };
 
   list: any;
@@ -512,8 +515,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
       );
     }
   };
-
-  // TODO: code style doesnt change on first load of production version
 
   componentDidUpdate = async (e: DomainProps) => {
     const domainName = this.props.match?.params?.domainName;
@@ -955,6 +956,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
     return (
       <RecordRow
+        client={this.props.client}
         style={style}
         config={this.props.config}
         handleChange={this.handleChange}
@@ -1279,9 +1281,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         }}
       >
         <Helper show={this.state.helper} handleHelper={this.handleHelper}></Helper>
-
         <ContextMenu config={this.props.config} cmClick={this.cmClick} g={this.props.g} />
-
         <div
           className="actionBar"
           style={{
@@ -1310,7 +1310,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
           {this.searchAndReplace()}
         </div>
-
         <div
           style={{
             height: "calc(100% - 125px)",
@@ -1319,22 +1318,35 @@ export default class Domain extends Component<DomainProps, DomainState> {
           }}
         >
           {this.tableHead()}
+
           <AutoSizer>
-            {({ height, width }) => (
-              <List
-                overscanRowCount={5}
-                style={{ overflowY: "scroll" }}
-                ref={(ref) => (this.list = ref)}
-                height={height}
-                width={width}
-                estimatedRowSize={70}
-                rowHeight={({ index }) => {
-                  return this.state.meta[index]?.expanded ? 670 : 70;
-                }}
-                rowRenderer={this.rowRenderer}
-                rowCount={this.state.records.length}
-              />
-            )}
+            {({ height, width }) =>
+              !this.state.itemsLoaded ? (
+                <List
+                  overscanRowCount={5}
+                  style={{ overflowY: "scroll" }}
+                  ref={(ref) => (this.list = ref)}
+                  height={height}
+                  width={width}
+                  estimatedRowSize={70}
+                  rowHeight={({ index }) => {
+                    return this.state.meta[index]?.expanded ? 670 : 70;
+                  }}
+                  rowRenderer={this.rowRenderer}
+                  rowCount={this.state.records.length}
+                />
+              ) : (
+                <ContentLoader
+                  height={height}
+                  width={width}
+                  backgroundColor={"#333"}
+                  foregroundColor={"#999"}
+                >
+                  <rect x="80" y="17" rx="4" ry="4" width="300" height="13" />
+                  <rect x="80" y="40" rx="3" ry="3" width="250" height="10" />
+                </ContentLoader>
+              )
+            }
           </AutoSizer>
         </div>
       </HotKeys>

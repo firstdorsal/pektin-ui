@@ -13,6 +13,8 @@ const defaultAuthHelper = (
   <span>JSON blob containing the URL, client username, and passwords for vault</span>
 );
 
+// TODO make session storage optional
+
 interface AuthProps extends RouteComponentProps {
   readonly config: t.Config;
   readonly saveAuth: InstanceType<typeof App>["saveAuth"]; // HOWTO define function type
@@ -68,12 +70,19 @@ export default class Auth extends Component<AuthProps, AuthState> {
         await client.getDomains();
         value = parsed;
         authError = false;
-      } catch (error) {
-        // TODO: more error handling; reimplement vault sealed check
-        if (error === "Failed to fetch") {
+      } catch (e) {
+        // TODO: more error handling;
+        let error = "";
+        if (typeof e === "string") {
+          error = e; // works, `e` narrowed to string
+        } else if (e instanceof Error) {
+          error = e.message; // works, `e` narrowed to Error
+        }
+
+        if (error.includes("Couldn't fetch")) {
           authHelper = (
             <React.Fragment>
-              {error}. Is Vault sealed?{" "}
+              Couldn't fetch: Is Vault sealed?{" "}
               <a
                 target="blank"
                 rel="norefferer"
@@ -84,6 +93,9 @@ export default class Auth extends Component<AuthProps, AuthState> {
               </a>
             </React.Fragment>
           );
+          authError = true;
+        } else {
+          authHelper = <span>An error occured: {error}</span>;
           authError = true;
         }
       }

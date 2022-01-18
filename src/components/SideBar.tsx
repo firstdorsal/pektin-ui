@@ -9,7 +9,7 @@ import * as t from "./types";
 interface BaseProps extends Partial<RouteComponentProps> {
   readonly config: t.Config;
   readonly domains: String[];
-  readonly health: any;
+  readonly health: t.ServiceHealth | undefined;
 }
 interface BaseState {}
 

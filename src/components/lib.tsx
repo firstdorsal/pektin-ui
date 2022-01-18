@@ -41,8 +41,6 @@ export const loadToluol = async () => {
   return await import("@pektin/toluol-wasm");
 };
 
-// TODO implement Access-Control-Max-Age
-
 export const dohQuery = async (
   dohQuery: t.DOHQuery,
   toluol: any,
@@ -241,7 +239,7 @@ export const defaulConfig: t.Config = {
           Wanderlust imports a single domain per import with NSEC zone walking using the Pektin
           recursor. Due to issues with the Content-Security-Policy this may not work with older
           browsers.{" "}
-          <a href="https://github.com/w3c/webappsec-csp/pull/293" className="url">
+          <a href="https://github.com/w3c/webappsec-csp/pull/293" className="url" rel="norefferer">
             More
           </a>
         </div>
@@ -374,6 +372,8 @@ export const validateDomain = (
   }
   return { type: "ok" };
 };
+
+//TODO cant rightclick on auth field
 
 export const validateIp = (
   config: t.Config,

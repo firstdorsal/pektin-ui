@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import * as t from "./types";
 import * as l from "./lib";
-import * as pektinApi from "./apis/pektin";
 import { Container, Grid, Paper, Switch, Tab, Tabs } from "@material-ui/core";
 import { AccountTree } from "@material-ui/icons";
 import { SiCurl, SiJavascript } from "react-icons/si";
@@ -13,6 +12,7 @@ import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
 import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import yaml from "react-syntax-highlighter/dist/esm/languages/hljs/yaml";
 import * as codeStyles from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { ExtendedPektinApiClient } from "@pektin/client";
 
 SyntaxHighlighter.registerLanguage("javascript", js);
 SyntaxHighlighter.registerLanguage("json", json);
@@ -24,6 +24,7 @@ interface DataDisplayProps {
   readonly data: t.DisplayRecord;
   readonly config: t.Config;
   readonly style?: any;
+  readonly client: ExtendedPektinApiClient;
 }
 
 interface DataDisplayState {
@@ -47,7 +48,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
         {l.jsTemp(this.props.config, [this.props.data])}
       </SyntaxHighlighter>,
-      <CurlTab config={this.props.config} data={this.props.data}></CurlTab>,
+      <CurlTab client={this.props.client} config={this.props.config} data={this.props.data} />,
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="text">
         {l.displayRecordToBind(this.props.data)}
       </SyntaxHighlighter>,
@@ -112,8 +113,9 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
 }
 
 interface CurlTabProps {
-  data: t.DisplayRecord;
-  config: t.Config;
+  readonly data: t.DisplayRecord;
+  readonly config: t.Config;
+  readonly client: ExtendedPektinApiClient;
 }
 
 interface CurlTabState {
@@ -125,28 +127,28 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
     multiline: false,
     auth: null,
   };
-  componentDidMount = async () => {
-    this.setState({ auth: await pektinApi.getAuthFromConfig(this.props.config) });
-  };
-  curl = (auth: any, data: t.DisplayRecord, multiline: boolean) => {
+
+  curl = (data: t.DisplayRecord, multiline: boolean) => {
     const body = {
-      token: auth.dev ? auth.token : "API_TOKEN",
+      confidant_password: "<REDACTED>",
+      client_username: this.props.client.username,
       records: [l.toPektinApiRecord(this.props.config, data)],
     };
 
     if (multiline)
-      return `curl -v ${auth.endpoint}/set -H "Content-Type: application/json" -d '<< EOF
+      return `curl -v ${
+        this.props.client.pektinApiEndpoint
+      }/set -H "Content-Type: application/json" -d '<< EOF
     ${JSON.stringify(body, null, "    ")} 
     EOF'`;
 
-    return `curl -v ${auth.endpoint}/set -H "Content-Type: application/json" -d '${JSON.stringify(
-      body
-    )}'`;
+    return `curl -v ${
+      this.props.client.pektinApiEndpoint
+    }/set -H "Content-Type: application/json" -d '${JSON.stringify(body)}'`;
   };
 
   render = () => {
     const codeStyle = codeStyles[this.props.config.local.codeStyle];
-    if (!this.state.auth) return <div></div>;
     return (
       <React.Fragment>
         <Container style={{ textAlign: "center" }}>
@@ -154,7 +156,7 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
           Multiline
         </Container>
         <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="sh">
-          {this.curl(this.state.auth, this.props.data, this.state.multiline)}
+          {this.curl(this.props.data, this.state.multiline)}
         </SyntaxHighlighter>
       </React.Fragment>
     );

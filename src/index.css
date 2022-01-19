@@ -9,6 +9,7 @@
   --font-color: #171d26;
   --f2: white;
 
+  --api-error: #f31a2d;
   --error: #f44336;
   --warning: #ffa632;
   --ok: #13d434;
@@ -63,6 +64,7 @@
 
     --font-color: white;
 
+    --api-error: #f31a2d;
     --error: #f44336;
     --warning: #ffa632;
     --ok: #13d434;
@@ -525,7 +527,7 @@ button.warning:hover {
   background: none;
   margin: 5px;
   text-align: center;
-  cursor: url("cursor.png"), auto;
+  cursor: url("img/cursor.png"), auto;
 }
 .Helper .speechBubble button span {
   border: 1px dotted black;

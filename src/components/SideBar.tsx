@@ -3,7 +3,6 @@ import { Add, ImportExport, Settings, ShoppingCart } from "@material-ui/icons";
 import { Component } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
 import Health from "./Health";
-import PieSpinner from "./small/PieSpinner";
 import * as t from "./types";
 
 interface BaseProps extends Partial<RouteComponentProps> {
@@ -13,6 +12,8 @@ interface BaseProps extends Partial<RouteComponentProps> {
 }
 interface BaseState {}
 
+// TODO prevent creation of invalid domain for add domain
+
 export default class Sidebar extends Component<BaseProps, BaseState> {
   render = () => {
     return (
@@ -21,13 +22,12 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
         <Health config={this.props.config} health={this.props.health} />
         <br />
         <br />
-        <PieSpinner></PieSpinner>
+
         <h2>Add Existing Domain</h2>
         <NavLink exact className="link" activeClassName="navActive" to="/add/existing/manual">
           <Add />
           <span className="linkText">Manually</span>
         </NavLink>
-
         <NavLink exact className="link" activeClassName="navActive" to="/add/existing/import">
           <ImportExport />
           <span className="linkText">Import</span>

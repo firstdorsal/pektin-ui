@@ -1,11 +1,9 @@
 import { Component, Fragment } from "react";
-import { Checkbox, Fab, IconButton, TextField } from "@material-ui/core";
+import { Checkbox, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
 import {
   AddCircle,
-  Check,
   CheckBox,
-  Clear,
   Close,
   Delete,
   KeyboardArrowUp,
@@ -33,7 +31,9 @@ import Helper from "../components/Helper";
 import { ExtendedPektinApiClient } from "@pektin/client";
 import { toDisplayRecord, toPektinApiRecord } from "./apis/pektin";
 import ContentLoader from "react-content-loader";
-import zIndex from "@material-ui/core/styles/zIndex";
+//@ts-ignore
+import Fade from "react-reveal/Fade";
+import PieButton from "./small/PieButton";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -53,6 +53,9 @@ interface DomainState {
   readonly instantSearch: boolean;
   readonly helper: boolean;
   readonly itemsLoaded: boolean;
+  readonly apiError: boolean;
+  readonly apiErrorMessage: string;
+  readonly apiTime: number;
 }
 
 interface RouteParams {
@@ -102,6 +105,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
     instantSearch: true,
     helper: false,
     itemsLoaded: false,
+    apiError: false,
+    apiErrorMessage: "",
+    apiTime: 0.3,
   };
 
   list: any;
@@ -120,7 +126,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
   saveRecord = async (i: number) => {
     this.setState({});
     const saveSuccessState = async (setRecord: t.DisplayRecord, i: number) => {
-      console.timeEnd();
       let record = setRecord;
       /* this is to keep everything synced
       try {
@@ -390,8 +395,13 @@ export default class Domain extends Component<DomainProps, DomainState> {
         );
 
         changedRecords = meta.filter((m) => m.anyChanged).length;
-        warningRecords = meta.filter((m) => m.validity?.totalValidity === "warning").length;
-        errorRecords = meta.filter((m) => m.validity?.totalValidity === "error").length;
+        warningRecords = meta.filter(
+          (m) => m.validity?.totalValidity === "warning" && m.anyChanged
+        ).length;
+
+        errorRecords = meta.filter(
+          (m) => m.validity?.totalValidity === "error" && m.anyChanged
+        ).length;
 
         return {
           meta,
@@ -522,6 +532,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     const domainName = this.props.match?.params?.domainName;
     // replace the current state when the components props change to a new domain page
     if (e.match?.params?.domainName !== domainName) {
+      this.setState({ itemsLoaded: false });
       const records = (await this.props.client.getZoneRecords([domainName])).data[domainName];
 
       this.initData(
@@ -770,8 +781,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
           );
         });
         changedRecords = meta.filter((m) => m.anyChanged).length;
-        warningRecords = meta.filter((m) => m.validity?.totalValidity === "warning").length;
-        errorRecords = meta.filter((m) => m.validity?.totalValidity === "error").length;
+        warningRecords = meta.filter(
+          (m) => m.validity?.totalValidity === "warning" && m.anyChanged
+        ).length;
+        errorRecords = meta.filter(
+          (m) => m.validity?.totalValidity === "error" && m.anyChanged
+        ).length;
 
         return {
           records,
@@ -974,6 +989,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         variant={this.props.variant}
         addRRValue={this.addRRValue}
         removeRRValue={this.removeRRValue}
+        apiTime={this.state.apiTime}
       />
     );
   };
@@ -1046,10 +1062,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
             <KeyboardArrowUp />
           </IconButton>
         </span>
-
         <span
           className="applyChanges"
-          title="Apply All Changes ctrl+s"
           style={{
             width: "50px",
             position: "absolute",
@@ -1057,21 +1071,18 @@ export default class Domain extends Component<DomainProps, DomainState> {
             top: "13px",
           }}
         >
-          <Fab
-            onClick={() => this.saveAllChangedRecords()}
-            disabled={(() => {
-              let v = false;
-              if (this.state.changedRecords === 0 && this.props.variant !== "import") v = true;
-              if (this.state.errorRecords) v = true;
-              return v;
+          <PieButton
+            title="Apply All Changes ctrl+s"
+            onClick={this.saveAllChangedRecords}
+            mode={(() => {
+              if (this.state.apiError) return "apiError";
+              if (this.state.changedRecords > 0 && this.state.errorRecords) return "error";
+              if (this.state.changedRecords > 0 && this.state.warningRecords) return "warning";
+              if (this.state.changedRecords > 0) return "ok";
+              return "disabled";
             })()}
-            size="small"
-            className={
-              this.state.errorRecords ? "error" : this.state.warningRecords ? "warning" : "ok"
-            }
-          >
-            {this.state.errorRecords ? <Clear /> : <Check />}
-          </Fab>
+            predictedTime={this.state.apiTime}
+          />
         </span>
       </div>
     );
@@ -1242,7 +1253,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
   contentLoader = (height: number, width: number) => {
     return (
       <ContentLoader
-        style={{ position: "absolute", top: 75, zIndex: 10 }}
+        style={{ position: "absolute", top: 75, pointerEvents: "none" }}
         height={height}
         width={width}
         backgroundColor={"#333"}
@@ -1254,10 +1265,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
             const ypos = i * 70 + 20;
 
             if (ypos > height) {
-              return;
+              return; // eslint-disable-line
             }
             return (
-              <Fragment>
+              <Fragment key={i}>
                 <rect x="29" y={ypos - 1} rx="5" ry="5" width="20" height="20" />
                 <rect x="0" y={ypos + 45} rx="1" ry="1" width={width} height="1" />
                 <rect x="70" y={ypos} rx="5" ry="5" width="310" height="20" />
@@ -1289,10 +1300,15 @@ export default class Domain extends Component<DomainProps, DomainState> {
           },
           RELOAD: (e) => {
             e?.preventDefault();
+            if (this.props.variant === "import") return;
             this.handleReloadClick();
           },
-          DELETE: this.handleDeleteClick,
+          DELETE: (e) => {
+            if (this.props.variant === "import") return;
+            this.handleDeleteClick();
+          },
           NEW: (e) => {
+            if (this.props.variant === "import") return;
             /*@ts-ignore*/
             if (e?.target?.nodeName !== "INPUT") {
               e?.preventDefault();
@@ -1301,6 +1317,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
           },
           SAVE: (e) => {
             e?.preventDefault();
+            if (this.props.variant === "import") return;
+
             if (this.state.changedRecords) this.saveAllChangedRecords();
           },
           ESCAPE: (e) => {
@@ -1356,9 +1374,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
           {this.tableHead()}
 
           <AutoSizer>
-            {({ height, width }) =>
-              this.state.itemsLoaded ? (
-                <Fragment>
+            {({ height, width }) => (
+              <Fragment>
+                <Fade when={this.state.itemsLoaded} left>
                   <List
                     overscanRowCount={5}
                     style={{ overflowY: "scroll" }}
@@ -1372,11 +1390,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     rowRenderer={this.rowRenderer}
                     rowCount={this.state.records.length}
                   />
-                </Fragment>
-              ) : (
-                this.contentLoader(height, width)
-              )
-            }
+                </Fade>
+                <Fade when={!this.state.itemsLoaded} left>
+                  {this.contentLoader(height, width)}
+                </Fade>
+              </Fragment>
+            )}
           </AutoSizer>
         </div>
       </HotKeys>

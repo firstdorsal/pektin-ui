@@ -4,7 +4,7 @@ add_header x-content-type-options nosniff;
 add_header x-permitted-cross-domain-policies none;
 add_header x-download-options noopen;
 add_header x-xss-protection "1; mode=block";
-add_header Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'wasm-eval' ; style-src 'self'; manifest-src 'self'; connect-src ${CSP_CONNECT_SRC}; img-src 'self'; font-src 'self';";
+add_header Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'wasm-eval' ; style-src 'self' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='; manifest-src 'self'; connect-src ${CSP_CONNECT_SRC}; img-src 'self'; font-src 'self';";
 
 add_header Strict-Transport-Security "max-age=315360000; includeSubdomains; preload";
 add_header referrer-policy no-referrer;

@@ -7,7 +7,6 @@ import {
   Checkbox,
   TextField,
   Input,
-  Fab,
   Select,
   MenuItem,
   Grid,
@@ -18,8 +17,6 @@ import DataDisplay from "./DataDisplay";
 import {
   AddCircle,
   Ballot,
-  Check,
-  Clear,
   KeyboardArrowDown,
   KeyboardArrowUp,
   RemoveCircle,
@@ -32,6 +29,7 @@ import TxtAssistant from "./TxtAssistant";
 import Domain from "./Domain";
 import { ExtendedPektinApiClient } from "@pektin/client";
 import PieButton from "./small/PieButton";
+import { PektinApiResponseBody } from "@pektin/client/src/types";
 
 interface RowProps {
   readonly handleChange: InstanceType<typeof Domain>["handleChange"];
@@ -49,7 +47,7 @@ interface RowProps {
   readonly addRRValue: InstanceType<typeof Domain>["addRRValue"];
   readonly removeRRValue: InstanceType<typeof Domain>["removeRRValue"];
   readonly client: ExtendedPektinApiClient;
-  readonly apiTime: number;
+  readonly lastApiCall?: PektinApiResponseBody;
 }
 interface RowState {}
 
@@ -390,14 +388,15 @@ export default class RecordRow extends Component<RowProps, RowState> {
             >
               <PieButton
                 title={(() => {
+                  if (!this.props.meta.anyChanged) return "";
                   const v = this.props.meta.validity?.totalValidity;
-                  if (v === "ok" && this.props.meta.anyChanged) {
+                  if (v === "ok") {
                     return "Apply changes";
                   }
-                  if (v === "warning" && this.props.meta.anyChanged) {
+                  if (v === "warning") {
                     return "Fix issues and apply changes";
                   }
-                  if (v === "error" && this.props.meta.anyChanged) {
+                  if (v === "error") {
                     return "Can't apply changes";
                   }
                   return "";
@@ -409,30 +408,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
 
                   return "disabled";
                 })()}
-                predictedTime={this.props.apiTime}
+                predictedTime={this.props?.lastApiCall?.time}
               />
             </span>
-            /*              <Fab
-                onClick={() => this.props.saveRecord(p.recordIndex)}
-                disabled={(() => {
-                  if (!this.props.meta?.anyChanged) return true;
-
-                  const v = this.props.meta.validity?.totalValidity;
-                  if (v === "error") return true;
-                })()}
-                size="small"
-                title={(() => {
-                  const v = this.props.meta.validity?.totalValidity;
-                  if (v === "ok") return "Apply changes";
-                  if (v === "warning") return "Fix issues and apply changes";
-                  if (v === "error") return "Can't apply changes";
-                  return "";
-                })()}
-                className={this.props.meta.validity?.totalValidity}
-              >
-                {this.props.meta.validity?.totalValidity === "error" ? <Clear /> : <Check />}
-              </Fab>
-            */
           )}
         </div>
         <div

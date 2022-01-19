@@ -74,9 +74,9 @@ export default class Auth extends Component<AuthProps, AuthState> {
         // TODO: more error handling;
         let error = "";
         if (typeof e === "string") {
-          error = e; // works, `e` narrowed to string
+          error = e;
         } else if (e instanceof Error) {
-          error = e.message; // works, `e` narrowed to Error
+          error = e.message;
         }
 
         if (error.includes("Couldn't fetch")) {

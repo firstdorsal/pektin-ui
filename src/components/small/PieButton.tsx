@@ -13,10 +13,12 @@ const colors = {
   apiError: { b: "#f31a2d", f: "black" },
 };
 
+const defaultTime = 0.2;
+
 type ButtonMode = "ok" | "warning" | "error" | "apiError" | "disabled";
 
 interface PieButtonProps {
-  readonly predictedTime: number;
+  readonly predictedTime?: number;
   readonly mode: ButtonMode;
   readonly title: string;
   readonly onClick: Function;
@@ -65,7 +67,7 @@ export default class PieButton extends Component<PieButtonProps, PieButtonState>
       this.setState({ animActive: true });
     }
 
-    const rot = ((pi * 2) / (frameRate * this.props.predictedTime)) * frame;
+    const rot = ((pi * 2) / (frameRate * (this.props.predictedTime || defaultTime))) * frame;
     ctx.clearRect(0, 0, width, height);
     ctx.save();
     //draw circular mask
@@ -88,7 +90,7 @@ export default class PieButton extends Component<PieButtonProps, PieButtonState>
     ctx.translate(width / 5, height / 5);
     ctx.scale(2.5, 2.5);
     ctx.fillStyle = colors[mode].f;
-    ctx.fill(mode === "error" ? cross : check);
+    ctx.fill(["error", "apiError"].includes(mode) ? cross : check);
     ctx.restore();
 
     frame += 1;

@@ -34,6 +34,7 @@ import ContentLoader from "react-content-loader";
 //@ts-ignore
 import Fade from "react-reveal/Fade";
 import PieButton from "./small/PieButton";
+import { PektinApiResponseBody } from "@pektin/client/src/types";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -53,9 +54,7 @@ interface DomainState {
   readonly instantSearch: boolean;
   readonly helper: boolean;
   readonly itemsLoaded: boolean;
-  readonly apiError: boolean;
-  readonly apiErrorMessage: string;
-  readonly apiTime: number;
+  readonly lastApiCall?: PektinApiResponseBody;
 }
 
 interface RouteParams {
@@ -105,9 +104,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
     instantSearch: true,
     helper: false,
     itemsLoaded: false,
-    apiError: false,
-    apiErrorMessage: "",
-    apiTime: 0.3,
   };
 
   list: any;
@@ -124,8 +120,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
   //TODO loading animation green circle rotates like a pie diagram to grey circle
 
   saveRecord = async (i: number) => {
-    this.setState({});
-    const saveSuccessState = async (setRecord: t.DisplayRecord, i: number) => {
+    const saveSuccessState = async (
+      setRecord: t.DisplayRecord,
+      i: number,
+      apiRes: PektinApiResponseBody
+    ) => {
       let record = setRecord;
       /* this is to keep everything synced
       try {
@@ -157,7 +156,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(record, "no");
         changedRecords = meta.filter((m) => m.anyChanged).length;
 
-        return { meta, ogRecords, records, changedRecords };
+        return { meta, ogRecords, records, changedRecords, lastApiCall: apiRes };
       });
     };
 
@@ -169,23 +168,29 @@ export default class Domain extends Component<DomainProps, DomainState> {
       // delete the key with the old name and or type and create one with the new name
 
       const setRes = await this.props.client.set(
-        [this.state.records[i]].map((record) => toPektinApiRecord(this.props.config, record))
+        [this.state.records[i]].map((record) => toPektinApiRecord(this.props.config, record)),
+        false
       );
       if (setRes && setRes.error !== undefined && setRes.error === false) {
         this.props.client.deleteRecords(
           [this.state.ogRecords[i]].map((r) => r.name + ":" + r.type)
         );
-        await saveSuccessState(this.state.records[i], i);
+        await saveSuccessState(this.state.records[i], i, setRes);
       }
     } else {
       const res = await this.props.client.set(
-        [this.state.records[i]].map((record) => toPektinApiRecord(this.props.config, record))
+        [this.state.records[i]].map((record) => toPektinApiRecord(this.props.config, record)),
+        false
       );
-      if (res && res.error !== undefined && res.error === false) {
-        await saveSuccessState(this.state.records[i], i);
+      if (!res.error) {
+        await saveSuccessState(this.state.records[i], i, res);
+      } else {
+        this.setState({ lastApiCall: res });
       }
     }
   };
+
+  // TODO check base64 for openpgp record
 
   saveAllChangedRecords = async () => {
     if (this.props.variant === "import") {
@@ -194,7 +199,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
         if (this.state.meta[i].selected) toBeAdded.push(record);
       });
       const res = await this.props.client.set(
-        toBeAdded.map((record) => toPektinApiRecord(this.props.config, record))
+        toBeAdded.map((record) => toPektinApiRecord(this.props.config, record)),
+        false
       );
       if (res && res.error !== undefined && res.error === false) {
         this.props.g.loadDomains();
@@ -218,42 +224,46 @@ export default class Domain extends Component<DomainProps, DomainState> {
         }
       });
       const setRes = await this.props.client.set(
-        toBeAdded.map((record) => toPektinApiRecord(this.props.config, record))
+        toBeAdded.map((record) => toPektinApiRecord(this.props.config, record)),
+        false
       );
 
       if (setRes && setRes.error !== undefined && setRes.error === false) {
         if (toBeDeleted.length) {
           await this.props.client.deleteRecords(toBeDeleted.map((r) => r.name + ":" + r.type));
         }
-        this.updateRecords(toBeAdded);
+        await this.updateRecords(setRes, toBeAdded);
+      } else {
+        this.setState({ lastApiCall: setRes });
       }
     }
   };
 
-  updateRecords = async (toUpdate?: t.DisplayRecord[]) => {
+  updateRecords = async (apiRes: PektinApiResponseBody, toUpdate?: t.DisplayRecord[]) => {
     if (!toUpdate) {
       this.handleReloadClick();
     } else {
-      const updatedRecords = (
-        await this.props.client.get(toUpdate.map((r) => r.name + ":" + r.type))
-      ).data.map((r) => toDisplayRecord(this.props.config, r));
-      this.setState(({ meta, ogRecords, records, changedRecords }) => {
-        meta = cloneDeep(meta);
-        records = cloneDeep(records);
-        records.forEach((record, i) => {
-          updatedRecords.forEach((updatedRecord) => {
-            if (updatedRecord.type === record.type && updatedRecord.name === record.name) {
-              ogRecords[i] = cloneDeep(updatedRecord);
-              records[i] = cloneDeep(updatedRecord);
-              meta[i].validity = this.validateRecord(updatedRecord, this.state.domainName);
-              [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(updatedRecord, "no");
-            }
+      const res = await this.props.client.get(toUpdate.map((r) => r.name + ":" + r.type));
+      if (!res.error) {
+        const updatedRecords = res.data.map((r) => toDisplayRecord(this.props.config, r));
+        this.setState(({ meta, ogRecords, records, changedRecords }) => {
+          meta = cloneDeep(meta);
+          records = cloneDeep(records);
+          records.forEach((record, i) => {
+            updatedRecords.forEach((updatedRecord) => {
+              if (updatedRecord.type === record.type && updatedRecord.name === record.name) {
+                ogRecords[i] = cloneDeep(updatedRecord);
+                records[i] = cloneDeep(updatedRecord);
+                meta[i].validity = this.validateRecord(updatedRecord, this.state.domainName);
+                [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(updatedRecord, "no");
+              }
+            });
           });
-        });
-        changedRecords = meta.filter((m) => m.anyChanged).length;
+          changedRecords = meta.filter((m) => m.anyChanged).length;
 
-        return { meta, ogRecords, records, changedRecords };
-      });
+          return { meta, ogRecords, records, changedRecords, lastApiCall: apiRes };
+        });
+      }
     }
   };
 
@@ -520,11 +530,14 @@ export default class Domain extends Component<DomainProps, DomainState> {
     } else {
       const domainName = this.props.match?.params?.domainName;
       this.setState({ domainName: this.props.match.params.domainName });
-      const records = (await this.props.client.getZoneRecords([domainName])).data[domainName];
-      this.initData(
-        records.map((r) => toDisplayRecord(this.props.config, r)),
-        this.props.match.params.domainName
-      );
+      const res = await this.props.client.getZoneRecords([domainName]);
+      if (!res.error) {
+        const records = res.data[domainName];
+        this.initData(
+          records.map((r) => toDisplayRecord(this.props.config, r)),
+          this.props.match.params.domainName
+        );
+      }
     }
   };
 
@@ -533,12 +546,15 @@ export default class Domain extends Component<DomainProps, DomainState> {
     // replace the current state when the components props change to a new domain page
     if (e.match?.params?.domainName !== domainName) {
       this.setState({ itemsLoaded: false });
-      const records = (await this.props.client.getZoneRecords([domainName])).data[domainName];
+      const res = await this.props.client.getZoneRecords([domainName]);
+      if (!res.error) {
+        const records = res.data[domainName];
 
-      this.initData(
-        records.map((r) => toDisplayRecord(this.props.config, r)),
-        domainName
-      );
+        this.initData(
+          records.map((r) => toDisplayRecord(this.props.config, r)),
+          domainName
+        );
+      }
     }
   };
 
@@ -872,14 +888,15 @@ export default class Domain extends Component<DomainProps, DomainState> {
   };
 
   handleReloadClick = async () => {
-    const records = (await this.props.client.getZoneRecords([this.state.domainName])).data[
-      this.state.domainName
-    ];
+    const res = await this.props.client.getZoneRecords([this.state.domainName]);
+    if (!res.error) {
+      const records = res.data[this.state.domainName];
 
-    this.initData(
-      records.map((r) => toDisplayRecord(this.props.config, r)),
-      this.props.match.params.domainName
-    );
+      this.initData(
+        records.map((r) => toDisplayRecord(this.props.config, r)),
+        this.props.match.params.domainName
+      );
+    }
   };
 
   hasRecordChanged = (
@@ -989,7 +1006,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         variant={this.props.variant}
         addRRValue={this.addRRValue}
         removeRRValue={this.removeRRValue}
-        apiTime={this.state.apiTime}
+        lastApiCall={this.state.lastApiCall}
       />
     );
   };
@@ -1072,16 +1089,26 @@ export default class Domain extends Component<DomainProps, DomainState> {
           }}
         >
           <PieButton
-            title="Apply All Changes ctrl+s"
+            title={(() => {
+              if (this.state.lastApiCall?.error) return this.state.lastApiCall.message;
+              if (this.state.changedRecords <= 0) return "";
+              if (this.state.errorRecords) {
+                return "Can't save records";
+              }
+              if (this.state.warningRecords) {
+                return "Fix warnings and apply all changes ctrl+s";
+              }
+              return "Apply all changes ctrl+s";
+            })()}
             onClick={this.saveAllChangedRecords}
             mode={(() => {
-              if (this.state.apiError) return "apiError";
+              if (this.state.lastApiCall?.error) return "apiError";
               if (this.state.changedRecords > 0 && this.state.errorRecords) return "error";
               if (this.state.changedRecords > 0 && this.state.warningRecords) return "warning";
               if (this.state.changedRecords > 0) return "ok";
               return "disabled";
             })()}
-            predictedTime={this.state.apiTime}
+            predictedTime={this.state.lastApiCall?.time}
           />
         </span>
       </div>

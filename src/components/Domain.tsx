@@ -126,27 +126,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
       apiRes: PektinApiResponseBody
     ) => {
       let record = setRecord;
-      /* this is to keep everything synced
-      try {
-        const candidate = (await this.props.client.getZoneRecords([this.state.domainName])).data[
-          this.state.domainName
-        ].filter((recordKey: string) => {
-          const same =
-            recordKey.toLowerCase().replaceAll(/\s+/g, "") ===
-            (setRecord.name + ":" + setRecord.type).toLowerCase().replaceAll(/\s+/g, "");
-
-          return same;
-        })[0];
-
-        record = (await this.props.client.get([candidate])).data.map((gotRecord) =>
-          toDisplayRecord(this.props.config, gotRecord)
-        )[0];
-      } catch (e) {}
-      if (!record) {
-        return;
-      }
-      */
-
       this.setState(({ meta, ogRecords, records, changedRecords }) => {
         meta = cloneDeep(meta);
         records = cloneDeep(records);
@@ -190,6 +169,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
     }
   };
 
+  // TODO import doesnt import multiple resource records: multiple NS records present but only one gets imported
+  // TODO import fix ttls
   // TODO check base64 for openpgp record
 
   saveAllChangedRecords = async () => {
@@ -228,13 +209,15 @@ export default class Domain extends Component<DomainProps, DomainState> {
         false
       );
 
-      if (setRes && setRes.error !== undefined && setRes.error === false) {
+      if (!setRes.error) {
         if (toBeDeleted.length) {
           await this.props.client.deleteRecords(toBeDeleted.map((r) => r.name + ":" + r.type));
         }
         await this.updateRecords(setRes, toBeAdded);
       } else {
-        this.setState({ lastApiCall: setRes });
+        this.setState(({ meta }) => {
+          return { lastApiCall: setRes, meta };
+        });
       }
     }
   };

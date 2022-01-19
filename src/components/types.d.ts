@@ -1,4 +1,4 @@
-import { PektinConfig } from "@pektin/client/src/types";
+import { PektinApiResponseBodyError, PektinConfig } from "@pektin/client/src/types";
 
 export interface DOHQuery {
   name: string;
@@ -93,6 +93,7 @@ export interface DomainMeta {
   searchMatch: SearchMatch;
   anySearchMatch: boolean;
   validity?: FieldValidity;
+  apiError: PektinApiResponseBodyError;
 }
 
 export interface DisplayRecord {

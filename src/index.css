@@ -458,22 +458,7 @@ button.error:hover {
 .warning .MuiInput-underline:after {
   border-bottom-color: var(--warning) !important;
 }
-/*
-button.warning,
-button.warning:hover {
-  background: var(--warning);
-}
 
-button.ok,
-button.ok:hover {
-  background: var(--ok);
-}
-
-button.ok:hover,
-button.warning:hover {
-  opacity: 0.9;
-}
-*/
 .MuiStepIcon-root {
   color: var(--disabled-color);
 }

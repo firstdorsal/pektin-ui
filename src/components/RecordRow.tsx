@@ -54,7 +54,7 @@ interface RowState {}
 // TODO: firefox always shows up/down arrows for number fields chrome shows them only on hover
 
 export default class RecordRow extends Component<RowProps, RowState> {
-  advancedView = (record: t.DisplayRecord) => {
+  advancedView = () => {
     const p = this.props;
     const recordValue = (record: t.DisplayRecord, rrIndex: number) => {
       let v: any = record.values[rrIndex];
@@ -438,7 +438,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         <Ballot />
                         <span className="caps label">rrset</span>
                       </div>
-                      {this.advancedView(record)}
+                      {this.advancedView()}
                       {record.type !== "SOA" ? (
                         <div>
                           <IconButton

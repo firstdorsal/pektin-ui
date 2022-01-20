@@ -1,18 +1,17 @@
-// @ts-nocheck
-import { Add, ImportExport, Settings, ShoppingCart } from "@material-ui/icons";
-import { Component } from "react";
+import { Add, ImportExport, Settings, ShoppingCart, People } from "@material-ui/icons";
+import { Component, Fragment } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
 import Health from "./Health";
 import * as t from "./types";
+import { ExtendedPektinApiClient } from "@pektin/client";
 
 interface BaseProps extends Partial<RouteComponentProps> {
   readonly config: t.Config;
-  readonly domains: String[];
+  readonly domains: string[];
   readonly health: t.ServiceHealth | undefined;
+  readonly client: ExtendedPektinApiClient;
 }
 interface BaseState {}
-
-// TODO prevent creation of invalid domain for add domain
 
 export default class Sidebar extends Component<BaseProps, BaseState> {
   render = () => {
@@ -22,6 +21,18 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
         <Health config={this.props.config} health={this.props.health} />
         <br />
         <br />
+        {this.props.client.managerPassword ? (
+          <Fragment>
+            <h2>Access Management</h2>
+            <NavLink exact className="link" activeClassName="navActive" to="/management/clients">
+              <People />
+              <span className="linkText">Clients</span>
+            </NavLink>
+            <br />
+          </Fragment>
+        ) : (
+          ""
+        )}
 
         <h2>Add Existing Domain</h2>
         <NavLink exact className="link" activeClassName="navActive" to="/add/existing/manual">

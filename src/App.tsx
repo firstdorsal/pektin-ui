@@ -283,6 +283,7 @@ export default class App extends PureComponent<AppProps, AppState> {
                       health={this.state.health}
                       domains={this.state.domains}
                       config={this.state.config}
+                      client={this.state.client}
                     ></Sidebar>
                     <main>
                       <AddDomain
@@ -308,6 +309,7 @@ export default class App extends PureComponent<AppProps, AppState> {
                       health={this.state.health}
                       domains={this.state.domains}
                       config={this.state.config}
+                      client={this.state.client}
                     ></Sidebar>
                     <main>
                       <ImportDomain
@@ -330,6 +332,7 @@ export default class App extends PureComponent<AppProps, AppState> {
                       health={this.state.health}
                       domains={this.state.domains}
                       config={this.state.config}
+                      client={this.state.client}
                     ></Sidebar>
                     <main>
                       <Domain
@@ -353,6 +356,7 @@ export default class App extends PureComponent<AppProps, AppState> {
                       health={this.state.health}
                       domains={this.state.domains}
                       config={this.state.config}
+                      client={this.state.client}
                     ></Sidebar>
                     <main>
                       <ConfigView g={this.state.g} config={this.state.config} />
@@ -371,6 +375,7 @@ export default class App extends PureComponent<AppProps, AppState> {
                       health={this.state.health}
                       domains={this.state.domains}
                       config={this.state.config}
+                      client={this.state.client}
                     ></Sidebar>
                     <main></main>
                   </Fragment>

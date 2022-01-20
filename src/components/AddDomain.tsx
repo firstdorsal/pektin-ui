@@ -26,13 +26,13 @@ interface AddDomainProps extends RouteComponentProps {
 
 interface AddDomainState {
   readonly record: t.DisplayRecord;
-  readonly error: string;
+  readonly apiError: string;
 }
 
 export default class AddDomain extends Component<AddDomainProps, AddDomainState> {
   state: AddDomainState = {
     record: defaultSOA,
-    error: "",
+    apiError: "",
   };
 
   handleChange = (e: any, mode: string = "default") => {
@@ -56,6 +56,8 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
       this.handleChange({ name: target.name, value }, action);
     }
   };
+
+  //TODO add better validation, disabled button etc.
 
   render = () => {
     return (
@@ -170,10 +172,12 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     color="primary"
                     variant="contained"
                     onClick={async () => {
-                      const req = await this.props.client.set(
-                        [this.state.record].map((r) => toPektinApiRecord(this.props.config, r))
+                      const setRes = await this.props.client.set(
+                        [toPektinApiRecord(this.props.config, this.state.record)],
+                        false
                       );
-                      if (req.error) this.setState({ error: req.message });
+                      if (setRes.error)
+                        return this.setState({ apiError: setRes.message + "\n" + setRes.data[0] });
                       await this.props.loadDomains();
                       if (this.props.history)
                         this.props.history.push(
@@ -184,7 +188,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     Add Domain
                   </Button>
                 </div>
-                <div style={{ color: "var(--error)" }}></div>
+                <div style={{ color: "var(--error)" }}>{this.state.apiError}</div>
               </Container>
             </Paper>
           </Grid>

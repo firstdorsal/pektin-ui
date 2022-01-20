@@ -144,7 +144,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
       this.state.ogRecords[i].type !== "NEW"
     ) {
       // delete the key with the old name and or type and create one with the new name
-
       const setRes = await this.props.client.set(
         [toPektinApiRecord(this.props.config, this.state.records[i])],
         false
@@ -168,10 +167,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
       }
     }
   };
-
-  // TODO import doesnt import multiple resource records: multiple NS records present but only one gets imported
-  // TODO import fix ttls
-
+  // TODO add error/warning text below the fields; i thought it was like this already at some point?
+  // TODO add abort button to import
   saveAllChangedRecords = async () => {
     if (this.props.variant === "import") {
       const toBeAdded: t.DisplayRecord[] = [];
@@ -620,6 +617,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
   };
 
   handleSearchAndReplaceChange = (e: any, useRegex = this.state.useRegex, searchNow = false) => {
+    try {
+      "".match(RegExp(e.target.value));
+    } catch (error) {
+      useRegex = false;
+    }
+
     if (e.target.name === "replace") {
       this.setState((prevState) => ({
         ...prevState,

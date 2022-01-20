@@ -42,7 +42,6 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
     const allTypes: string[] = [];
     for (let i = 0; i < limit; i++) {
       const newNameRes = await this.query({ name: currentName, type: "NSEC" });
-      console.log(currentName, newNameRes);
 
       if (!newNameRes) break;
       if (newNameRes.answers.length > 1) {

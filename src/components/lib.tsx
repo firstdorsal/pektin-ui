@@ -87,11 +87,21 @@ export const dohQuery = async (
   }
 };
 export const toluolToDisplayRecord = (response: ToluolResponse): t.DisplayRecord | false => {
-  const answer = response.answers[0].NONOPT;
-  if (!isSupportedType(answer.atype)) return false;
-  const rdata = response.answers[0].NONOPT.rdata;
-  const values = [{ ttl: answer.ttl, ...textToRRValue(rdata.join(" "), answer.atype as t.RRType) }];
-  return { name: answer.name, type: answer.atype as t.RRType, values };
+  if (!response?.answers || !response?.answers.length) return false;
+  const firstAnswer = response?.answers[0]?.NONOPT;
+  if (!firstAnswer) return false;
+  if (!isSupportedType(firstAnswer.atype)) return false;
+
+  const values = response?.answers.map((e, i) => {
+    const answer = e.NONOPT;
+    const rdata = e.NONOPT?.rdata;
+    return {
+      ttl: answer.ttl, //TODO maybe fix/beautify ttls rounding them somehow
+      ...textToRRValue(rdata.join(" "), answer.atype as t.RRType),
+    };
+  });
+
+  return { name: firstAnswer.name, type: firstAnswer.atype as t.RRType, values };
 };
 
 const textToRRValue = (val: string, recordType: t.RRType) => {

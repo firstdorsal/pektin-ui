@@ -13,7 +13,7 @@ const colors = {
   apiError: { b: "#f31a2d", f: "black" },
 };
 
-const defaultTime = 0.2;
+const defaultTime = 200;
 
 type ButtonMode = "ok" | "warning" | "error" | "apiError" | "disabled";
 
@@ -22,6 +22,7 @@ interface PieButtonProps {
   readonly mode: ButtonMode;
   readonly title: string;
   readonly onClick: Function;
+  readonly type?: string;
 }
 interface PieButtonState {
   animActive: boolean;
@@ -42,32 +43,27 @@ export default class PieButton extends Component<PieButtonProps, PieButtonState>
   clicked = () => {
     this.props.onClick();
     this.runAnimation(0, false, "disabled", this.bgCanvas.current);
-    this.runAnimation(0, ["ok", "warning"].includes(this.props.mode));
+    this.runAnimation(0, ["ok", "warning"].includes(this.props.mode), this.props.mode);
   };
   componentDidMount = () => {
-    this.runAnimation(0, false);
+    this.runAnimation(0, false, this.props.mode);
   };
 
-  runAnimation = (
-    frame: number,
-    anim: boolean,
-    mode = this.props.mode,
-    canvas = this.canvas.current
-  ) => {
+  runAnimation = (frame: number, anim: boolean, mode: ButtonMode, canvas = this.canvas.current) => {
     if (!canvas) return;
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
+    if (anim && frame === 0) {
+      this.setState({ animActive: true });
+    }
     const { width, height } = canvas;
     ctx.fillStyle = colors[mode].b;
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
     const pi = Math.PI;
     const frameRate = 60;
+    const time = (this.props.predictedTime || defaultTime) / 1000;
 
-    if (anim && frame === 0) {
-      this.setState({ animActive: true });
-    }
-
-    const rot = ((pi * 2) / (frameRate * (this.props.predictedTime || defaultTime))) * frame;
+    const rot = ((pi * 2) / (frameRate * time)) * frame;
     ctx.clearRect(0, 0, width, height);
     ctx.save();
     //draw circular mask
@@ -93,19 +89,18 @@ export default class PieButton extends Component<PieButtonProps, PieButtonState>
     ctx.fill(["error", "apiError"].includes(mode) ? cross : check);
     ctx.restore();
 
-    frame += 1;
-
     if (anim && rot < pi * 2) {
-      requestAnimationFrame(() => this.runAnimation(frame, true));
+      frame += 1;
+      requestAnimationFrame(() => this.runAnimation(frame, true, mode));
     } else if (anim) {
       this.setState({ animActive: false });
-      ctx.clearRect(0, 0, width, height);
     }
   };
+
   render = () => {
-    this.runAnimation(0, false);
+    this.runAnimation(0, false, this.props.mode);
     return (
-      <button title={this.props.title} className={this.props.mode} style={{ all: "unset" }}>
+      <button title={this.props.title} style={{ all: "unset" }}>
         <canvas
           style={{
             width: "40px",

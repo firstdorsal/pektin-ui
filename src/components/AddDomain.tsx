@@ -194,7 +194,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
               config={this.props.config}
               data={this.state.record}
               client={this.props.client}
-            ></DataDisplay>
+            />
           </Grid>
         </Grid>
       </Container>

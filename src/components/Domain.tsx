@@ -117,8 +117,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
     }
   };
 
-  //TODO loading animation green circle rotates like a pie diagram to grey circle
-
   saveRecord = async (i: number) => {
     const saveSuccessState = async (
       setRecord: t.DisplayRecord,
@@ -131,6 +129,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         records = cloneDeep(records);
         ogRecords[i] = cloneDeep(record);
         records[i] = cloneDeep(record);
+
         meta[i].validity = this.validateRecord(record, this.state.domainName);
         [meta[i].changed, meta[i].anyChanged] = this.hasRecordChanged(record, "no");
         changedRecords = meta.filter((m) => m.anyChanged).length;
@@ -147,31 +146,31 @@ export default class Domain extends Component<DomainProps, DomainState> {
       // delete the key with the old name and or type and create one with the new name
 
       const setRes = await this.props.client.set(
-        [this.state.records[i]].map((record) => toPektinApiRecord(this.props.config, record)),
+        [toPektinApiRecord(this.props.config, this.state.records[i])],
         false
       );
-      if (setRes && setRes.error !== undefined && setRes.error === false) {
+      if (!setRes.error) {
         this.props.client.deleteRecords(
           [this.state.ogRecords[i]].map((r) => r.name + ":" + r.type)
         );
         await saveSuccessState(this.state.records[i], i, setRes);
       }
     } else {
-      const res = await this.props.client.set(
-        [this.state.records[i]].map((record) => toPektinApiRecord(this.props.config, record)),
-        false
-      );
+      const setRecord = toPektinApiRecord(this.props.config, this.state.records[i]);
+      const res = await this.props.client.set([setRecord], false);
       if (!res.error) {
-        await saveSuccessState(this.state.records[i], i, res);
+        await saveSuccessState(toDisplayRecord(this.props.config, setRecord), i, res);
       } else {
-        this.setState({ lastApiCall: res });
+        this.setState(({ meta }) => {
+          meta[i].apiError = res.data[0];
+          return { lastApiCall: res, meta };
+        });
       }
     }
   };
 
   // TODO import doesnt import multiple resource records: multiple NS records present but only one gets imported
   // TODO import fix ttls
-  // TODO check base64 for openpgp record
 
   saveAllChangedRecords = async () => {
     if (this.props.variant === "import") {
@@ -183,7 +182,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         toBeAdded.map((record) => toPektinApiRecord(this.props.config, record)),
         false
       );
-      if (res && res.error !== undefined && res.error === false) {
+      if (!res.error) {
         this.props.g.loadDomains();
         this.props.history.push({
           pathname: `/domain/${this.state.domainName}`,
@@ -216,6 +215,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
         await this.updateRecords(setRes, toBeAdded);
       } else {
         this.setState(({ meta }) => {
+          meta
+            .filter((m) => m.anyChanged)
+            .forEach((m, i) => {
+              m.apiError = setRes.data[i];
+            });
+
           return { lastApiCall: setRes, meta };
         });
       }
@@ -354,6 +359,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         warningRecords,
         errorRecords,
         helper,
+        lastApiCall,
       }) => {
         [records[recordIndex], ogRecords[recordIndex]] = this.handleRecordChange(
           records[recordIndex],
@@ -396,6 +402,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
           (m) => m.validity?.totalValidity === "error" && m.anyChanged
         ).length;
 
+        meta[recordIndex].apiError = null;
+        if (lastApiCall) lastApiCall.error = false;
+
         return {
           meta,
           records,
@@ -405,6 +414,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
           warningRecords,
           errorRecords,
           helper,
+          lastApiCall,
         };
       }
     );
@@ -470,6 +480,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         m.selected = true;
       }
       m.validity = this.validateRecord(record, domainName);
+      m.apiError = null;
       [m.changed, m.anyChanged] = this.hasRecordChanged(record, "no");
       return m;
     });
@@ -801,10 +812,26 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
   handleDeleteClick = async () => {
     const toBeDeleted = this.state.records.filter((e, i) => this.state.meta[i].selected);
-    const delRes = await this.props.client.deleteRecords(
-      toBeDeleted.map((r) => r.name + ":" + r.type)
-    );
-    if (delRes && delRes.error !== undefined && delRes.error === false) {
+    let deletedSoa = false;
+    let toBeDeletedOnServer = this.state.records.filter((e, i) => {
+      if (this.state.records[i].type === "SOA") deletedSoa = true;
+      return this.state.meta[i].selected && this.state.ogRecords[i].type !== "NEW";
+    });
+
+    if (toBeDeletedOnServer.length) {
+      if (deletedSoa) {
+        toBeDeletedOnServer = toBeDeleted.filter((e, i) => {
+          return this.state.ogRecords[i].type !== "NEW";
+        });
+      }
+      await this.props.client.deleteRecords(toBeDeletedOnServer.map((r) => r.name + ":" + r.type));
+    }
+    if (deletedSoa) {
+      this.props.g.loadDomains();
+      this.props.history.push({
+        pathname: `/`,
+      });
+    } else {
       this.setState(({ records, meta, ogRecords: ogData, defaultOrder }) => {
         records = records.filter((e, i) => !meta[i].selected);
         ogData = ogData.filter((e, i) => !meta[i].selected);
@@ -1073,6 +1100,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         >
           <PieButton
             title={(() => {
+              if (this.props.variant === "import") return "Import selected records";
               if (this.state.lastApiCall?.error) return this.state.lastApiCall.message;
               if (this.state.changedRecords <= 0) return "";
               if (this.state.errorRecords) {
@@ -1085,6 +1113,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             })()}
             onClick={this.saveAllChangedRecords}
             mode={(() => {
+              if (this.props.variant === "import") return "ok";
               if (this.state.lastApiCall?.error) return "apiError";
               if (this.state.changedRecords > 0 && this.state.errorRecords) return "error";
               if (this.state.changedRecords > 0 && this.state.warningRecords) return "warning";
@@ -1315,7 +1344,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
           },
           DELETE: (e) => {
             if (this.props.variant === "import") return;
-            this.handleDeleteClick();
+            /* this.handleDeleteClick(); */
           },
           NEW: (e) => {
             if (this.props.variant === "import") return;

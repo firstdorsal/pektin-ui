@@ -34,6 +34,7 @@ export const regex = {
 
   domainName:
     /^(?:[a-z0-9_](?:[a-z0-9-_]{0,61}[a-z0-9_]|[-]{2,}?)?\.)*[a-z0-9-_][a-z0-9-]{0,61}[a-z0-9]{1,61}[.]?$/,
+  base64: /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/,
 };
 
 export const loadToluol = async () => {
@@ -787,6 +788,17 @@ export const rrTemplates: any = {
         name: "public key",
         inputType: "text",
         width: 12,
+        validate: (config: t.Config, field: string): t.ValidationResult => {
+          field = variablesToValues(config, field);
+
+          if (!field.match(regex.base64)) {
+            return {
+              type: "error",
+              message: `Invalid Base64`,
+            };
+          }
+          return { type: "ok" };
+        },
       },
     },
     color: [145, 0, 7],

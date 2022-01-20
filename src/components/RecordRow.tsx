@@ -388,7 +388,11 @@ export default class RecordRow extends Component<RowProps, RowState> {
             >
               <PieButton
                 title={(() => {
+                  if (this.props.meta.apiError) {
+                    return this.props.meta.apiError;
+                  }
                   if (!this.props.meta.anyChanged) return "";
+
                   const v = this.props.meta.validity?.totalValidity;
                   if (v === "ok") {
                     return "Apply changes";
@@ -401,8 +405,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                   }
                   return "";
                 })()}
+                type={this.props.record.type}
                 onClick={() => this.props.saveRecord(p.recordIndex)}
                 mode={(() => {
+                  if (this.props.meta.apiError) {
+                    return "apiError";
+                  }
                   const v = this.props.meta.validity?.totalValidity;
                   if (v && this.props.meta.anyChanged) return v;
 

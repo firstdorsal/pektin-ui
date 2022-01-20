@@ -1581,10 +1581,10 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@pektin/client@1.0.68":
-  version "1.0.68"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.0.68.tgz#7a42dcb8e62439dea3c2a4263a469f3ecf9c8e90"
-  integrity sha512-iCLYyUIeIMDQkA0mXXe5BnBzd69JJFYnseEalv3vm3UI0Q40I4KOZmjLXVAl06VNX5MQBfxSM7zYAfKYGkES/g==
+"@pektin/client@1.0.70":
+  version "1.0.70"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.0.70.tgz#ea57a8adffade3b6f0f1c89c25c2bd36def55d66"
+  integrity sha512-7ePzOnAgHg0f6u1aoDgW+Ay4phyfc1xZrRYruAeSxsL6bY71W6e0swNKHIp0UIm2HdswxVg7B8TN4miWELn3hw==
   dependencies:
     cross-fetch "^3.1.4"
 

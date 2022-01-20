@@ -93,7 +93,7 @@ export interface DomainMeta {
   searchMatch: SearchMatch;
   anySearchMatch: boolean;
   validity?: FieldValidity;
-  apiError: PektinApiResponseBodyError;
+  apiError: string | null;
 }
 
 export interface DisplayRecord {

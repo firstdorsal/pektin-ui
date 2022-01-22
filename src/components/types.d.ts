@@ -1,4 +1,4 @@
-import { PektinApiResponseBodyError, PektinConfig } from "@pektin/client/src/types";
+import { PektinConfig } from "@pektin/client/src/types";
 
 export interface DOHQuery {
   name: string;

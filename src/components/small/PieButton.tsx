@@ -27,6 +27,9 @@ interface PieButtonProps {
 interface PieButtonState {
   animActive: boolean;
 }
+
+let updateBlock = false;
+
 export default class PieButton extends Component<PieButtonProps, PieButtonState> {
   canvas: any;
   bgCanvas: any;
@@ -46,10 +49,12 @@ export default class PieButton extends Component<PieButtonProps, PieButtonState>
     this.runAnimation(0, ["ok", "warning"].includes(this.props.mode), this.props.mode);
   };
   componentDidMount = () => {
+    this.runAnimation(0, false, "disabled", this.bgCanvas.current);
     this.runAnimation(0, false, this.props.mode);
   };
 
   runAnimation = (frame: number, anim: boolean, mode: ButtonMode, canvas = this.canvas.current) => {
+    if (updateBlock) return;
     if (!canvas) return;
     const ctx: CanvasRenderingContext2D = canvas.getContext("2d");
     if (anim && frame === 0) {
@@ -93,7 +98,13 @@ export default class PieButton extends Component<PieButtonProps, PieButtonState>
       frame += 1;
       requestAnimationFrame(() => this.runAnimation(frame, true, mode));
     } else if (anim) {
+      this.runAnimation(0, false, "disabled");
+      updateBlock = true;
       this.setState({ animActive: false });
+      setTimeout(() => {
+        updateBlock = false;
+        this.runAnimation(0, false, this.props.mode);
+      }, 300);
     }
   };
 
@@ -108,6 +119,7 @@ export default class PieButton extends Component<PieButtonProps, PieButtonState>
             zIndex: 3,
             top: "2px",
             cursor: ["ok", "warning"].includes(this.props.mode) ? "pointer" : "default",
+            display: this.props.mode === "disabled" ? "none" : "block",
           }}
           ref={this.canvas}
           onClick={() =>

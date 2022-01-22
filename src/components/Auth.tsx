@@ -108,6 +108,8 @@ export default class Auth extends Component<AuthProps, AuthState> {
     this.setState({ authField: value, authError, authHelper });
   };
 
+  // TODO button ploppt manchmal nochmal kurz auf
+
   // TODO: Add manual input
   render = () => {
     return (
@@ -125,8 +127,8 @@ export default class Auth extends Component<AuthProps, AuthState> {
             style={{ width: "90%", float: "left" }}
             required
             value={this.state.authField}
-            name="pektin-ui-connection-config"
-            label="Pektin UI Connection Config"
+            name="pektin-client-connection-config"
+            label="Pektin Client Connection Config"
             helperText={this.state.authHelper}
             onChange={this.authChange}
           />

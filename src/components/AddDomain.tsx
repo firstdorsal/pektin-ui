@@ -17,6 +17,8 @@ const defaultSOA: t.DisplayRecord = {
   values: [l.rrTemplates.SOA.template],
 };
 
+// TODO add react strict mode
+
 interface AddDomainProps extends RouteComponentProps {
   readonly config: t.Config;
   readonly g: t.Glob;

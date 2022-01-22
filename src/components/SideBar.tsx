@@ -21,7 +21,7 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
         <Health config={this.props.config} health={this.props.health} />
         <br />
         <br />
-        {this.props.client.managerPassword ? (
+        {this.props.client?.managerPassword ? (
           <Fragment>
             <h2>Access Management</h2>
             <NavLink exact className="link" activeClassName="navActive" to="/management/clients">

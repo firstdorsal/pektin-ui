@@ -9,9 +9,9 @@ import { cloneDeep } from "lodash";
 import { RouteComponentProps } from "react-router-dom";
 import { ExtendedPektinApiClient } from "@pektin/client";
 import App from "../App";
-import { ApiRecord, SOARecord } from "@pektin/client/src/types";
+import { SOARecord } from "@pektin/client/src/types";
 
-const defaultSOA: ApiRecord = {
+const defaultSOA: t.DisplayRecord = {
   name: "",
   rr_type: t.PektinRRType.SOA,
   rr_set: [l.rrTemplates.SOA.template],
@@ -27,7 +27,7 @@ interface AddDomainProps extends RouteComponentProps {
 }
 
 interface AddDomainState {
-  readonly record: ApiRecord;
+  readonly record: t.DisplayRecord;
   readonly apiError: string;
 }
 
@@ -166,7 +166,10 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     color="primary"
                     variant="contained"
                     onClick={async () => {
-                      const setRes = await this.props.client.set([this.state.record], false);
+                      const setRes = await this.props.client.set(
+                        [l.toPektinApiRecord(this.props.config, this.state.record)],
+                        false
+                      );
                       if (setRes.error)
                         return this.setState({ apiError: setRes.message + "\n" + setRes.data[0] });
                       await this.props.loadDomains();

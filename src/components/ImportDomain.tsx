@@ -1,6 +1,5 @@
 import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
 import { ExtendedPektinApiClient, getPektinRecursorEndpoint } from "@pektin/client";
-import { ApiRecord } from "@pektin/client/src/types";
 import React, { Component } from "react";
 import Domain from "./Domain";
 import * as t from "./types";
@@ -14,7 +13,7 @@ interface ImportDomainProps {
 interface ImportDomainState {
   readonly activeStep: number;
   readonly selectedApi: number;
-  readonly records: ApiRecord[];
+  readonly records: t.DisplayRecord[];
 }
 
 const stepNames = ["How?", "Which ones?"];
@@ -33,7 +32,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
     });
   };
 
-  import = (records: ApiRecord[]) => {
+  import = (records: t.DisplayRecord[]) => {
     this.setState({ records, activeStep: 1 });
   };
 

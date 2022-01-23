@@ -33,12 +33,12 @@ import ContentLoader from "react-content-loader";
 //@ts-ignore
 import Fade from "react-reveal/Fade";
 import PieButton from "./small/PieButton";
-import { ApiRecord, PektinApiResponseBody } from "@pektin/client/src/types";
+import { PektinApiResponseBody } from "@pektin/client/src/types";
 
 interface DomainState {
-  readonly records: ApiRecord[];
+  readonly records: t.DisplayRecord[];
   readonly meta: Array<t.DomainMeta>;
-  readonly ogRecords: ApiRecord[];
+  readonly ogRecords: t.DisplayRecord[];
   readonly selectAll: boolean;
   readonly columnItems: ColumnItem[];
   readonly defaultOrder: number[];
@@ -64,7 +64,7 @@ interface DomainProps extends RouteComponentProps<RouteParams> {
   readonly config: t.Config;
   readonly g: t.Glob;
   readonly variant?: "import";
-  readonly records?: ApiRecord[];
+  readonly records?: t.DisplayRecord[];
   readonly style?: any;
   readonly client: ExtendedPektinApiClient;
 }
@@ -118,7 +118,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
   saveRecord = async (i: number) => {
     const saveSuccessState = async (
-      setRecord: ApiRecord,
+      setRecord: t.DisplayRecord,
       i: number,
       apiRes: PektinApiResponseBody
     ) => {
@@ -143,7 +143,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
       this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType)
     ) {
       // delete the key with the old name and or type and create one with the new name
-      const setRes = await this.props.client.set([this.state.records[i]], false);
+      const setRes = await this.props.client.set(
+        [l.toPektinApiRecord(this.props.config, this.state.records[i])],
+        false
+      );
       if (!setRes.error) {
         this.props.client.deleteRecords(
           [this.state.ogRecords[i]].map((r) => r.name + ":" + r.rr_type)
@@ -151,10 +154,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
         await saveSuccessState(this.state.records[i], i, setRes);
       }
     } else {
-      const setRecord = this.state.records[i];
+      const setRecord = l.toPektinApiRecord(this.props.config, this.state.records[i]);
       const res = await this.props.client.set([setRecord], false);
       if (!res.error) {
-        await saveSuccessState(setRecord, i, res);
+        await saveSuccessState(l.toUiRecord(this.props.config, setRecord), i, res);
       } else {
         this.setState(({ meta }) => {
           meta[i].apiError = res.data[0];
@@ -167,11 +170,14 @@ export default class Domain extends Component<DomainProps, DomainState> {
   // TODO add abort button to import
   saveAllChangedRecords = async () => {
     if (this.props.variant === "import") {
-      const toBeAdded: ApiRecord[] = [];
+      const toBeAdded: t.DisplayRecord[] = [];
       this.state.records.forEach((record, i) => {
         if (this.state.meta[i].selected) toBeAdded.push(record);
       });
-      const res = await this.props.client.set(toBeAdded, false);
+      const res = await this.props.client.set(
+        toBeAdded.map((r) => l.toPektinApiRecord(this.props.config, r)),
+        false
+      );
       if (!res.error) {
         this.props.g.loadDomains();
         this.props.history.push({
@@ -179,8 +185,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
         });
       }
     } else {
-      const toBeAdded: ApiRecord[] = [];
-      const toBeDeleted: ApiRecord[] = [];
+      const toBeAdded: t.DisplayRecord[] = [];
+      const toBeDeleted: t.DisplayRecord[] = [];
       this.state.records.forEach((record, i) => {
         if (this.state.meta[i].anyChanged) {
           toBeAdded.push(record);
@@ -193,7 +199,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
           }
         }
       });
-      const setRes = await this.props.client.set(toBeAdded, false);
+      const setRes = await this.props.client.set(
+        toBeAdded.map((r) => l.toPektinApiRecord(this.props.config, r)),
+        false
+      );
 
       if (!setRes.error) {
         if (toBeDeleted.length) {
@@ -214,13 +223,13 @@ export default class Domain extends Component<DomainProps, DomainState> {
     }
   };
 
-  updateRecords = async (apiRes: PektinApiResponseBody, toUpdate?: ApiRecord[]) => {
+  updateRecords = async (apiRes: PektinApiResponseBody, toUpdate?: t.DisplayRecord[]) => {
     if (!toUpdate) {
       this.handleReloadClick();
     } else {
       const res = await this.props.client.get(toUpdate.map((r) => r.name + ":" + r.rr_type));
       if (!res.error) {
-        const updatedRecords = res.data;
+        const updatedRecords = res.data.map((r) => l.toUiRecord(this.props.config, r));
         this.setState(({ meta, ogRecords, records, changedRecords }) => {
           meta = cloneDeep(meta);
           records = cloneDeep(records);
@@ -258,8 +267,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
   };
 
   handleRecordChange = (
-    record: ApiRecord,
-    ogRecord: ApiRecord,
+    record: t.DisplayRecord,
+    ogRecord: t.DisplayRecord,
     rrIndex: number,
     fieldName: string,
     fieldChildName: string,
@@ -412,7 +421,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     );
   };
 
-  validateRecord = (record: ApiRecord, domainName: string): t.FieldValidity => {
+  validateRecord = (record: t.DisplayRecord, domainName: string): t.FieldValidity => {
     const valName = l.validateDomain(this.props.config, record?.name, {
       domainName,
     });
@@ -463,7 +472,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     return fieldValidity;
   };
 
-  initData = (records: ApiRecord[], domainName: string) => {
+  initData = (records: t.DisplayRecord[], domainName: string) => {
     const meta = records.map((record) => {
       const m: t.DomainMeta = cloneDeep(l.defaultMeta) as unknown as t.DomainMeta;
       if (this.props.variant === "import") {
@@ -517,7 +526,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
       const res = await this.props.client.getZoneRecords([domainName]);
       if (!res.error) {
         const records = res.data[domainName];
-        this.initData(records, this.props.match.params.domainName);
+        this.initData(
+          records.map((r) => l.toUiRecord(this.props.config, r)),
+          this.props.match.params.domainName
+        );
       }
     }
   };
@@ -531,7 +543,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
       if (!res.error) {
         const records = res.data[domainName];
 
-        this.initData(records, domainName);
+        this.initData(
+          records.map((r) => l.toUiRecord(this.props.config, r)),
+          domainName
+        );
       }
     }
   };
@@ -549,9 +564,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
   sortColumns = (name: string) => {
     this.setState(({ records, meta, columnItems, defaultOrder, ogRecords }) => {
-      let combine: [ApiRecord, t.DomainMeta, number, ApiRecord][] = records.map((e, i) => {
-        return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
-      });
+      let combine: [t.DisplayRecord, t.DomainMeta, number, t.DisplayRecord][] = records.map(
+        (e, i) => {
+          return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
+        }
+      );
 
       let currentSortDirection = 0;
       columnItems = columnItems.map((e) => {
@@ -680,9 +697,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
               }
             });
 
-            let combine: [ApiRecord, t.DomainMeta, number, ApiRecord][] = records.map((e, i) => {
-              return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
-            });
+            let combine: [t.DisplayRecord, t.DomainMeta, number, t.DisplayRecord][] = records.map(
+              (e, i) => {
+                return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
+              }
+            );
             combine = sortBy(combine, [
               (key) => {
                 if (!search.length) return key[2];
@@ -751,7 +770,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
             records[recordIndex].rr_set.forEach((value, rrIndex) => {
               const fieldValues = Object.values(value);
               const fieldNames = Object.keys(value);
-              console.log(fieldValues, fieldNames);
 
               for (let ii = 0; ii < fieldValues.length; ii++) {
                 if (m.searchMatch.rr_set[rrIndex][fieldNames[ii]]) {
@@ -843,7 +861,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       //meta = cloneDeep(meta);
       let defaultName = this.state.domainName;
       defaultName = defaultName ? defaultName : "";
-      const newRecord: ApiRecord = {
+      const newRecord: t.DisplayRecord = {
         name: l.absoluteName(defaultName),
         rr_type: t.PektinRRType.AAAA,
         rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
@@ -852,7 +870,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       [newMeta.changed, newMeta.anyChanged] = this.hasRecordChanged(newRecord, "yes");
 
       newMeta.validity = this.validateRecord(newRecord, this.state.domainName);
-      const newOgData: ApiRecord = {
+      const newOgData: t.DisplayRecord = {
         name: "",
         rr_type: "NEW" as t.PektinRRType,
         rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
@@ -895,13 +913,16 @@ export default class Domain extends Component<DomainProps, DomainState> {
     if (!res.error) {
       const records = res.data[this.state.domainName];
 
-      this.initData(records, this.props.match.params.domainName);
+      this.initData(
+        records.map((r) => l.toUiRecord(this.props.config, r)),
+        this.props.match.params.domainName
+      );
     }
   };
 
   hasRecordChanged = (
-    record: ApiRecord,
-    ogRecord: ApiRecord | "yes" | "no"
+    record: t.DisplayRecord,
+    ogRecord: t.DisplayRecord | "yes" | "no"
   ): [t.FieldsChanged, boolean] => {
     const changed = { name: false, type: false, values: [] as Array<any> };
     let anyChanged = false;
@@ -982,7 +1003,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     key: any;
     index: number;
     style: any;
-    //record: ApiRecord;
+    //record: t.DisplayRecord;
     //meta: t.DomainMeta;
     //totalRows: number;
   }) => {

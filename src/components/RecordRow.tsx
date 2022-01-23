@@ -29,14 +29,16 @@ import TxtAssistant from "./TxtAssistant";
 import Domain from "./Domain";
 import { ExtendedPektinApiClient } from "@pektin/client";
 import PieButton from "./small/PieButton";
-import { ApiRecord, PektinApiResponseBody } from "@pektin/client/src/types";
+import { PektinApiResponseBody } from "@pektin/client/src/types";
+
+// TODO reimplement variable feature
 
 interface RowProps {
   readonly handleChange: InstanceType<typeof Domain>["handleChange"];
   readonly saveRecord: any;
   readonly changeMeta: InstanceType<typeof Domain>["changeMeta"];
   readonly recordIndex: number;
-  readonly record: ApiRecord;
+  readonly record: t.DisplayRecord;
   readonly meta: t.DomainMeta;
   readonly config: t.Config;
   readonly style: any;
@@ -56,7 +58,7 @@ interface RowState {}
 export default class RecordRow extends Component<RowProps, RowState> {
   advancedView = () => {
     const p = this.props;
-    const recordValue = (record: ApiRecord, rrIndex: number) => {
+    const recordValue = (record: t.DisplayRecord, rrIndex: number) => {
       let v: any = record.rr_set[rrIndex];
       const { rr_type } = record;
 
@@ -164,7 +166,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
       return recordValue(this.props.record, rrIndex);
     });
   };
-  simpleView = (record: ApiRecord) => {
+  simpleView = (record: t.DisplayRecord) => {
     const p = this.props;
     const rr = record.rr_set;
     const type = record.rr_type;

@@ -1,4 +1,17 @@
-import { PektinConfig } from "@pektin/client/src/types";
+import {
+  ApiRecordA,
+  ApiRecordAAAA,
+  ApiRecordBase,
+  ApiRecordCNAME,
+  ApiRecordMX,
+  ApiRecordNS,
+  ApiRecordOPENPGPKEY,
+  ApiRecordSRV,
+  ApiRecordTLSA,
+  ApiRecordTXT,
+  PektinConfig,
+  ResourceRecordBase,
+} from "@pektin/client/src/types";
 import App from "../App";
 import { CodeStyle } from "./code-styles";
 
@@ -110,4 +123,35 @@ export enum PektinRRType {
   CAA = "CAA",
   OPENPGPKEY = "OPENPGPKEY",
   TLSA = "TLSA",
+}
+
+export type DisplayRecord =
+  | ApiRecordA
+  | ApiRecordAAAA
+  | DisplayRecordCAA
+  | ApiRecordCNAME
+  | ApiRecordMX
+  | ApiRecordNS
+  | ApiRecordOPENPGPKEY
+  | ApiRecordSRV
+  | ApiRecordTLSA
+  | ApiRecordTXT
+  | DisplayRecordSOA;
+
+export interface DisplayRecordSOA extends ApiRecordBase {
+  rr_type: PektinRRType.SOA;
+  rr_set: DisplayResourceRecordSOA[];
+}
+export interface DisplayResourceRecordSOA extends ResourceRecordBase {
+  mname: string;
+  rname: string;
+}
+
+export interface DisplayRecordCAA extends ApiRecordBase {
+  rr_type: PektinRRType.CAA;
+  rr_set: DisplayResourceRecordCAA[];
+}
+export interface DisplayResourceRecordCAA extends ResourceRecordBase {
+  caaValue: string;
+  tag: string;
 }

@@ -22,7 +22,7 @@ SyntaxHighlighter.registerLanguage("yaml", yaml);
 //import { format } from "prettier/standalone";
 
 interface DataDisplayProps {
-  readonly data: ApiRecord;
+  readonly data: t.DisplayRecord;
   readonly config: t.Config;
   readonly style?: any;
   readonly client: ExtendedPektinApiClient;
@@ -41,17 +41,21 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
     const codeStyle = codeStyles[this.props.config.local.codeStyle];
     const tabs = [
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="json">
-        {JSON.stringify(this.props.data, null, "    ")}
+        {JSON.stringify(l.toPektinApiRecord(this.props.config, this.props.data), null, "    ")}
       </SyntaxHighlighter>,
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="yaml">
-        {toYaml(this.props.data)}
+        {toYaml(l.toPektinApiRecord(this.props.config, this.props.data))}
       </SyntaxHighlighter>,
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
         TODO
       </SyntaxHighlighter>,
-      <CurlTab client={this.props.client} config={this.props.config} data={this.props.data} />,
+      <CurlTab
+        client={this.props.client}
+        config={this.props.config}
+        data={l.toPektinApiRecord(this.props.config, this.props.data)}
+      />,
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="text">
-        {l.displayRecordToBind(this.props.data)}
+        {l.displayRecordToBind(l.toPektinApiRecord(this.props.config, this.props.data))}
       </SyntaxHighlighter>,
     ];
 
@@ -129,7 +133,7 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
     auth: null,
   };
 
-  curl = (data: ApiRecord, multiline: boolean) => {
+  curl = (multiline: boolean) => {
     const body = {
       confidant_password: "<REDACTED>",
       client_username: this.props.client.username,
@@ -157,7 +161,7 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
           Multiline
         </Container>
         <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="sh">
-          {this.curl(this.props.data, this.state.multiline)}
+          {this.curl(this.state.multiline)}
         </SyntaxHighlighter>
       </React.Fragment>
     );

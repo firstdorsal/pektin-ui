@@ -8,7 +8,8 @@ import Wanderlust from "./foreignApis/Wanderlust";
 import * as txt from "./apis/txtRecords";
 import { ToluolResponse } from "@pektin/client/src/toluol-wasm/types";
 import punycode from "punycode";
-import { ApiRecord, CAARecord, PektinRRType, ResourceRecord } from "@pektin/client/src/types";
+import { ApiRecord, CAARecord, ResourceRecord } from "@pektin/client/src/types";
+import { cloneDeep } from "lodash";
 
 const f = fetch;
 export const defaultSearchMatch = {
@@ -38,6 +39,72 @@ export const regex = {
 
 export const loadToluol = async () => {
   return await import("@pektin/toluol-wasm");
+};
+
+export const toPektinApiRecord = (config: t.Config, displayRecord: t.DisplayRecord): ApiRecord => {
+  const apiRecord = cloneDeep(displayRecord) as ApiRecord;
+
+  switch (displayRecord.rr_type) {
+    case t.PektinRRType.SOA:
+      apiRecord.rr_set = displayRecord.rr_set.map((rr) => {
+        return {
+          ttl: rr.ttl,
+          mname: rr.mname,
+          rname: rr.rname,
+          serial: 0,
+          refresh: 0,
+          retry: 0,
+          expire: 0,
+          minimum: 0,
+        };
+      });
+      break;
+    case t.PektinRRType.CAA:
+      apiRecord.rr_set = displayRecord.rr_set.map((rr) => {
+        return {
+          ttl: rr.ttl,
+          value: rr.caaValue,
+          tag: rr.tag,
+          issuer_critical: true,
+        };
+      });
+      break;
+
+    default:
+      break;
+  }
+
+  return apiRecord;
+};
+
+export const toUiRecord = (config: t.Config, apiRecord: ApiRecord): t.DisplayRecord => {
+  const displayRecord = cloneDeep(apiRecord) as t.DisplayRecord;
+
+  switch (apiRecord.rr_type) {
+    case t.PektinRRType.SOA:
+      displayRecord.rr_set = apiRecord.rr_set.map((rr) => {
+        return {
+          ttl: rr.ttl,
+          mname: rr.mname,
+          rname: rr.rname,
+        };
+      });
+      break;
+    case t.PektinRRType.CAA:
+      displayRecord.rr_set = apiRecord.rr_set.map((rr) => {
+        return {
+          ttl: rr.ttl,
+          caaValue: rr.value,
+          tag: rr.tag,
+          issuer_critical: true,
+        };
+      });
+      break;
+
+    default:
+      break;
+  }
+  return displayRecord;
 };
 
 export const dohQuery = async (
@@ -85,7 +152,7 @@ export const dohQuery = async (
     return false;
   }
 };
-export const toluolToApiRecord = (response: ToluolResponse): ApiRecord | false => {
+export const toluolToApiRecord = (response: ToluolResponse): t.DisplayRecord | false => {
   if (!response?.answers || !response?.answers.length) return false;
   const firstAnswer = response?.answers[0]?.NONOPT;
   if (!firstAnswer) return false;
@@ -96,18 +163,18 @@ export const toluolToApiRecord = (response: ToluolResponse): ApiRecord | false =
     const rdata = e.NONOPT?.rdata;
     return {
       ttl: answer.ttl, //TODO maybe fix/beautify ttls rounding them somehow
-      ...textToRRValue(rdata.join(" "), answer.atype as PektinRRType),
+      ...textToRRValue(rdata.join(" "), answer.atype as t.PektinRRType),
     };
   }) as ResourceRecord[];
 
   return {
     name: firstAnswer.name,
-    rr_type: firstAnswer.atype as PektinRRType,
+    rr_type: firstAnswer.atype as t.PektinRRType,
     rr_set,
-  } as ApiRecord;
+  } as t.DisplayRecord;
 };
 
-const textToRRValue = (val: string, recordType: PektinRRType) => {
+const textToRRValue = (val: string, recordType: t.PektinRRType) => {
   const t = val.split(" ");
   switch (recordType) {
     case "SOA":
@@ -130,17 +197,16 @@ const textToRRValue = (val: string, recordType: PektinRRType) => {
 
     case "CAA":
       return {
-        flag: parseInt(t[0]),
         tag: t[1] as "issue" | "issuewild" | "iodef",
         caaValue: t[2].replaceAll('"', ""),
       };
 
     case "TLSA":
       return {
-        usage: parseInt(t[0]) as 0 | 1 | 2 | 3,
+        cert_usage: parseInt(t[0]) as 0 | 1 | 2 | 3,
         selector: parseInt(t[1]) as 0 | 1,
-        matching_type: parseInt(t[2]) as 0 | 1 | 2,
-        data: t[3],
+        matching: parseInt(t[2]) as 0 | 1 | 2,
+        cert_data: t[3],
       };
 
     default:
@@ -172,7 +238,7 @@ export const valuesToVariables = (config: t.Config, input: string) => {
   return input;
 };
 
-export const isSupportedRecord = (record: ApiRecord) => {
+export const isSupportedRecord = (record: t.DisplayRecord) => {
   if (supportedRecords.indexOf(record.rr_type) > -1) return true;
   return false;
 };
@@ -472,27 +538,6 @@ export const rrTemplates: any = {
     color: [255, 0, 0],
     complex: false,
   },
-  PTR: {
-    sortBy: "value",
-    template: {
-      value: "",
-      ttl: 3600,
-    },
-    fields: {
-      value: {
-        placeholder: "example.com.",
-        inputType: "text",
-        name: "pointer",
-        width: 12,
-        absolute: true,
-        validate: (config: t.Config, field: string): t.ValidationResult => {
-          return validateDomain(config, field);
-        },
-      },
-    },
-    color: [255, 122, 0],
-    complex: false,
-  },
   SOA: {
     sortBy: "mname",
     template: {
@@ -697,7 +742,6 @@ export const rrTemplates: any = {
   CAA: {
     sortBy: "caaValue",
     template: {
-      flag: 0,
       tag: "issue",
       caaValue: "letsencrypt.org",
       ttl: 3600,
@@ -709,11 +753,7 @@ export const rrTemplates: any = {
         name: "tag",
         width: 6,
         validate: (config: t.Config, field: string): t.ValidationResult => {
-          if (
-            field.toLowerCase().indexOf("issue") > -1 ||
-            field.toLowerCase().indexOf("issuewild") > -1 ||
-            field.toLowerCase().indexOf("iodef") > -1
-          ) {
+          if (["issue", "issuewild", "iodef"].includes(field.toLowerCase())) {
             if (field === field.toLowerCase()) {
               return {
                 type: "ok",
@@ -795,14 +835,14 @@ export const rrTemplates: any = {
     template: {
       usage: 3,
       selector: 1,
-      matching_type: 1,
+      matching: 1,
       data: "",
       ttl: 3600,
     },
     fields: {
-      usage: {
+      cert_usage: {
         placeholder: 3,
-        name: "usage",
+        name: "cert_usage",
         inputType: "number",
         width: 2,
         min: 0,
@@ -816,7 +856,7 @@ export const rrTemplates: any = {
         min: 0,
         max: 1,
       },
-      matching_type: {
+      matching: {
         placeholder: 1,
         name: "matching",
         inputType: "number",
@@ -824,9 +864,9 @@ export const rrTemplates: any = {
         min: 0,
         max: 2,
       },
-      data: {
+      cert_data: {
         placeholder: "50c1ab1e11feb0a75",
-        name: "data",
+        name: "cert_data",
         inputType: "text",
         width: 6,
       },

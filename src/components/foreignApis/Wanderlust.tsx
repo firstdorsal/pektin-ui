@@ -1,7 +1,6 @@
 import { Button, Box, TextField } from "@material-ui/core";
 
 import { ArrowRight } from "@material-ui/icons";
-import { ApiRecord } from "@pektin/client/src/types";
 import { Component } from "react";
 import ImportDomain from "../ImportDomain";
 import * as l from "../lib";
@@ -79,7 +78,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
 
     const displayRecords = records
       .map(l.toluolToApiRecord)
-      .filter((r) => r !== false) as ApiRecord[];
+      .filter((r) => r !== false) as t.DisplayRecord[];
 
     this.props.import(displayRecords);
   };

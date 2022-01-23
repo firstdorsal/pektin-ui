@@ -103,6 +103,7 @@ export class CodeStylePicker extends Component<CodeStylePickerProps, CodeStylePi
         className={this.props.className}
         variant="standard"
         style={{ width: "230px" }}
+        /*@ts-ignore*/
         onChange={(e) => this.props.g.updateLocalConfig({ e, type: "codeStyle" })}
         name="codeStyle"
         value={codeStyle}

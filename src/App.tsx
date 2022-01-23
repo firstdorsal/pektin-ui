@@ -41,6 +41,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       changeContextMenu: () => {},
       cmAction: "",
       updateLocalConfig: () => {},
+      /*@ts-ignore*/
       loadDomains: () => {},
     },
     domains: [],

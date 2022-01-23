@@ -13,6 +13,7 @@ import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import yaml from "react-syntax-highlighter/dist/esm/languages/hljs/yaml";
 import * as codeStyles from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { ExtendedPektinApiClient } from "@pektin/client";
+import { ApiRecord } from "@pektin/client/src/types";
 
 SyntaxHighlighter.registerLanguage("javascript", js);
 SyntaxHighlighter.registerLanguage("json", json);
@@ -21,7 +22,7 @@ SyntaxHighlighter.registerLanguage("yaml", yaml);
 //import { format } from "prettier/standalone";
 
 interface DataDisplayProps {
-  readonly data: t.DisplayRecord;
+  readonly data: ApiRecord;
   readonly config: t.Config;
   readonly style?: any;
   readonly client: ExtendedPektinApiClient;
@@ -40,10 +41,10 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
     const codeStyle = codeStyles[this.props.config.local.codeStyle];
     const tabs = [
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="json">
-        {JSON.stringify(l.toPektinApiRecord(this.props.config, this.props.data), null, "    ")}
+        {JSON.stringify(this.props.data, null, "    ")}
       </SyntaxHighlighter>,
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="yaml">
-        {toYaml(l.toPektinApiRecord(this.props.config, this.props.data))}
+        {toYaml(this.props.data)}
       </SyntaxHighlighter>,
       <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
         TODO
@@ -113,7 +114,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
 }
 
 interface CurlTabProps {
-  readonly data: t.DisplayRecord;
+  readonly data: ApiRecord;
   readonly config: t.Config;
   readonly client: ExtendedPektinApiClient;
 }
@@ -128,11 +129,11 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
     auth: null,
   };
 
-  curl = (data: t.DisplayRecord, multiline: boolean) => {
+  curl = (data: ApiRecord, multiline: boolean) => {
     const body = {
       confidant_password: "<REDACTED>",
       client_username: this.props.client.username,
-      records: [l.toPektinApiRecord(this.props.config, data)],
+      records: [this.props.data],
     };
 
     if (multiline)

@@ -5,17 +5,16 @@ import Dexie from "dexie";
 import PektinBackup from "./foreignApis/PektinBackup";
 import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
-import * as pektinApi from "./apis/pektin";
 import * as txt from "./apis/txtRecords";
 import { ToluolResponse } from "@pektin/client/src/toluol-wasm/types";
 import punycode from "punycode";
-import { RedisEntry } from "@pektin/client/src/types";
+import { ApiRecord, CAARecord, PektinRRType, ResourceRecord } from "@pektin/client/src/types";
 
 const f = fetch;
 export const defaultSearchMatch = {
   name: false,
-  type: false,
-  values: [],
+  rr_type: false,
+  rr_set: [],
 };
 
 export const defaultMeta = {
@@ -86,25 +85,29 @@ export const dohQuery = async (
     return false;
   }
 };
-export const toluolToDisplayRecord = (response: ToluolResponse): t.DisplayRecord | false => {
+export const toluolToApiRecord = (response: ToluolResponse): ApiRecord | false => {
   if (!response?.answers || !response?.answers.length) return false;
   const firstAnswer = response?.answers[0]?.NONOPT;
   if (!firstAnswer) return false;
   if (!isSupportedType(firstAnswer.atype)) return false;
 
-  const values = response?.answers.map((e, i) => {
+  const rr_set = response?.answers.map((e, i) => {
     const answer = e.NONOPT;
     const rdata = e.NONOPT?.rdata;
     return {
       ttl: answer.ttl, //TODO maybe fix/beautify ttls rounding them somehow
-      ...textToRRValue(rdata.join(" "), answer.atype as t.RRType),
+      ...textToRRValue(rdata.join(" "), answer.atype as PektinRRType),
     };
-  });
+  }) as ResourceRecord[];
 
-  return { name: firstAnswer.name, type: firstAnswer.atype as t.RRType, values };
+  return {
+    name: firstAnswer.name,
+    rr_type: firstAnswer.atype as PektinRRType,
+    rr_set,
+  } as ApiRecord;
 };
 
-const textToRRValue = (val: string, recordType: t.RRType) => {
+const textToRRValue = (val: string, recordType: PektinRRType) => {
   const t = val.split(" ");
   switch (recordType) {
     case "SOA":
@@ -169,8 +172,8 @@ export const valuesToVariables = (config: t.Config, input: string) => {
   return input;
 };
 
-export const isSupportedRecord = (record: t.DisplayRecord) => {
-  if (supportedRecords.indexOf(record.type) > -1) return true;
+export const isSupportedRecord = (record: ApiRecord) => {
+  if (supportedRecords.indexOf(record.rr_type) > -1) return true;
   return false;
 };
 
@@ -178,30 +181,6 @@ export const isSupportedRecord = (record: t.DisplayRecord) => {
 export const isSupportedType = (type: string) => {
   if (supportedRecords.indexOf(type) > -1) return true;
   return false;
-};
-
-export const toPektinApiRecord = (
-  config: t.Config,
-  displayRecord: t.DisplayRecord,
-  format = "pektin"
-): RedisEntry => {
-  if (format === "something") {
-    return pektinApi.toPektinApiRecord(config, displayRecord);
-  } else {
-    return pektinApi.toPektinApiRecord(config, displayRecord);
-  }
-};
-
-export const toDisplayRecord = (
-  config: t.Config,
-  redisEntry: RedisEntry,
-  format = "pektin"
-): t.DisplayRecord => {
-  if (format === "something") {
-    return pektinApi.toDisplayRecord(config, redisEntry);
-  } else {
-    return pektinApi.toDisplayRecord(config, redisEntry);
-  }
 };
 
 interface DbConfig {
@@ -267,16 +246,13 @@ export const absoluteName = (name: string) => {
 
 export const isAbsolute = (name: string): boolean => name[name.length - 1] === ".";
 
-export const displayRecordToBind = (
-  rec0: t.DisplayRecord,
-  onlyValues: boolean = false
-): ReactNode => {
-  if (!rec0 || !rec0.values) return "";
-  if (rec0.type === "SOA") {
-    const soa = rec0.values[0] as t.SOA;
+export const displayRecordToBind = (rec: ApiRecord, onlyValues: boolean = false): ReactNode => {
+  if (!rec || !rec.rr_set) return "";
+  if (rec.rr_type === "SOA") {
+    const soa = rec.rr_set[0];
     if (onlyValues) return `${soa.mname} ${soa.rname}`;
-    return `${absoluteName(rec0.name)} ${rec0.values[0].ttl ? rec0.values[0].ttl : ""} IN ${
-      rec0.type
+    return `${absoluteName(rec.name)} ${rec.rr_set[0].ttl ? rec.rr_set[0].ttl : ""} IN ${
+      rec.rr_type
     } ${soa.mname} ${soa.rname} 0 0 0 0 0`;
   }
   return "Not Implemented for this record";
@@ -759,7 +735,7 @@ export const rrTemplates: any = {
         name: "value",
         inputType: "text",
         width: 6,
-        validate: (config: t.Config, field: string, val: t.CAA): t.ValidationResult => {
+        validate: (config: t.Config, field: string, val: CAARecord): t.ValidationResult => {
           if (val.tag === "iodef") {
             if (
               field.indexOf("https://") === -1 &&

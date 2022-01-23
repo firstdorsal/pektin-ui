@@ -8,13 +8,13 @@ import { ContextMenu } from "./ContextMenu";
 import { cloneDeep } from "lodash";
 import { RouteComponentProps } from "react-router-dom";
 import { ExtendedPektinApiClient } from "@pektin/client";
-import { toPektinApiRecord } from "./apis/pektin";
 import App from "../App";
+import { ApiRecord, SOARecord } from "@pektin/client/src/types";
 
-const defaultSOA: t.DisplayRecord = {
+const defaultSOA: ApiRecord = {
   name: "",
-  type: "SOA",
-  values: [l.rrTemplates.SOA.template],
+  rr_type: t.PektinRRType.SOA,
+  rr_set: [l.rrTemplates.SOA.template],
 };
 
 // TODO add react strict mode
@@ -27,7 +27,7 @@ interface AddDomainProps extends RouteComponentProps {
 }
 
 interface AddDomainState {
-  readonly record: t.DisplayRecord;
+  readonly record: ApiRecord;
   readonly apiError: string;
 }
 
@@ -43,13 +43,13 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     if (!n || !v === undefined) return;
 
     this.setState(({ record }) => {
-      record = cloneDeep(record);
-      if (n === "ttl") record.values[0].ttl = parseInt(v);
-      /*@ts-ignore*/
-      if (n === "mname") record.values[0].mname = v;
-      /*@ts-ignore*/
-      if (n === "rname") record.values[0].rname = v;
-      if (n === "name") record.name = v;
+      if (record.rr_type === "SOA") {
+        record = cloneDeep(record);
+        if (n === "ttl") record.rr_set[0].ttl = parseInt(v);
+        if (n === "mname") record.rr_set[0].mname = v;
+        if (n === "rname") record.rr_set[0].rname = v;
+        if (n === "name") record.name = v;
+      }
       return { record };
     });
   };
@@ -94,11 +94,9 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
 
                 <div
                   className={
-                    /*@ts-ignore*/
                     l.rrTemplates["SOA"]?.fields.mname?.validate(
                       this.props.config,
-                      /*@ts-ignore*/
-                      this.state.record.values[0].mname
+                      (this.state.record.rr_set[0] as SOARecord).mname
                     )?.type
                   }
                 >
@@ -109,13 +107,11 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     onChange={this.handleChange}
                     name="mname"
                     placeholder="ns1.example.com"
-                    /*@ts-ignore*/
-                    value={this.state.record.values[0].mname}
+                    value={(this.state.record.rr_set[0] as SOARecord).mname}
                     helperText={
                       l.rrTemplates["SOA"]?.fields.mname?.validate(
                         this.props.config,
-                        /*@ts-ignore*/
-                        this.state.record.values[0].mname
+                        (this.state.record.rr_set[0] as SOARecord).mname
                       )?.message || " "
                     }
                     InputLabelProps={{
@@ -126,11 +122,9 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
 
                 <div
                   className={
-                    /*@ts-ignore*/
                     l.rrTemplates["SOA"]?.fields.rname?.validate(
                       this.props.config,
-                      /*@ts-ignore*/
-                      this.state.record.values[0].rname
+                      (this.state.record.rr_set[0] as SOARecord).rname
                     )?.type
                   }
                 >
@@ -141,13 +135,11 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     onChange={this.handleChange}
                     name="rname"
                     placeholder="hostmaster.example.com"
-                    /*@ts-ignore*/
-                    value={this.state.record.values[0].rname}
+                    value={(this.state.record.rr_set[0] as SOARecord).rname}
                     helperText={
                       l.rrTemplates["SOA"]?.fields.rname?.validate(
                         this.props.config,
-                        /*@ts-ignore*/
-                        this.state.record.values[0].rname
+                        (this.state.record.rr_set[0] as SOARecord).rname
                       )?.message || " "
                     }
                     InputLabelProps={{
@@ -163,7 +155,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     type="number"
                     onChange={this.handleChange}
                     name="ttl"
-                    value={this.state.record.values[0].ttl}
+                    value={this.state.record.rr_set[0].ttl}
                     inputProps={{
                       min: 0,
                     }}
@@ -174,10 +166,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     color="primary"
                     variant="contained"
                     onClick={async () => {
-                      const setRes = await this.props.client.set(
-                        [toPektinApiRecord(this.props.config, this.state.record)],
-                        false
-                      );
+                      const setRes = await this.props.client.set([this.state.record], false);
                       if (setRes.error)
                         return this.setState({ apiError: setRes.message + "\n" + setRes.data[0] });
                       await this.props.loadDomains();

@@ -29,14 +29,14 @@ import TxtAssistant from "./TxtAssistant";
 import Domain from "./Domain";
 import { ExtendedPektinApiClient } from "@pektin/client";
 import PieButton from "./small/PieButton";
-import { PektinApiResponseBody } from "@pektin/client/src/types";
+import { ApiRecord, PektinApiResponseBody } from "@pektin/client/src/types";
 
 interface RowProps {
   readonly handleChange: InstanceType<typeof Domain>["handleChange"];
   readonly saveRecord: any;
   readonly changeMeta: InstanceType<typeof Domain>["changeMeta"];
   readonly recordIndex: number;
-  readonly record: t.DisplayRecord;
+  readonly record: ApiRecord;
   readonly meta: t.DomainMeta;
   readonly config: t.Config;
   readonly style: any;
@@ -56,11 +56,11 @@ interface RowState {}
 export default class RecordRow extends Component<RowProps, RowState> {
   advancedView = () => {
     const p = this.props;
-    const recordValue = (record: t.DisplayRecord, rrIndex: number) => {
-      let v: any = record.values[rrIndex];
-      const { type } = record;
+    const recordValue = (record: ApiRecord, rrIndex: number) => {
+      let v: any = record.rr_set[rrIndex];
+      const { rr_type } = record;
 
-      const fields = l.rrTemplates[type]?.fields;
+      const fields = l.rrTemplates[rr_type]?.fields;
       const fieldNames = Object.keys(fields);
 
       const fieldValues = Object.values(fields);
@@ -70,15 +70,15 @@ export default class RecordRow extends Component<RowProps, RowState> {
             spacing={2}
             container
             style={{
-              width: `calc(100% - 25px${this.props.record.type === "TXT" ? " - 35px" : ""})`,
+              width: `calc(100% - 25px${this.props.record.rr_type === "TXT" ? " - 35px" : ""})`,
             }}
           >
             {fieldNames.map((fieldName: any, fieldIndex: number) => {
               const field: any = fieldValues[fieldIndex];
               const fieldValue = fieldNames?.length > 1 ? v[fieldName] + "" : v?.value + "";
 
-              const isSearchMatch = this.props.meta.searchMatch.values[rrIndex]
-                ? this.props.meta.searchMatch.values[rrIndex][fieldName]
+              const isSearchMatch = this.props.meta.searchMatch.rr_set[rrIndex]
+                ? this.props.meta.searchMatch.rr_set[rrIndex][fieldName]
                 : false;
 
               const verify =
@@ -125,7 +125,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
               );
             })}
           </Grid>
-          {this.props.record.type === "TXT" ? (
+          {this.props.record.rr_type === "TXT" ? (
             <span className="txtButton">
               <IconButton
                 style={{
@@ -142,7 +142,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
           )}
           <span>
             <IconButton
-              disabled={record.values.length === 1}
+              disabled={record.rr_set.length === 1}
               title="Remove resource record"
               style={{
                 width: "35px",
@@ -160,14 +160,14 @@ export default class RecordRow extends Component<RowProps, RowState> {
       );
     };
 
-    return this.props.record.values.map((value, rrIndex) => {
+    return this.props.record.rr_set.map((value, rrIndex) => {
       return recordValue(this.props.record, rrIndex);
     });
   };
-  simpleView = (record: t.DisplayRecord) => {
+  simpleView = (record: ApiRecord) => {
     const p = this.props;
-    const rr = record.values;
-    const type = record.type;
+    const rr = record.rr_set;
+    const type = record.rr_type;
     let v: any = rr[0];
 
     const fields = l.rrTemplates[type]?.fields;
@@ -180,8 +180,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
           const field: any = fieldValues[fieldIndex];
           const fieldValue = fieldNames?.length > 1 ? v[fieldName] + "" : v.value + "";
 
-          const isSearchMatch = this.props.meta.searchMatch.values[0]
-            ? this.props.meta.searchMatch.values[0][fieldName]
+          const isSearchMatch = this.props.meta.searchMatch.rr_set[0]
+            ? this.props.meta.searchMatch.rr_set[0][fieldName]
             : false;
           const verify = this.props.meta.validity
             ? this.props.meta.validity.values[0][fieldName]
@@ -216,8 +216,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
                 }}
                 label={
                   field.name +
-                  (this.props.record.values.length > 1
-                    ? ` 1/${this.props.record.values.length}`
+                  (this.props.record.rr_set.length > 1
+                    ? ` 1/${this.props.record.rr_set.length}`
                     : "")
                 }
                 name={`${p.recordIndex}:rrField:0:${fieldName}`}
@@ -238,9 +238,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
     const p = this.props;
     const { record } = p;
     if (!record) return <div>Invalid Record</div>;
-    const editable = record.type === "SOA" && this.props.variant !== "import" ? false : true;
+    const editable = record.rr_type === "SOA" && this.props.variant !== "import" ? false : true;
     const color =
-      JSON.stringify(l.rrTemplates[record.type]?.color).replace("[", "").replace("]", "") ||
+      JSON.stringify(l.rrTemplates[record.rr_type]?.color).replace("[", "").replace("]", "") ||
       "0 0 0";
 
     const backgroundColor = this.props.config.local?.synesthesia ? `rgba(${color},0.2)` : "";
@@ -302,20 +302,20 @@ export default class RecordRow extends Component<RowProps, RowState> {
               top: "18px",
             }}
             className={(() => {
-              let c = this.props.meta.searchMatch.type ? "searchMatch" : "";
+              let c = this.props.meta.searchMatch.rr_type ? "searchMatch" : "";
               c += this.props.meta.changed.type ? " changed" : "";
 
               return c;
             })()}
           >
-            {record.type === "SOA" ? (
-              <Input disabled={!editable} value={record.type} />
+            {record.rr_type === "SOA" ? (
+              <Input disabled={!editable} value={record.rr_type} />
             ) : (
               <Select
                 style={{ width: "100%" }}
                 name={`${p.recordIndex}:type:`}
                 disabled={!editable}
-                value={record.type}
+                value={record.rr_type}
                 onChange={(e) => this.props.handleChange(e)}
               >
                 {["A", "AAAA", "NS", "CNAME", "MX", "TXT", "SRV", "CAA", "OPENPGPKEY", "TLSA"].map(
@@ -335,7 +335,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
               top: "18px",
             }}
             className={(() => {
-              let c = this.props.meta.searchMatch.values[0]?.ttl ? "searchMatch" : "";
+              let c = this.props.meta.searchMatch.rr_set[0]?.ttl ? "searchMatch" : "";
               c += this.props.meta.changed.values[0]?.ttl ? " changed" : "";
               return c;
             })()}
@@ -344,7 +344,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
               onInput={(e) => this.props.handleChange(e)}
               name={`${p.recordIndex}:ttl:`}
               type="number"
-              value={record.values[0]?.ttl}
+              value={record.rr_set[0]?.ttl}
               inputProps={{
                 min: 0,
               }}
@@ -405,7 +405,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                   }
                   return "";
                 })()}
-                type={this.props.record.type}
+                type={this.props.record.rr_type}
                 onClick={() => this.props.saveRecord(p.recordIndex)}
                 mode={(() => {
                   if (this.props.meta.apiError) {
@@ -447,7 +447,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                         <span className="caps label">rrset</span>
                       </div>
                       {this.advancedView()}
-                      {record.type !== "SOA" ? (
+                      {record.rr_type !== "SOA" ? (
                         <div>
                           <IconButton
                             title="Add resource record"
@@ -466,7 +466,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                       )}
                     </Container>
                   </Paper>
-                  {this.props.record.type === "TXT" ? (
+                  {this.props.record.rr_type === "TXT" ? (
                     <Paper elevation={3} style={{ padding: "10px 20px", marginTop: "10px" }}>
                       <TxtAssistant></TxtAssistant>
                     </Paper>

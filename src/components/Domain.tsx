@@ -28,18 +28,17 @@ import { VscRegex, VscReplaceAll } from "react-icons/vsc";
 import { MdFlashOn } from "react-icons/md";
 import { HotKeys } from "react-hotkeys";
 import Helper from "../components/Helper";
-import { ExtendedPektinApiClient } from "@pektin/client";
-import { toDisplayRecord, toPektinApiRecord } from "./apis/pektin";
+import { ExtendedPektinApiClient, isSupportedRecordType } from "@pektin/client";
 import ContentLoader from "react-content-loader";
 //@ts-ignore
 import Fade from "react-reveal/Fade";
 import PieButton from "./small/PieButton";
-import { PektinApiResponseBody } from "@pektin/client/src/types";
+import { ApiRecord, PektinApiResponseBody } from "@pektin/client/src/types";
 
 interface DomainState {
-  readonly records: t.DisplayRecord[];
+  readonly records: ApiRecord[];
   readonly meta: Array<t.DomainMeta>;
-  readonly ogRecords: t.DisplayRecord[];
+  readonly ogRecords: ApiRecord[];
   readonly selectAll: boolean;
   readonly columnItems: ColumnItem[];
   readonly defaultOrder: number[];
@@ -65,7 +64,7 @@ interface DomainProps extends RouteComponentProps<RouteParams> {
   readonly config: t.Config;
   readonly g: t.Glob;
   readonly variant?: "import";
-  readonly records?: t.DisplayRecord[];
+  readonly records?: ApiRecord[];
   readonly style?: any;
   readonly client: ExtendedPektinApiClient;
 }
@@ -119,7 +118,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
   saveRecord = async (i: number) => {
     const saveSuccessState = async (
-      setRecord: t.DisplayRecord,
+      setRecord: ApiRecord,
       i: number,
       apiRes: PektinApiResponseBody
     ) => {
@@ -140,25 +139,22 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
     if (
       (this.state.ogRecords[i].name !== this.state.records[i].name ||
-        this.state.ogRecords[i].type !== this.state.records[i].type) &&
-      this.state.ogRecords[i].type !== "NEW"
+        this.state.ogRecords[i].rr_type !== this.state.records[i].rr_type) &&
+      this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType)
     ) {
       // delete the key with the old name and or type and create one with the new name
-      const setRes = await this.props.client.set(
-        [toPektinApiRecord(this.props.config, this.state.records[i])],
-        false
-      );
+      const setRes = await this.props.client.set([this.state.records[i]], false);
       if (!setRes.error) {
         this.props.client.deleteRecords(
-          [this.state.ogRecords[i]].map((r) => r.name + ":" + r.type)
+          [this.state.ogRecords[i]].map((r) => r.name + ":" + r.rr_type)
         );
         await saveSuccessState(this.state.records[i], i, setRes);
       }
     } else {
-      const setRecord = toPektinApiRecord(this.props.config, this.state.records[i]);
+      const setRecord = this.state.records[i];
       const res = await this.props.client.set([setRecord], false);
       if (!res.error) {
-        await saveSuccessState(toDisplayRecord(this.props.config, setRecord), i, res);
+        await saveSuccessState(setRecord, i, res);
       } else {
         this.setState(({ meta }) => {
           meta[i].apiError = res.data[0];
@@ -171,14 +167,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
   // TODO add abort button to import
   saveAllChangedRecords = async () => {
     if (this.props.variant === "import") {
-      const toBeAdded: t.DisplayRecord[] = [];
+      const toBeAdded: ApiRecord[] = [];
       this.state.records.forEach((record, i) => {
         if (this.state.meta[i].selected) toBeAdded.push(record);
       });
-      const res = await this.props.client.set(
-        toBeAdded.map((record) => toPektinApiRecord(this.props.config, record)),
-        false
-      );
+      const res = await this.props.client.set(toBeAdded, false);
       if (!res.error) {
         this.props.g.loadDomains();
         this.props.history.push({
@@ -186,28 +179,25 @@ export default class Domain extends Component<DomainProps, DomainState> {
         });
       }
     } else {
-      const toBeAdded: t.DisplayRecord[] = [];
-      const toBeDeleted: t.DisplayRecord[] = [];
+      const toBeAdded: ApiRecord[] = [];
+      const toBeDeleted: ApiRecord[] = [];
       this.state.records.forEach((record, i) => {
         if (this.state.meta[i].anyChanged) {
           toBeAdded.push(record);
           if (
             (this.state.ogRecords[i].name !== this.state.records[i].name ||
-              this.state.ogRecords[i].type !== this.state.records[i].type) &&
-            this.state.ogRecords[i].type !== "NEW"
+              this.state.ogRecords[i].rr_type !== this.state.records[i].rr_type) &&
+            this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType)
           ) {
             toBeDeleted.push(this.state.ogRecords[i]);
           }
         }
       });
-      const setRes = await this.props.client.set(
-        toBeAdded.map((record) => toPektinApiRecord(this.props.config, record)),
-        false
-      );
+      const setRes = await this.props.client.set(toBeAdded, false);
 
       if (!setRes.error) {
         if (toBeDeleted.length) {
-          await this.props.client.deleteRecords(toBeDeleted.map((r) => r.name + ":" + r.type));
+          await this.props.client.deleteRecords(toBeDeleted.map((r) => r.name + ":" + r.rr_type));
         }
         await this.updateRecords(setRes, toBeAdded);
       } else {
@@ -224,19 +214,19 @@ export default class Domain extends Component<DomainProps, DomainState> {
     }
   };
 
-  updateRecords = async (apiRes: PektinApiResponseBody, toUpdate?: t.DisplayRecord[]) => {
+  updateRecords = async (apiRes: PektinApiResponseBody, toUpdate?: ApiRecord[]) => {
     if (!toUpdate) {
       this.handleReloadClick();
     } else {
-      const res = await this.props.client.get(toUpdate.map((r) => r.name + ":" + r.type));
+      const res = await this.props.client.get(toUpdate.map((r) => r.name + ":" + r.rr_type));
       if (!res.error) {
-        const updatedRecords = res.data.map((r) => toDisplayRecord(this.props.config, r));
+        const updatedRecords = res.data;
         this.setState(({ meta, ogRecords, records, changedRecords }) => {
           meta = cloneDeep(meta);
           records = cloneDeep(records);
           records.forEach((record, i) => {
             updatedRecords.forEach((updatedRecord) => {
-              if (updatedRecord.type === record.type && updatedRecord.name === record.name) {
+              if (updatedRecord.rr_type === record.rr_type && updatedRecord.name === record.name) {
                 ogRecords[i] = cloneDeep(updatedRecord);
                 records[i] = cloneDeep(updatedRecord);
                 meta[i].validity = this.validateRecord(updatedRecord, this.state.domainName);
@@ -268,8 +258,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
   };
 
   handleRecordChange = (
-    record: t.DisplayRecord,
-    ogRecord: t.DisplayRecord,
+    record: ApiRecord,
+    ogRecord: ApiRecord,
     rrIndex: number,
     fieldName: string,
     fieldChildName: string,
@@ -279,25 +269,27 @@ export default class Domain extends Component<DomainProps, DomainState> {
     if (fieldName === "name") {
       record.name = v;
     } else if (fieldName === "ttl") {
-      record.values = record.values.map((e) => {
+      /*@ts-ignore*/
+      record.rr_set = record.rr_set.map((e) => {
         e.ttl = v ? parseInt(v) : 0;
         return e;
       });
     } else if (fieldName === "type") {
-      record.type = v;
-      record.values = [];
-      if (v === ogRecord.type) {
-        record.values[0] = ogRecord.values[0];
+      record.rr_type = v;
+      record.rr_set = [];
+      if (v === ogRecord.rr_type) {
+        record.rr_set[0] = ogRecord.rr_set[0];
       } else {
-        record.values[0] = l.rrTemplates[v as t.RRType].template;
+        record.rr_set[0] = l.rrTemplates[v as t.PektinRRType].template;
       }
-    } else if (fieldName === "rrField" && record.values[rrIndex] !== undefined) {
-      if (record.values[rrIndex]?.value !== undefined) {
-        record.values[rrIndex].value = v;
-      } else {
-        const isNumber = typeof l.rrTemplates[record.type].template[fieldChildName] === "number";
+    } else if (fieldName === "rrField" && record.rr_set[rrIndex] !== undefined) {
+      if (record.rr_set[rrIndex].hasOwnProperty("value")) {
         /*@ts-ignore*/
-        record.values[rrIndex][fieldChildName] = isNumber ? parseInt(v) : v;
+        record.rr_set[rrIndex].value = v;
+      } else {
+        const isNumber = typeof l.rrTemplates[record.rr_type].template[fieldChildName] === "number";
+        /*@ts-ignore*/
+        record.rr_set[rrIndex][fieldChildName] = isNumber ? parseInt(v) : v;
       }
     }
     return [record, ogRecord];
@@ -306,7 +298,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
   addRRValue = (recordIndex: number) => {
     this.setState(({ records, meta }) => {
       const record = cloneDeep(records[recordIndex]);
-      record.values = [...record.values, cloneDeep(record.values[0])];
+      /*@ts-ignore*/
+      record.rr_set = [...record.rr_set, cloneDeep(record.rr_set[0])];
       records[recordIndex] = record;
 
       meta[recordIndex] = cloneDeep(meta[recordIndex]);
@@ -324,7 +317,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
   removeRRValue = (recordIndex: number, rrIndex: number) => {
     this.setState(({ records, meta }) => {
       const record = cloneDeep(records[recordIndex]);
-      record.values = record.values.filter((e, i) => i !== rrIndex);
+      /*@ts-ignore*/
+      record.rr_set = record.rr_set.filter((e, i) => i !== rrIndex);
       records[recordIndex] = record;
 
       meta[recordIndex] = cloneDeep(meta[recordIndex]);
@@ -367,7 +361,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
           newValue
         );
 
-        if (records[recordIndex].type === "SOA" && fieldName === "name") {
+        if (records[recordIndex].rr_type === "SOA" && fieldName === "name") {
           domainName = records[recordIndex].name;
           meta = cloneDeep(meta);
           meta.forEach((m, i) => {
@@ -378,8 +372,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
           meta[recordIndex].validity = this.validateRecord(records[recordIndex], domainName);
         }
 
-        if (records[recordIndex].type === "TXT" && this.props.config.local.helper) {
-          const changedValue = records[recordIndex]?.values[rrIndex]?.value;
+        if (records[recordIndex].rr_type === "TXT" && this.props.config.local.helper) {
+          /*@ts-ignore*/
+          const changedValue = records[recordIndex]?.rr_set[rrIndex]?.value;
           if (changedValue?.startsWith("v=spf")) {
             helper = true;
           }
@@ -417,11 +412,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
     );
   };
 
-  validateRecord = (record: t.DisplayRecord, domainName: string): t.FieldValidity => {
+  validateRecord = (record: ApiRecord, domainName: string): t.FieldValidity => {
     const valName = l.validateDomain(this.props.config, record?.name, {
       domainName,
     });
-    /*@ts-ignore*/
     const fieldValidity: t.FieldValidity = {
       name: valName,
       values: [],
@@ -429,16 +423,16 @@ export default class Domain extends Component<DomainProps, DomainState> {
     };
     if (!record) return fieldValidity;
 
-    fieldValidity.values = record.values.map((rr, rrIndex) => {
+    fieldValidity.values = record.rr_set.map((rr, rrIndex) => {
       const rrValidity: t.RRValidity = {};
+      if (record.rr_set[rrIndex].hasOwnProperty("value")) {
+        const templateFields = Object.keys(l.rrTemplates[record.rr_type]?.fields);
 
-      if (record.values[rrIndex].value !== undefined) {
-        const templateFields = Object.keys(l.rrTemplates[record.type]?.fields);
-
-        if (l.rrTemplates[record.type]?.fields[templateFields[0]]?.validate) {
-          rrValidity[templateFields[0]] = l.rrTemplates[record.type].fields[
+        if (l.rrTemplates[record.rr_type]?.fields[templateFields[0]]?.validate) {
+          rrValidity[templateFields[0]] = l.rrTemplates[record.rr_type].fields[
             templateFields[0]
-          ].validate(this.props.config, record.values[rrIndex].value);
+            /*@ts-ignore*/
+          ].validate(this.props.config, record.rr_set[rrIndex].value);
           if (
             fieldValidity.totalValidity !== "error" &&
             rrValidity[templateFields[0]].type !== "ok"
@@ -447,15 +441,15 @@ export default class Domain extends Component<DomainProps, DomainState> {
           }
         }
       } else {
-        const keys = Object.keys(record.values[rrIndex]);
-        const values = Object.values(record.values[rrIndex]);
+        const keys = Object.keys(record.rr_set[rrIndex]);
+        const values = Object.values(record.rr_set[rrIndex]);
 
         keys.forEach((key, i) => {
-          if (l.rrTemplates[record.type]?.fields[key]?.validate !== undefined) {
-            rrValidity[key] = l.rrTemplates[record.type].fields[key].validate(
+          if (l.rrTemplates[record.rr_type]?.fields[key]?.validate !== undefined) {
+            rrValidity[key] = l.rrTemplates[record.rr_type].fields[key].validate(
               this.props.config,
               values[i],
-              record.values[rrIndex]
+              record.rr_set[rrIndex]
             );
 
             if (fieldValidity.totalValidity !== "error" && rrValidity[key].type !== "ok") {
@@ -469,10 +463,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
     return fieldValidity;
   };
 
-  initData = (records: t.DisplayRecord[], domainName: string) => {
+  initData = (records: ApiRecord[], domainName: string) => {
     const meta = records.map((record) => {
-      /*@ts-ignore*/
-      const m: t.DomainMeta = cloneDeep(l.defaultMeta);
+      const m: t.DomainMeta = cloneDeep(l.defaultMeta) as unknown as t.DomainMeta;
       if (this.props.variant === "import") {
         m.selected = true;
       }
@@ -511,7 +504,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       let domainName = "";
       for (let i = 0; i < this.props.records.length; i++) {
         const record = this.props.records[i];
-        if (record.type === "SOA") {
+        if (record.rr_type === "SOA") {
           domainName = record.name;
 
           break;
@@ -524,10 +517,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       const res = await this.props.client.getZoneRecords([domainName]);
       if (!res.error) {
         const records = res.data[domainName];
-        this.initData(
-          records.map((r) => toDisplayRecord(this.props.config, r)),
-          this.props.match.params.domainName
-        );
+        this.initData(records, this.props.match.params.domainName);
       }
     }
   };
@@ -541,10 +531,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       if (!res.error) {
         const records = res.data[domainName];
 
-        this.initData(
-          records.map((r) => toDisplayRecord(this.props.config, r)),
-          domainName
-        );
+        this.initData(records, domainName);
       }
     }
   };
@@ -562,11 +549,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
   sortColumns = (name: string) => {
     this.setState(({ records, meta, columnItems, defaultOrder, ogRecords }) => {
-      let combine: [t.DisplayRecord, t.DomainMeta, number, t.DisplayRecord][] = records.map(
-        (e, i) => {
-          return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
-        }
-      );
+      let combine: [ApiRecord, t.DomainMeta, number, ApiRecord][] = records.map((e, i) => {
+        return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
+      });
 
       let currentSortDirection = 0;
       columnItems = columnItems.map((e) => {
@@ -586,8 +571,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
         (key) => {
           if (currentSortDirection === 0) return key[2];
           if (name === "name") return key[0].name;
-          if (name === "ttl") return key[0].values[0].ttl;
-          if (name === "type") return key[0].type;
+          if (name === "ttl") return key[0].rr_set[0].ttl;
+          if (name === "type") return key[0].rr_type;
           if (name === "search") return key[1].searchMatch;
         },
       ]);
@@ -655,21 +640,21 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 }
                 if (columnItems[1].search) {
                   const match = useRegex
-                    ? rec.type.match(RegExp(search, "g"))
-                    : rec.type.indexOf(search) > -1;
+                    ? rec.rr_type.match(RegExp(search, "g"))
+                    : rec.rr_type.indexOf(search) > -1;
                   if (match) {
-                    meta[i].searchMatch.type = !!match;
+                    meta[i].searchMatch.rr_type = !!match;
                     meta[i].anySearchMatch = true;
                   }
                 }
                 if (columnItems[2].search || columnItems[3].search) {
                   // handle values column
-                  meta[i].searchMatch.values = [];
+                  meta[i].searchMatch.rr_set = [];
 
-                  rec.values.forEach((value, rrIndex) => {
+                  rec.rr_set.forEach((value, rrIndex) => {
                     const fieldValues = Object.values(value);
                     const fieldNames = Object.keys(value);
-                    meta[i].searchMatch.values.push({});
+                    meta[i].searchMatch.rr_set.push({});
                     for (let fieldIndex = 0; fieldIndex < fieldValues.length; fieldIndex++) {
                       const m = useRegex
                         ? fieldValues[fieldIndex].toString().match(RegExp(search, "g"))
@@ -680,14 +665,14 @@ export default class Domain extends Component<DomainProps, DomainState> {
                         ((fieldNames[fieldIndex] === "ttl" && columnItems[2].search) ||
                           (fieldNames[fieldIndex] !== "ttl" && columnItems[3].search))
                       ) {
-                        meta[i].searchMatch.values[rrIndex][fieldNames[fieldIndex]] = true;
+                        meta[i].searchMatch.rr_set[rrIndex][fieldNames[fieldIndex]] = true;
                         if (rrIndex > 0) {
                           meta[i].expanded = true;
                         }
 
                         meta[i].anySearchMatch = true;
                       } else {
-                        meta[i].searchMatch.values[rrIndex][fieldNames[fieldIndex]] = false;
+                        meta[i].searchMatch.rr_set[rrIndex][fieldNames[fieldIndex]] = false;
                       }
                     }
                   });
@@ -695,11 +680,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
               }
             });
 
-            let combine: [t.DisplayRecord, t.DomainMeta, number, t.DisplayRecord][] = records.map(
-              (e, i) => {
-                return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
-              }
-            );
+            let combine: [ApiRecord, t.DomainMeta, number, ApiRecord][] = records.map((e, i) => {
+              return [records[i], meta[i], defaultOrder[i], ogRecords[i]];
+            });
             combine = sortBy(combine, [
               (key) => {
                 if (!search.length) return key[2];
@@ -744,7 +727,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
               ? records[recordIndex].name.replaceAll(RegExp(search, "g"), replace)
               : records[recordIndex].name.replaceAll(search, replace);
 
-            if (records[recordIndex].type === "SOA") {
+            if (records[recordIndex].rr_type === "SOA") {
               if (this.props.variant === "import") {
                 domainName = replaced;
                 records[recordIndex].name = replaced;
@@ -753,32 +736,36 @@ export default class Domain extends Component<DomainProps, DomainState> {
               records[recordIndex].name = replaced;
             }
           }
-          if (m.searchMatch.type) {
+          if (m.searchMatch.rr_type) {
             const replaced = useRegex
-              ? (records[recordIndex].type.replaceAll(RegExp(search, "g"), replace) as t.RRType)
-              : (records[recordIndex].type.replaceAll(search, replace) as t.RRType);
+              ? records[recordIndex].rr_type.replaceAll(RegExp(search, "g"), replace)
+              : records[recordIndex].rr_type.replaceAll(search, replace);
 
-            if (records[recordIndex].type !== "SOA") {
-              records[recordIndex].type = replaced;
-              records[recordIndex].values = [l.rrTemplates[replaced].template];
+            if (records[recordIndex].rr_type !== "SOA" && isSupportedRecordType(replaced)) {
+              records[recordIndex].rr_type = replaced as t.PektinRRType;
+              records[recordIndex].rr_set = [l.rrTemplates[replaced].template];
             }
           }
 
-          if (m.searchMatch.values) {
-            records[recordIndex].values.forEach((value, rrIndex) => {
+          if (m.searchMatch.rr_set) {
+            records[recordIndex].rr_set.forEach((value, rrIndex) => {
               const fieldValues = Object.values(value);
               const fieldNames = Object.keys(value);
+              console.log(fieldValues, fieldNames);
 
               for (let ii = 0; ii < fieldValues.length; ii++) {
-                if (m.searchMatch.values[rrIndex][fieldNames[ii]]) {
-                  /*@ts-ignore*/
-                  const fieldValue = fieldValues[ii];
+                if (m.searchMatch.rr_set[rrIndex][fieldNames[ii]]) {
+                  const fieldValue =
+                    typeof fieldValues[ii] === "number"
+                      ? fieldValues[ii].toString()
+                      : fieldValues[ii];
 
                   const replaced = useRegex
                     ? fieldValue.replaceAll(RegExp(search, "g"), replace)
                     : fieldValue.replaceAll(search, replace);
                   /*@ts-ignore*/
-                  records[recordIndex].values[rrIndex][fieldNames[ii]] = replaced;
+                  records[recordIndex].rr_set[rrIndex][fieldNames[ii]] =
+                    typeof fieldValues[ii] === "number" ? parseInt(replaced) : replaced;
                 }
               }
             });
@@ -817,17 +804,21 @@ export default class Domain extends Component<DomainProps, DomainState> {
     const toBeDeleted = this.state.records.filter((e, i) => this.state.meta[i].selected);
     let deletedSoa = false;
     let toBeDeletedOnServer = this.state.records.filter((e, i) => {
-      if (this.state.records[i].type === "SOA") deletedSoa = true;
-      return this.state.meta[i].selected && this.state.ogRecords[i].type !== "NEW";
+      if (this.state.meta[i].selected && this.state.records[i].rr_type === "SOA") deletedSoa = true;
+      return (
+        this.state.meta[i].selected && this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType)
+      );
     });
 
     if (toBeDeletedOnServer.length) {
       if (deletedSoa) {
         toBeDeletedOnServer = toBeDeleted.filter((e, i) => {
-          return this.state.ogRecords[i].type !== "NEW";
+          return this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType);
         });
       }
-      await this.props.client.deleteRecords(toBeDeletedOnServer.map((r) => r.name + ":" + r.type));
+      await this.props.client.deleteRecords(
+        toBeDeletedOnServer.map((r) => r.name + ":" + r.rr_type)
+      );
     }
     if (deletedSoa) {
       this.props.g.loadDomains();
@@ -852,20 +843,19 @@ export default class Domain extends Component<DomainProps, DomainState> {
       //meta = cloneDeep(meta);
       let defaultName = this.state.domainName;
       defaultName = defaultName ? defaultName : "";
-      const newRecord: t.DisplayRecord = {
+      const newRecord: ApiRecord = {
         name: l.absoluteName(defaultName),
-        type: "AAAA",
-        values: [cloneDeep(l.rrTemplates.AAAA.template)],
+        rr_type: t.PektinRRType.AAAA,
+        rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
       };
-      /*@ts-ignore*/
-      const newMeta: t.DomainMeta = cloneDeep(l.defaultMeta);
+      const newMeta: t.DomainMeta = cloneDeep(l.defaultMeta) as unknown as t.DomainMeta;
       [newMeta.changed, newMeta.anyChanged] = this.hasRecordChanged(newRecord, "yes");
 
       newMeta.validity = this.validateRecord(newRecord, this.state.domainName);
-      const newOgData: t.DisplayRecord = {
+      const newOgData: ApiRecord = {
         name: "",
-        type: "NEW",
-        values: [cloneDeep(l.rrTemplates.AAAA.template)],
+        rr_type: "NEW" as t.PektinRRType,
+        rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
       };
       const newDefaultOrder = defaultOrder.length;
 
@@ -905,16 +895,13 @@ export default class Domain extends Component<DomainProps, DomainState> {
     if (!res.error) {
       const records = res.data[this.state.domainName];
 
-      this.initData(
-        records.map((r) => toDisplayRecord(this.props.config, r)),
-        this.props.match.params.domainName
-      );
+      this.initData(records, this.props.match.params.domainName);
     }
   };
 
   hasRecordChanged = (
-    record: t.DisplayRecord,
-    ogRecord: t.DisplayRecord | "yes" | "no"
+    record: ApiRecord,
+    ogRecord: ApiRecord | "yes" | "no"
   ): [t.FieldsChanged, boolean] => {
     const changed = { name: false, type: false, values: [] as Array<any> };
     let anyChanged = false;
@@ -923,7 +910,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       const valid = ogRecord === "yes";
       changed.name = valid;
       changed.type = valid;
-      record.values.forEach((recordValue: t.RRVal, i: number) => {
+      record.rr_set.forEach((recordValue, i) => {
         changed.values.push({});
         const fieldKeys = Object.keys(recordValue);
         fieldKeys.forEach((fieldKey: string) => {
@@ -940,12 +927,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
       changed.name = true;
       anyChanged = true;
     }
-    if (record.type !== ogRecord.type) {
+    if (record.rr_type !== ogRecord.rr_type) {
       changed.type = true;
       anyChanged = true;
     }
 
-    record.values.forEach((recordValue: t.RRVal, i: number) => {
+    record.rr_set.forEach((recordValue, i) => {
       changed.values.push({});
       const fieldKeys = Object.keys(recordValue);
       fieldKeys.forEach((fieldKey: string) => {
@@ -953,7 +940,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
           /*@ts-ignore*/
           recordValue[fieldKey] !==
           /*@ts-ignore*/
-          (ogRecord.values[i] ? ogRecord.values[i][fieldKey] : false)
+          (ogRecord.rr_set[i] ? ogRecord.rr_set[i][fieldKey] : false)
         ) {
           changed.values[i][fieldKey] = true;
           anyChanged = true;
@@ -995,7 +982,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     key: any;
     index: number;
     style: any;
-    //record: t.DisplayRecord;
+    //record: ApiRecord;
     //meta: t.DomainMeta;
     //totalRows: number;
   }) => {

@@ -12,7 +12,7 @@ import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
 import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import yaml from "react-syntax-highlighter/dist/esm/languages/hljs/yaml";
 import * as codeStyles from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { ExtendedPektinApiClient } from "@pektin/client";
+import { PektinClient } from "@pektin/client";
 import { ApiRecord } from "@pektin/client/src/types";
 
 SyntaxHighlighter.registerLanguage("javascript", js);
@@ -25,7 +25,7 @@ interface DataDisplayProps {
   readonly data: t.DisplayRecord;
   readonly config: t.Config;
   readonly style?: any;
-  readonly client: ExtendedPektinApiClient;
+  readonly client: PektinClient;
 }
 
 interface DataDisplayState {
@@ -120,7 +120,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
 interface CurlTabProps {
   readonly data: ApiRecord;
   readonly config: t.Config;
-  readonly client: ExtendedPektinApiClient;
+  readonly client: PektinClient;
 }
 
 interface CurlTabState {

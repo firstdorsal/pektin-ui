@@ -9,9 +9,9 @@ import {
   ApiRecordSRV,
   ApiRecordTLSA,
   ApiRecordTXT,
-  PektinConfig,
   ResourceRecordBase,
 } from "@pektin/client/src/types";
+import { PektinConfig } from "@pektin/config/src/types";
 import App from "../App";
 import { CodeStyle } from "./code-styles";
 

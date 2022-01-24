@@ -7,7 +7,7 @@ import DataDisplay from "../components/DataDisplay";
 import { ContextMenu } from "./ContextMenu";
 import { cloneDeep } from "lodash";
 import { RouteComponentProps } from "react-router-dom";
-import { ExtendedPektinApiClient } from "@pektin/client";
+import { PektinClient } from "@pektin/client";
 import App from "../App";
 import { SOARecord } from "@pektin/client/src/types";
 
@@ -23,7 +23,7 @@ interface AddDomainProps extends RouteComponentProps {
   readonly config: t.Config;
   readonly g: t.Glob;
   readonly loadDomains: InstanceType<typeof App>["loadDomains"];
-  readonly client: ExtendedPektinApiClient;
+  readonly client: PektinClient;
 }
 
 interface AddDomainState {

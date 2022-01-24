@@ -1,5 +1,5 @@
 import { Container, MenuItem, Paper, Select, Step, StepLabel, Stepper } from "@material-ui/core";
-import { ExtendedPektinApiClient, getPektinRecursorEndpoint } from "@pektin/client";
+import { PektinClient, getPektinEndpoint } from "@pektin/client";
 import React, { Component } from "react";
 import Domain from "./Domain";
 import * as t from "./types";
@@ -8,7 +8,7 @@ interface ImportDomainProps {
   readonly config: t.Config;
   readonly g: t.Glob;
   readonly routeProps: any;
-  readonly client: ExtendedPektinApiClient;
+  readonly client: PektinClient;
 }
 interface ImportDomainState {
   readonly activeStep: number;
@@ -68,7 +68,7 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                     import: this.import,
                     config: this.props.config,
                     recursorUrl: this.props.client?.pektinConfig
-                      ? getPektinRecursorEndpoint(this.props.client?.pektinConfig)
+                      ? getPektinEndpoint(this.props.client?.pektinConfig, "recursor")
                       : "",
                     recursorAuth: this.props.client?.recursorAuth,
                   })

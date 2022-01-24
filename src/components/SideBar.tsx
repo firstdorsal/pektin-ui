@@ -3,13 +3,13 @@ import { Component, Fragment } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
 import Health from "./Health";
 import * as t from "./types";
-import { ExtendedPektinApiClient } from "@pektin/client";
+import { PektinClient } from "@pektin/client";
 
 interface BaseProps extends Partial<RouteComponentProps> {
   readonly config: t.Config;
   readonly domains: string[];
   readonly health: t.ServiceHealth | undefined;
-  readonly client: ExtendedPektinApiClient;
+  readonly client: PektinClient;
 }
 interface BaseState {}
 

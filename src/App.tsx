@@ -14,7 +14,7 @@ import ConfigView from "./components/Config";
 import cloneDeep from "lodash/cloneDeep";
 import { HotKeys, configure as configureHotkeys, GlobalHotKeys } from "react-hotkeys";
 import { PektinClientConnectionConfigOverride } from "@pektin/client/src/types";
-import { ExtendedPektinApiClient } from "@pektin/client";
+import { PektinClient } from "@pektin/client";
 
 configureHotkeys({ ignoreTags: [] });
 
@@ -26,7 +26,7 @@ interface AppState {
   readonly domains: string[];
   readonly configError: boolean;
   readonly health?: t.ServiceHealth;
-  readonly client: ExtendedPektinApiClient;
+  readonly client: PektinClient;
 }
 interface AppProps {}
 
@@ -45,7 +45,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       loadDomains: () => {},
     },
     domains: [],
-    client: undefined as unknown as ExtendedPektinApiClient,
+    client: undefined as unknown as PektinClient,
   };
   mounted = true;
   router: any;
@@ -113,7 +113,7 @@ export default class App extends PureComponent<AppProps, AppState> {
     } catch (error) {}
   };
 
-  initClient = async (client: ExtendedPektinApiClient) => {
+  initClient = async (client: PektinClient) => {
     try {
       await client.getPektinConfig();
     } catch (error: any) {
@@ -143,7 +143,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       const ssr = sessionStorage.getItem("pccc");
       if (!ssr) throw Error();
       const pccc: PektinClientConnectionConfigOverride = JSON.parse(ssr);
-      const client = new ExtendedPektinApiClient(pccc);
+      const client = new PektinClient(pccc);
       const { domains } = await this.initClient(client);
 
       // handle custom right click menu
@@ -198,10 +198,7 @@ export default class App extends PureComponent<AppProps, AppState> {
     document.removeEventListener("contextmenu", this.handleContextMenu);
   };
 
-  saveAuth = async (
-    pccc: PektinClientConnectionConfigOverride,
-    client: ExtendedPektinApiClient
-  ) => {
+  saveAuth = async (pccc: PektinClientConnectionConfigOverride, client: PektinClient) => {
     sessionStorage.setItem("pccc", JSON.stringify(pccc));
 
     const { domains } = await this.initClient(client);

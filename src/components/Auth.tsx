@@ -5,7 +5,7 @@ import * as l from "./lib";
 import { Refresh, Security } from "@material-ui/icons";
 import HelpPopper from "./HelpPopper";
 import { RouteComponentProps } from "react-router-dom";
-import { ExtendedPektinApiClient } from "@pektin/client";
+import { PektinClient } from "@pektin/client";
 import { PektinClientConnectionConfigOverride } from "@pektin/client/src/types";
 import App from "../App";
 
@@ -66,7 +66,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
     // send the config to vault and try to get a token
     if (!authError) {
       try {
-        client = new ExtendedPektinApiClient(parsed);
+        client = new PektinClient(parsed);
         await client.getDomains();
         value = parsed;
         authError = false;

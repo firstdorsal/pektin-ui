@@ -28,7 +28,7 @@ import { VscRegex, VscReplaceAll } from "react-icons/vsc";
 import { MdFlashOn } from "react-icons/md";
 import { HotKeys } from "react-hotkeys";
 import Helper from "../components/Helper";
-import { ExtendedPektinApiClient, isSupportedRecordType } from "@pektin/client";
+import { PektinClient, isSupportedRecordType } from "@pektin/client";
 import ContentLoader from "react-content-loader";
 //@ts-ignore
 import Fade from "react-reveal/Fade";
@@ -66,7 +66,7 @@ interface DomainProps extends RouteComponentProps<RouteParams> {
   readonly variant?: "import";
   readonly records?: t.DisplayRecord[];
   readonly style?: any;
-  readonly client: ExtendedPektinApiClient;
+  readonly client: PektinClient;
 }
 
 interface ColumnItem {
@@ -304,11 +304,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
     return [record, ogRecord];
   };
 
-  addRRValue = (recordIndex: number) => {
+  addRRValue = (recordIndex: number, newRRValueIndex: number) => {
     this.setState(({ records, meta }) => {
       const record = cloneDeep(records[recordIndex]);
       /*@ts-ignore*/
-      record.rr_set = [...record.rr_set, cloneDeep(record.rr_set[0])];
+      record.rr_set[newRRValueIndex] = cloneDeep(record.rr_set[0]);
       records[recordIndex] = record;
 
       meta[recordIndex] = cloneDeep(meta[recordIndex]);
@@ -668,6 +668,9 @@ export default class Domain extends Component<DomainProps, DomainState> {
                   // handle values column
                   meta[i].searchMatch.rr_set = [];
 
+                  // TODO:in strict mode the search matches a legacy ip address when input is "y" surely because of array.push and double state updates
+                  // TODO:error handling on failed import
+
                   rec.rr_set.forEach((value, rrIndex) => {
                     const fieldValues = Object.values(value);
                     const fieldNames = Object.keys(value);
@@ -772,7 +775,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
               const fieldNames = Object.keys(value);
 
               for (let ii = 0; ii < fieldValues.length; ii++) {
-                if (m.searchMatch.rr_set[rrIndex][fieldNames[ii]]) {
+                if (
+                  m.searchMatch.rr_set[rrIndex] &&
+                  m.searchMatch.rr_set[rrIndex][fieldNames[ii]]
+                ) {
                   const fieldValue =
                     typeof fieldValues[ii] === "number"
                       ? fieldValues[ii].toString()

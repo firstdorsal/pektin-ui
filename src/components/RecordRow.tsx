@@ -27,7 +27,7 @@ import { GrDocumentTxt } from "react-icons/gr";
 import isEqual from "lodash/isEqual";
 import TxtAssistant from "./TxtAssistant";
 import Domain from "./Domain";
-import { ExtendedPektinApiClient } from "@pektin/client";
+import { PektinClient } from "@pektin/client";
 import PieButton from "./small/PieButton";
 import { PektinApiResponseBody } from "@pektin/client/src/types";
 
@@ -48,7 +48,7 @@ interface RowProps {
   readonly totalRows: number;
   readonly addRRValue: InstanceType<typeof Domain>["addRRValue"];
   readonly removeRRValue: InstanceType<typeof Domain>["removeRRValue"];
-  readonly client: ExtendedPektinApiClient;
+  readonly client: PektinClient;
   readonly lastApiCall?: PektinApiResponseBody;
 }
 interface RowState {}
@@ -458,7 +458,12 @@ export default class RecordRow extends Component<RowProps, RowState> {
                               height: "35px",
                               marginTop: "5px",
                             }}
-                            onClick={() => this.props.addRRValue(this.props.recordIndex)}
+                            onClick={() =>
+                              this.props.addRRValue(
+                                this.props.recordIndex,
+                                this.props.record.rr_set.length
+                              )
+                            }
                           >
                             <AddCircle />
                           </IconButton>

@@ -15,6 +15,7 @@ import { PektinConfig } from "@pektin/config/src/types";
 import App from "../App";
 import { CodeStyle } from "./code-styles";
 
+import { PektinRRType } from "@pektin/client";
 export interface DOHQuery {
   name: string;
   type: string;
@@ -109,20 +110,6 @@ export interface DomainMeta {
   anySearchMatch: boolean;
   validity?: FieldValidity;
   apiError: string | null;
-}
-
-export enum PektinRRType {
-  A = "A",
-  AAAA = "AAAA",
-  NS = "NS",
-  CNAME = "CNAME",
-  SOA = "SOA",
-  MX = "MX",
-  TXT = "TXT",
-  SRV = "SRV",
-  CAA = "CAA",
-  OPENPGPKEY = "OPENPGPKEY",
-  TLSA = "TLSA",
 }
 
 export type DisplayRecord =

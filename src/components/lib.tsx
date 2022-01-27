@@ -10,7 +10,7 @@ import { ToluolResponse } from "@pektin/client/src/toluol-wasm/types";
 import punycode from "punycode";
 import { ApiRecord, CAARecord, ResourceRecord } from "@pektin/client/src/types";
 import { cloneDeep } from "lodash";
-
+import { PektinRRType } from "@pektin/client";
 const f = fetch;
 export const defaultSearchMatch = {
   name: false,
@@ -45,7 +45,7 @@ export const toPektinApiRecord = (config: t.Config, displayRecord: t.DisplayReco
   const apiRecord = cloneDeep(displayRecord) as ApiRecord;
 
   switch (displayRecord.rr_type) {
-    case t.PektinRRType.SOA:
+    case PektinRRType.SOA:
       apiRecord.rr_set = displayRecord.rr_set.map((rr) => {
         return {
           ttl: rr.ttl,
@@ -59,7 +59,7 @@ export const toPektinApiRecord = (config: t.Config, displayRecord: t.DisplayReco
         };
       });
       break;
-    case t.PektinRRType.CAA:
+    case PektinRRType.CAA:
       apiRecord.rr_set = displayRecord.rr_set.map((rr) => {
         return {
           ttl: rr.ttl,
@@ -81,7 +81,7 @@ export const toUiRecord = (config: t.Config, apiRecord: ApiRecord): t.DisplayRec
   const displayRecord = cloneDeep(apiRecord) as t.DisplayRecord;
 
   switch (apiRecord.rr_type) {
-    case t.PektinRRType.SOA:
+    case PektinRRType.SOA:
       displayRecord.rr_set = apiRecord.rr_set.map((rr) => {
         return {
           ttl: rr.ttl,
@@ -90,7 +90,7 @@ export const toUiRecord = (config: t.Config, apiRecord: ApiRecord): t.DisplayRec
         };
       });
       break;
-    case t.PektinRRType.CAA:
+    case PektinRRType.CAA:
       displayRecord.rr_set = apiRecord.rr_set.map((rr) => {
         return {
           ttl: rr.ttl,
@@ -163,18 +163,18 @@ export const toluolToApiRecord = (response: ToluolResponse): t.DisplayRecord | f
     const rdata = e.NONOPT?.rdata;
     return {
       ttl: answer.ttl, //TODO maybe fix/beautify ttls rounding them somehow
-      ...textToRRValue(rdata.join(" "), answer.atype as t.PektinRRType),
+      ...textToRRValue(rdata.join(" "), answer.atype as PektinRRType),
     };
   }) as ResourceRecord[];
 
   return {
     name: firstAnswer.name,
-    rr_type: firstAnswer.atype as t.PektinRRType,
+    rr_type: firstAnswer.atype as PektinRRType,
     rr_set,
   } as t.DisplayRecord;
 };
 
-const textToRRValue = (val: string, recordType: t.PektinRRType) => {
+const textToRRValue = (val: string, recordType: PektinRRType) => {
   const t = val.split(" ");
   switch (recordType) {
     case "SOA":

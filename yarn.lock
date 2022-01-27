@@ -1581,20 +1581,21 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@pektin/client@1.0.97":
-  version "1.0.97"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.0.97.tgz#c76b6a4bc218bd00955bd967500254e903ab28ee"
-  integrity sha512-X2ifa0NTavkplsRmer9nxSq6bXusGXpT4TKW9BBzKzNat3mZaQ4t3Rd+ZgiNDGQorYzMCjQ1zYqSE/Lm2JmoHQ==
+"@pektin/client@1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.5.tgz#255afb6b27b34b01d6e4333202b6c721062914a6"
+  integrity sha512-PnX24LpdZo1npQmGQD7rCkEyBoZ7gUUrWLDln8PXn6ChlZnvMjgN/rnU6fiLGkNMDXZZyRd8XNGdiknsQ48fMw==
   dependencies:
-    "@pektin/config" "^1.0.1"
+    "@pektin/config" "^1.0.11"
     cross-fetch "^3.1.4"
 
-"@pektin/config@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.1.tgz#5ff823461ad504841450a2d89791e0adb78e8ced"
-  integrity sha512-5iNAGXLIDEcgUCSZOUQJAwTtPfeVc1H90eRxrBz0Jo93IgarFx1qLoQ1Du6VShCtZF1tQjxivcKLRsbMRfV5GQ==
+"@pektin/config@^1.0.11":
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.11.tgz#511c010a2cf0e1dd2d1a93d40d22ae40eeff5bfb"
+  integrity sha512-yGT1ZfOvmWb6dhJqkOk9mh31rGBlhyihj8iVPAof5Un+6q498e0n/Coiykpgea+Mio8IwdCwMBABXfH5Kr/1Kg==
   dependencies:
     ajv "^8.9.0"
+    lodash "^4.17.21"
     yaml "^1.10.2"
 
 "@pektin/toluol-wasm@0.2.0":

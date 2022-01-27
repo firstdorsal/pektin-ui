@@ -29,7 +29,7 @@ import TxtAssistant from "./TxtAssistant";
 import Domain from "./Domain";
 import { PektinClient } from "@pektin/client";
 import PieButton from "./small/PieButton";
-import { PektinApiResponseBody } from "@pektin/client/src/types";
+import { ApiResponseBody } from "@pektin/client/src/types";
 
 // TODO reimplement variable feature
 
@@ -49,7 +49,7 @@ interface RowProps {
   readonly addRRValue: InstanceType<typeof Domain>["addRRValue"];
   readonly removeRRValue: InstanceType<typeof Domain>["removeRRValue"];
   readonly client: PektinClient;
-  readonly lastApiCall?: PektinApiResponseBody;
+  readonly lastApiCall?: ApiResponseBody;
 }
 interface RowState {}
 

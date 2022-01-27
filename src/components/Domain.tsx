@@ -28,12 +28,12 @@ import { VscRegex, VscReplaceAll } from "react-icons/vsc";
 import { MdFlashOn } from "react-icons/md";
 import { HotKeys } from "react-hotkeys";
 import Helper from "../components/Helper";
-import { PektinClient, isSupportedRecordType } from "@pektin/client";
+import { PektinClient, isSupportedRecordType, PektinRRType, ApiResponseType } from "@pektin/client";
 import ContentLoader from "react-content-loader";
 //@ts-ignore
 import Fade from "react-reveal/Fade";
 import PieButton from "./small/PieButton";
-import { PektinApiResponseBody } from "@pektin/client/src/types";
+import { ApiRecord, ApiResponseBody } from "@pektin/client/src/types";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -53,7 +53,7 @@ interface DomainState {
   readonly instantSearch: boolean;
   readonly helper: boolean;
   readonly itemsLoaded: boolean;
-  readonly lastApiCall?: PektinApiResponseBody;
+  readonly lastApiCall?: ApiResponseBody;
 }
 
 interface RouteParams {
@@ -120,7 +120,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     const saveSuccessState = async (
       setRecord: t.DisplayRecord,
       i: number,
-      apiRes: PektinApiResponseBody
+      apiRes: ApiResponseBody
     ) => {
       let record = setRecord;
       this.setState(({ meta, ogRecords, records, changedRecords }) => {
@@ -140,27 +140,31 @@ export default class Domain extends Component<DomainProps, DomainState> {
     if (
       (this.state.ogRecords[i].name !== this.state.records[i].name ||
         this.state.ogRecords[i].rr_type !== this.state.records[i].rr_type) &&
-      this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType)
+      this.state.ogRecords[i].rr_type !== ("NEW" as PektinRRType)
     ) {
       // delete the key with the old name and or type and create one with the new name
       const setRes = await this.props.client.set(
         [l.toPektinApiRecord(this.props.config, this.state.records[i])],
         false
       );
-      if (!setRes.error) {
+      if (setRes.type === ApiResponseType.Error) {
         this.props.client.deleteRecords(
-          [this.state.ogRecords[i]].map((r) => r.name + ":" + r.rr_type)
+          [this.state.ogRecords[i]].map((r) => ({ name: r.name, rr_type: r.rr_type }))
         );
         await saveSuccessState(this.state.records[i], i, setRes);
       }
     } else {
       const setRecord = l.toPektinApiRecord(this.props.config, this.state.records[i]);
       const res = await this.props.client.set([setRecord], false);
-      if (!res.error) {
+      if (res.type !== "error") {
         await saveSuccessState(l.toUiRecord(this.props.config, setRecord), i, res);
       } else {
         this.setState(({ meta }) => {
-          meta[i].apiError = res.data[0];
+          if (!res.data) {
+            meta[i].apiError = res.message;
+          } else {
+            meta[i].apiError = res.data[0].message;
+          }
           return { lastApiCall: res, meta };
         });
       }
@@ -178,7 +182,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         toBeAdded.map((r) => l.toPektinApiRecord(this.props.config, r)),
         false
       );
-      if (!res.error) {
+      if (res.type !== "error") {
         this.props.g.loadDomains();
         this.props.history.push({
           pathname: `/domain/${this.state.domainName}`,
@@ -193,7 +197,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
           if (
             (this.state.ogRecords[i].name !== this.state.records[i].name ||
               this.state.ogRecords[i].rr_type !== this.state.records[i].rr_type) &&
-            this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType)
+            this.state.ogRecords[i].rr_type !== ("NEW" as PektinRRType)
           ) {
             toBeDeleted.push(this.state.ogRecords[i]);
           }
@@ -204,9 +208,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
         false
       );
 
-      if (!setRes.error) {
+      if (setRes.type !== "error") {
         if (toBeDeleted.length) {
-          await this.props.client.deleteRecords(toBeDeleted.map((r) => r.name + ":" + r.rr_type));
+          await this.props.client.deleteRecords(
+            toBeDeleted.map((r) => ({ name: r.name, rr_type: r.rr_type }))
+          );
         }
         await this.updateRecords(setRes, toBeAdded);
       } else {
@@ -214,7 +220,11 @@ export default class Domain extends Component<DomainProps, DomainState> {
           meta
             .filter((m) => m.anyChanged)
             .forEach((m, i) => {
-              m.apiError = setRes.data[i];
+              if (!setRes.data) {
+                m.apiError = setRes.message;
+                return;
+              }
+              m.apiError = setRes.data[i].message;
             });
 
           return { lastApiCall: setRes, meta };
@@ -223,13 +233,15 @@ export default class Domain extends Component<DomainProps, DomainState> {
     }
   };
 
-  updateRecords = async (apiRes: PektinApiResponseBody, toUpdate?: t.DisplayRecord[]) => {
+  updateRecords = async (apiRes: ApiResponseBody, toUpdate?: t.DisplayRecord[]) => {
     if (!toUpdate) {
       this.handleReloadClick();
     } else {
       const res = await this.props.client.get(toUpdate.map((r) => r.name + ":" + r.rr_type));
-      if (!res.error) {
-        const updatedRecords = res.data.map((r) => l.toUiRecord(this.props.config, r));
+      if (res.type === ApiResponseType.Success) {
+        const updatedRecords = res.data.map((r) =>
+          l.toUiRecord(this.props.config, r.data as ApiRecord)
+        );
         this.setState(({ meta, ogRecords, records, changedRecords }) => {
           meta = cloneDeep(meta);
           records = cloneDeep(records);
@@ -289,7 +301,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       if (v === ogRecord.rr_type) {
         record.rr_set[0] = ogRecord.rr_set[0];
       } else {
-        record.rr_set[0] = l.rrTemplates[v as t.PektinRRType].template;
+        record.rr_set[0] = l.rrTemplates[v as PektinRRType].template;
       }
     } else if (fieldName === "rrField" && record.rr_set[rrIndex] !== undefined) {
       if (record.rr_set[rrIndex].hasOwnProperty("value")) {
@@ -404,7 +416,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         ).length;
 
         meta[recordIndex].apiError = null;
-        if (lastApiCall) lastApiCall.error = false;
+        if (lastApiCall) lastApiCall.type = ApiResponseType.Success;
 
         return {
           meta,
@@ -524,8 +536,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
       const domainName = this.props.match?.params?.domainName;
       this.setState({ domainName: this.props.match.params.domainName });
       const res = await this.props.client.getZoneRecords([domainName]);
-      if (!res.error) {
-        const records = res.data[domainName];
+      if (res.type === ApiResponseType.Success) {
+        const records = res.data[0].data as ApiRecord[];
         this.initData(
           records.map((r) => l.toUiRecord(this.props.config, r)),
           this.props.match.params.domainName
@@ -540,8 +552,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
     if (e.match?.params?.domainName !== domainName) {
       this.setState({ itemsLoaded: false });
       const res = await this.props.client.getZoneRecords([domainName]);
-      if (!res.error) {
-        const records = res.data[domainName];
+      if (res.type === ApiResponseType.Success) {
+        const records = res.data[0].data as ApiRecord[];
 
         this.initData(
           records.map((r) => l.toUiRecord(this.props.config, r)),
@@ -764,7 +776,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
               : records[recordIndex].rr_type.replaceAll(search, replace);
 
             if (records[recordIndex].rr_type !== "SOA" && isSupportedRecordType(replaced)) {
-              records[recordIndex].rr_type = replaced as t.PektinRRType;
+              records[recordIndex].rr_type = replaced as PektinRRType;
               records[recordIndex].rr_set = [l.rrTemplates[replaced].template];
             }
           }
@@ -830,18 +842,18 @@ export default class Domain extends Component<DomainProps, DomainState> {
     let toBeDeletedOnServer = this.state.records.filter((e, i) => {
       if (this.state.meta[i].selected && this.state.records[i].rr_type === "SOA") deletedSoa = true;
       return (
-        this.state.meta[i].selected && this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType)
+        this.state.meta[i].selected && this.state.ogRecords[i].rr_type !== ("NEW" as PektinRRType)
       );
     });
 
     if (toBeDeletedOnServer.length) {
       if (deletedSoa) {
         toBeDeletedOnServer = toBeDeleted.filter((e, i) => {
-          return this.state.ogRecords[i].rr_type !== ("NEW" as t.PektinRRType);
+          return this.state.ogRecords[i].rr_type !== ("NEW" as PektinRRType);
         });
       }
       await this.props.client.deleteRecords(
-        toBeDeletedOnServer.map((r) => r.name + ":" + r.rr_type)
+        toBeDeletedOnServer.map((r) => ({ name: r.name, rr_type: r.rr_type }))
       );
     }
     if (deletedSoa) {
@@ -869,7 +881,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       defaultName = defaultName ? defaultName : "";
       const newRecord: t.DisplayRecord = {
         name: l.absoluteName(defaultName),
-        rr_type: t.PektinRRType.AAAA,
+        rr_type: PektinRRType.AAAA,
         rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
       };
       const newMeta: t.DomainMeta = cloneDeep(l.defaultMeta) as unknown as t.DomainMeta;
@@ -878,7 +890,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       newMeta.validity = this.validateRecord(newRecord, this.state.domainName);
       const newOgData: t.DisplayRecord = {
         name: "",
-        rr_type: "NEW" as t.PektinRRType,
+        rr_type: "NEW" as PektinRRType,
         rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
       };
       const newDefaultOrder = defaultOrder.length;
@@ -916,8 +928,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
 
   handleReloadClick = async () => {
     const res = await this.props.client.getZoneRecords([this.state.domainName]);
-    if (!res.error) {
-      const records = res.data[this.state.domainName];
+    if (res.type === ApiResponseType.Success) {
+      const records = res.data[0].data as ApiRecord[];
 
       this.initData(
         records.map((r) => l.toUiRecord(this.props.config, r)),
@@ -1118,7 +1130,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
           <PieButton
             title={(() => {
               if (this.props.variant === "import") return "Import selected records";
-              if (this.state.lastApiCall?.error) return this.state.lastApiCall.message;
+              if (this.state.lastApiCall?.type === ApiResponseType.Success)
+                return this.state.lastApiCall.message;
               if (this.state.changedRecords <= 0) return "";
               if (this.state.errorRecords) {
                 return "Can't save records";
@@ -1131,7 +1144,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
             onClick={this.saveAllChangedRecords}
             mode={(() => {
               if (this.props.variant === "import") return "ok";
-              if (this.state.lastApiCall?.error) return "apiError";
+              if (this.state.lastApiCall?.type === ApiResponseType.Success) return "apiError";
               if (this.state.changedRecords > 0 && this.state.errorRecords) return "error";
               if (this.state.changedRecords > 0 && this.state.warningRecords) return "warning";
               if (this.state.changedRecords > 0) return "ok";

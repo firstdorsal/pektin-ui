@@ -7,13 +7,13 @@ import DataDisplay from "../components/DataDisplay";
 import { ContextMenu } from "./ContextMenu";
 import { cloneDeep } from "lodash";
 import { RouteComponentProps } from "react-router-dom";
-import { PektinClient } from "@pektin/client";
+import { PektinClient, PektinRRType } from "@pektin/client";
 import App from "../App";
-import { SOARecord } from "@pektin/client/src/types";
+import { SetResponseError, SOARecord } from "@pektin/client/src/types";
 
 const defaultSOA: t.DisplayRecord = {
   name: "",
-  rr_type: t.PektinRRType.SOA,
+  rr_type: PektinRRType.SOA,
   rr_set: [l.rrTemplates.SOA.template],
 };
 
@@ -170,8 +170,12 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                         [l.toPektinApiRecord(this.props.config, this.state.record)],
                         false
                       );
-                      if (setRes.error)
-                        return this.setState({ apiError: setRes.message + "\n" + setRes.data[0] });
+                      if (setRes.type === "error" && (setRes as SetResponseError).data) {
+                        return this.setState({
+                          apiError: setRes.message + "\n" + (setRes as SetResponseError).data[0],
+                        });
+                      }
+                      // TODO handle unauthorized and internal
                       await this.props.loadDomains();
                       if (this.props.history)
                         this.props.history.push(

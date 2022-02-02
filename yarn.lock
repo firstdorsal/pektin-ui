@@ -1581,27 +1581,40 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@pektin/client@1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.5.tgz#255afb6b27b34b01d6e4333202b6c721062914a6"
-  integrity sha512-PnX24LpdZo1npQmGQD7rCkEyBoZ7gUUrWLDln8PXn6ChlZnvMjgN/rnU6fiLGkNMDXZZyRd8XNGdiknsQ48fMw==
+"@pektin/client@^1.1.32", "@pektin/client@^1.1.33":
+  version "1.1.33"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.33.tgz#caa4851bcf2cc95f960374a3c94507316e1ceab2"
+  integrity sha512-h7piwMwZ6WV+hmGK5mqxrHdNS6TwU3aUZD5gjY9Mzz6dST1ezgZZProjv57Cgrx13NhKu4lBXXIhkJLS0F/maQ==
   dependencies:
-    "@pektin/config" "^1.0.11"
+    "@pektin/config" "^1.0.28"
+    "@pektin/global-registrar" "^1.0.13"
     cross-fetch "^3.1.4"
 
-"@pektin/config@^1.0.11":
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.11.tgz#511c010a2cf0e1dd2d1a93d40d22ae40eeff5bfb"
-  integrity sha512-yGT1ZfOvmWb6dhJqkOk9mh31rGBlhyihj8iVPAof5Un+6q498e0n/Coiykpgea+Mio8IwdCwMBABXfH5Kr/1Kg==
+"@pektin/config@^1.0.28", "@pektin/config@^1.0.30":
+  version "1.0.30"
+  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.30.tgz#83e6a1967684f0b990e0a8f6e6235eb114c59a00"
+  integrity sha512-ybqYvi9OBMoIdXKZMYvEr+iw0SafTmjfC3Vc7OCQ30rv+9MxqpiJtOBlDnaFvus8rTaCQZ4XVELXvUaXgd/L+g==
   dependencies:
+    "@pektin/client" "^1.1.32"
     ajv "^8.9.0"
     lodash "^4.17.21"
     yaml "^1.10.2"
 
-"@pektin/toluol-wasm@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@pektin/toluol-wasm/-/toluol-wasm-0.2.0.tgz#652fed0c2e77f6abbb70b3fbd2bfc55f3b36d278"
-  integrity sha512-z0OUVwrgt/ovzWIHuYPwZtwtpV2Ptzma4e2ZE9UTkfU+FuyPYYumqgPOINSHxd5N1wGZ3fPVfaZuR4ODt6Yiig==
+"@pektin/global-registrar@^1.0.13":
+  version "1.0.14"
+  resolved "https://registry.yarnpkg.com/@pektin/global-registrar/-/global-registrar-1.0.14.tgz#59640b8145b0e07be76c8f81be29fc135938f7a8"
+  integrity sha512-KI2jGYuQDl5XNDJRIWvDHU9syemWIYjzOpN6vRlE9EjHsLSFg14QyHUoPZ69UxTqhiNDHiSfyP77ULuMBx2x2A==
+  dependencies:
+    "@pektin/client" "^1.1.32"
+    "@pektin/config" "^1.0.28"
+    "@types/lodash" "^4.14.178"
+    cross-fetch "^3.1.5"
+    lodash "^4.17.21"
+
+"@pektin/toluol-wasm-bundler@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@pektin/toluol-wasm-bundler/-/toluol-wasm-bundler-0.3.0.tgz#c1cd46c3f420a11e4c35cbb35b96219b9229b573"
+  integrity sha512-opYqYQmwweVpc8RM7KV95rUpKCNruKuIu0eAoSN8GRk5nBOGdoJhm9W6jQ/cSfcM3vm1hv2P7Guw1V76mfsXKw==
 
 "@pmmmwh/react-refresh-webpack-plugin@0.4.3":
   version "0.4.3"
@@ -1955,7 +1968,7 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
 
-"@types/lodash@^4.14.172":
+"@types/lodash@^4.14.172", "@types/lodash@^4.14.178":
   version "4.14.178"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.178.tgz#341f6d2247db528d4a13ddbb374bcdc80406f4f8"
   integrity sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==
@@ -3909,7 +3922,7 @@ create-hmac@^1.1.0, create-hmac@^1.1.4, create-hmac@^1.1.7:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-cross-fetch@^3.1.4:
+cross-fetch@^3.1.4, cross-fetch@^3.1.5:
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.1.5.tgz#e1389f44d9e7ba767907f7af8454787952ab534f"
   integrity sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==

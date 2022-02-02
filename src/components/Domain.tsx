@@ -28,7 +28,9 @@ import { VscRegex, VscReplaceAll } from "react-icons/vsc";
 import { MdFlashOn } from "react-icons/md";
 import { HotKeys } from "react-hotkeys";
 import Helper from "../components/Helper";
-import { PektinClient, isSupportedRecordType, PektinRRType, ApiResponseType } from "@pektin/client";
+import { PektinClient, PektinRRType, ApiResponseType } from "@pektin/client";
+import { isSupportedRecordType } from "@pektin/client/dist/js/utils/index";
+
 import ContentLoader from "react-content-loader";
 //@ts-ignore
 import Fade from "react-reveal/Fade";

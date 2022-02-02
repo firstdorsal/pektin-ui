@@ -11,6 +11,7 @@ import punycode from "punycode";
 import { ApiRecord, CAARecord, ResourceRecord } from "@pektin/client/src/types";
 import { cloneDeep } from "lodash";
 import { PektinRRType } from "@pektin/client";
+import { isSupportedRecordType } from "@pektin/client/dist/js/utils/index";
 const f = fetch;
 export const defaultSearchMatch = {
   name: false,
@@ -38,7 +39,7 @@ export const regex = {
 };
 
 export const loadToluol = async () => {
-  return await import("@pektin/toluol-wasm");
+  return await import("@pektin/toluol-wasm-bundler");
 };
 
 export const toPektinApiRecord = (config: t.Config, displayRecord: t.DisplayRecord): ApiRecord => {
@@ -107,113 +108,6 @@ export const toUiRecord = (config: t.Config, apiRecord: ApiRecord): t.DisplayRec
   return displayRecord;
 };
 
-export const dohQuery = async (
-  dohQuery: t.DOHQuery,
-  toluol: any,
-  recursorUrl: string,
-  recursorAuth: string,
-  httpMethod?: "post" | "get"
-): Promise<false | ToluolResponse> => {
-  if (!recursorUrl || !recursorAuth) return false;
-
-  const post = async (q: Uint8Array) => {
-    const res = await f(`${recursorUrl}/dns-query`, {
-      headers: {
-        "content-type": "application/dns-message",
-        Authorization: recursorAuth,
-      },
-      credentials: "omit",
-      method: "POST",
-      body: q,
-    });
-    return new Uint8Array(await res.arrayBuffer());
-  };
-
-  const get = async (q: Uint8Array) => {
-    const s = Buffer.from(q).toString("base64").replace(/\+/g, "-").replace(/\//g, "_");
-
-    const res = await f(`${recursorUrl}/dns-query?dns=${s.replace(/=/g, "")}`, {
-      headers: {
-        accept: "application/dns-message",
-        Authorization: recursorAuth,
-      },
-      credentials: "omit",
-    });
-    return new Uint8Array(await res.arrayBuffer());
-  };
-  toluol.init_panic_hook();
-  try {
-    const query = toluol.new_query(absoluteName(dohQuery.name).slice(0, -1), dohQuery.type);
-    const res = httpMethod === "get" ? await get(query) : await post(query);
-    const jsonRes = JSON.parse(toluol.parse_answer(res));
-    return jsonRes;
-  } catch (e) {
-    console.error(e);
-    return false;
-  }
-};
-export const toluolToApiRecord = (response: ToluolResponse): t.DisplayRecord | false => {
-  if (!response?.answers || !response?.answers.length) return false;
-  const firstAnswer = response?.answers[0]?.NONOPT;
-  if (!firstAnswer) return false;
-  if (!isSupportedType(firstAnswer.atype)) return false;
-
-  const rr_set = response?.answers.map((e, i) => {
-    const answer = e.NONOPT;
-    const rdata = e.NONOPT?.rdata;
-    return {
-      ttl: answer.ttl, //TODO maybe fix/beautify ttls rounding them somehow
-      ...textToRRValue(rdata.join(" "), answer.atype as PektinRRType),
-    };
-  }) as ResourceRecord[];
-
-  return {
-    name: firstAnswer.name,
-    rr_type: firstAnswer.atype as PektinRRType,
-    rr_set,
-  } as t.DisplayRecord;
-};
-
-const textToRRValue = (val: string, recordType: PektinRRType) => {
-  const t = val.split(" ");
-  switch (recordType) {
-    case "SOA":
-      return {
-        mname: t[0],
-        rname: t[1],
-      };
-    case "MX":
-      return {
-        preference: parseInt(t[0]),
-        exchange: t[1],
-      };
-    case "SRV":
-      return {
-        priority: parseInt(t[0]),
-        weight: parseInt(t[1]),
-        port: parseInt(t[2]),
-        target: t[3],
-      };
-
-    case "CAA":
-      return {
-        tag: t[1] as "issue" | "issuewild" | "iodef",
-        caaValue: t[2].replaceAll('"', ""),
-      };
-
-    case "TLSA":
-      return {
-        cert_usage: parseInt(t[0]) as 0 | 1 | 2 | 3,
-        selector: parseInt(t[1]) as 0 | 1,
-        matching: parseInt(t[2]) as 0 | 1 | 2,
-        cert_data: t[3],
-      };
-
-    default:
-      return { value: val };
-  }
-};
-
 export const variablesToValues = (config: t.Config, input: string) => {
   if (!config?.local?.replaceVariables) return input;
   const variables = config?.local?.variables;
@@ -236,17 +130,6 @@ export const valuesToVariables = (config: t.Config, input: string) => {
     input = input.replaceAll(variables[i].value, `$${variables[i].key}`);
   }
   return input;
-};
-
-export const isSupportedRecord = (record: t.DisplayRecord) => {
-  if (supportedRecords.indexOf(record.rr_type) > -1) return true;
-  return false;
-};
-
-// TODO use pektin client for this
-export const isSupportedType = (type: string) => {
-  if (supportedRecords.indexOf(type) > -1) return true;
-  return false;
 };
 
 interface DbConfig {

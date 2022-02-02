@@ -11,7 +11,7 @@ import {
   ApiRecordTXT,
   ResourceRecordBase,
 } from "@pektin/client/src/types";
-import { PektinConfig } from "@pektin/config/src/types";
+import { PektinConfig } from "@pektin/config/dist/js/config-types.js";
 import App from "../App";
 import { CodeStyle } from "./code-styles";
 

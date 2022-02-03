@@ -1,3 +1,5 @@
+TODO add https://crt.sh/?q=y.gy&output=json
+
 # features
 
 change variable value

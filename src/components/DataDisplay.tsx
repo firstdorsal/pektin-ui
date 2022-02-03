@@ -13,7 +13,7 @@ import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import yaml from "react-syntax-highlighter/dist/esm/languages/hljs/yaml";
 import * as codeStyles from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { PektinClient } from "@pektin/client";
-import { ApiRecord } from "@pektin/client/src/types";
+import { ApiRecord } from "@pektin/client";
 
 SyntaxHighlighter.registerLanguage("javascript", js);
 SyntaxHighlighter.registerLanguage("json", json);

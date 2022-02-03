@@ -9,7 +9,7 @@ import { cloneDeep } from "lodash";
 import { RouteComponentProps } from "react-router-dom";
 import { PektinClient, PektinRRType } from "@pektin/client";
 import App from "../App";
-import { SetResponseError, SOARecord } from "@pektin/client/src/types";
+import { SetResponseError, SOARecord } from "@pektin/client";
 
 const defaultSOA: t.DisplayRecord = {
   name: "",

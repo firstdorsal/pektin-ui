@@ -6,13 +6,11 @@ import PektinBackup from "./foreignApis/PektinBackup";
 import PowerDns from "./foreignApis/PowerDns";
 import Wanderlust from "./foreignApis/Wanderlust";
 import * as txt from "./apis/txtRecords";
-import { ToluolResponse } from "@pektin/client/src/toluol-wasm/types";
-import punycode from "punycode";
-import { ApiRecord, CAARecord, ResourceRecord } from "@pektin/client/src/types";
+import punycode from "punycode/";
+import { ApiRecord, CAARecord } from "@pektin/client";
 import { cloneDeep } from "lodash";
 import { PektinRRType } from "@pektin/client";
-import { isSupportedRecordType } from "@pektin/client/dist/js/utils/index";
-const f = fetch;
+
 export const defaultSearchMatch = {
   name: false,
   rr_type: false,

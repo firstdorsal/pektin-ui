@@ -3,6 +3,7 @@ import { Checkbox, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
 import {
   AddCircle,
+  Assignment,
   CheckBox,
   Close,
   Delete,
@@ -29,13 +30,13 @@ import { MdFlashOn } from "react-icons/md";
 import { HotKeys } from "react-hotkeys";
 import Helper from "../components/Helper";
 import { PektinClient, PektinRRType, ApiResponseType } from "@pektin/client";
-import { isSupportedRecordType } from "@pektin/client/dist/js/utils/index";
+import { isSupportedRecordType } from "@pektin/client";
 
 import ContentLoader from "react-content-loader";
 //@ts-ignore
 import Fade from "react-reveal/Fade";
 import PieButton from "./small/PieButton";
-import { ApiRecord, ApiResponseBody } from "@pektin/client/src/types";
+import { ApiRecord, ApiResponseBody } from "@pektin/client";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -1429,6 +1430,17 @@ export default class Domain extends Component<DomainProps, DomainState> {
               </IconButton>
               <IconButton title="Delete Selected" onClick={this.handleDeleteClick}>
                 {<Delete />}
+              </IconButton>
+              <IconButton
+                style={{ marginLeft: "30px" }}
+                title="Domain Metadata"
+                onClick={() => {
+                  this.props.history.push({
+                    pathname: `/domain/${this.state.domainName}/meta`,
+                  });
+                }}
+              >
+                {<Assignment />}
               </IconButton>
             </Fragment>
           )}

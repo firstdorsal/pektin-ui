@@ -6,7 +6,7 @@ import { Refresh, Security } from "@material-ui/icons";
 import HelpPopper from "./HelpPopper";
 import { RouteComponentProps } from "react-router-dom";
 import { PektinClient } from "@pektin/client";
-import { PektinClientConnectionConfigOverride } from "@pektin/client/src/types";
+import { PektinClientConnectionConfigOverride } from "@pektin/client";
 import App from "../App";
 
 const defaultAuthHelper = (

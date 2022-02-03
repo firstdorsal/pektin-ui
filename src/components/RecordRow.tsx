@@ -29,7 +29,7 @@ import TxtAssistant from "./TxtAssistant";
 import Domain from "./Domain";
 import { PektinClient } from "@pektin/client";
 import PieButton from "./small/PieButton";
-import { ApiResponseBody } from "@pektin/client/src/types";
+import { ApiResponseBody } from "@pektin/client";
 
 // TODO reimplement variable feature
 

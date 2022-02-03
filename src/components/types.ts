@@ -10,8 +10,8 @@ import {
   ApiRecordTLSA,
   ApiRecordTXT,
   ResourceRecordBase,
-} from "@pektin/client/src/types";
-import { PektinConfig } from "@pektin/config/dist/js/config-types.js";
+} from "@pektin/client";
+import { PektinConfig } from "@pektin/config/dist/js/config-types";
 import App from "../App";
 import { CodeStyle } from "./code-styles";
 

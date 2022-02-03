@@ -13,8 +13,9 @@ import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
 import cloneDeep from "lodash/cloneDeep";
 import { HotKeys, configure as configureHotkeys, GlobalHotKeys } from "react-hotkeys";
-import { PektinClientConnectionConfigOverride } from "@pektin/client/src/types";
+import { PektinClientConnectionConfigOverride } from "@pektin/client";
 import { PektinClient } from "@pektin/client";
+import DomainMeta from "./components/DomainMeta";
 
 configureHotkeys({ ignoreTags: [] });
 
@@ -323,6 +324,7 @@ export default class App extends PureComponent<AppProps, AppState> {
             />
             <Route
               path={`/domain/:domainName`}
+              exact
               render={(routeProps: any) => {
                 return (
                   <Fragment>
@@ -334,6 +336,30 @@ export default class App extends PureComponent<AppProps, AppState> {
                     ></Sidebar>
                     <main>
                       <Domain
+                        {...routeProps}
+                        g={this.state.g}
+                        config={this.state.config}
+                        client={this.state.client}
+                      />
+                    </main>
+                  </Fragment>
+                );
+              }}
+            />
+            <Route
+              path={`/domain/:domainName/meta`}
+              exact
+              render={(routeProps: any) => {
+                return (
+                  <Fragment>
+                    <Sidebar
+                      health={this.state.health}
+                      domains={this.state.domains}
+                      config={this.state.config}
+                      client={this.state.client}
+                    ></Sidebar>
+                    <main>
+                      <DomainMeta
                         {...routeProps}
                         g={this.state.g}
                         config={this.state.config}

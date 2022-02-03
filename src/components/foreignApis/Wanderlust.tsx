@@ -1,12 +1,13 @@
 import { Button, Box, TextField } from "@material-ui/core";
 
 import { ArrowRight } from "@material-ui/icons";
-import { ApiRecord, PektinZoneData } from "@pektin/client/src/types";
+import { ApiRecord } from "@pektin/client";
 import { Component } from "react";
 import ImportDomain from "../ImportDomain";
 import * as l from "../lib";
 import * as t from "../types";
-import { Toluol } from "@pektin/client/dist/js/toluol-wasm/index";
+//import { Toluol } from "@pektin/client";
+
 interface WanderlustProps {
   readonly import: InstanceType<typeof ImportDomain>["import"];
   readonly config: t.Config;
@@ -19,8 +20,6 @@ interface WanderlustState {
   readonly limit: number;
   readonly toluol?: any;
 }
-
-// TODO harden wanderlust against errors
 
 export default class Wanderlust extends Component<WanderlustProps, WanderlustState> {
   state: WanderlustState = {

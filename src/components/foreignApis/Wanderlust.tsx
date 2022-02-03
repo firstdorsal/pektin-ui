@@ -6,7 +6,7 @@ import { Component } from "react";
 import ImportDomain from "../ImportDomain";
 import * as l from "../lib";
 import * as t from "../types";
-//import { Toluol } from "@pektin/client";
+import { Toluol } from "@pektin/client";
 
 interface WanderlustProps {
   readonly import: InstanceType<typeof ImportDomain>["import"];

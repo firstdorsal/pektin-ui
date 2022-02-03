@@ -1229,6 +1229,13 @@
   dependencies:
     node-fetch "^2.6.1"
 
+"@firstdorsal/powerdns-api@^1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@firstdorsal/powerdns-api/-/powerdns-api-1.11.0.tgz#3714eba004db8f8418e646f969003fdf00e6742b"
+  integrity sha512-tL+qPWvouC+jg6pdC++MyxKIlar659L8QoR1bYtcZmj2wPBA0iSXkz8vUHYChWSL90bT7RttfhnpBaXLLB/GVg==
+  dependencies:
+    node-fetch "^2.6.1"
+
 "@fontsource/inter@^4.5.0":
   version "4.5.2"
   resolved "https://registry.yarnpkg.com/@fontsource/inter/-/inter-4.5.2.tgz#f21a1b39e9fc40fd7f315f37687ad6f6f040528a"
@@ -1604,7 +1611,7 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@pektin/client@^1.1.32", "@pektin/client@^1.1.33":
+"@pektin/client@^1.1.32":
   version "1.1.33"
   resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.33.tgz#caa4851bcf2cc95f960374a3c94507316e1ceab2"
   integrity sha512-h7piwMwZ6WV+hmGK5mqxrHdNS6TwU3aUZD5gjY9Mzz6dST1ezgZZProjv57Cgrx13NhKu4lBXXIhkJLS0F/maQ==
@@ -1612,6 +1619,20 @@
     "@pektin/config" "^1.0.28"
     "@pektin/global-registrar" "^1.0.13"
     cross-fetch "^3.1.4"
+
+"@pektin/client@^1.1.35":
+  version "1.1.35"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.35.tgz#1aa4051d14f8c4bd01d95bf2f1dfaf74d4eec8b2"
+  integrity sha512-UHOQ4GjpGlNLvtvJghL6JQWwp+j/kyNJIJN7e6fOyOkJRJfe7YyyaCA0GG9X7w2ulCNtxpadkoP46r+TIcYd5g==
+  dependencies:
+    "@firstdorsal/powerdns-api" "^1.11.0"
+    "@pektin/config" "^1.0.28"
+    "@pektin/global-registrar" "^1.0.13"
+    "@pektin/toluol-wasm-nodejs" "^0.3.0"
+    "@types/async" "^3.2.12"
+    async "^3.2.3"
+    cross-fetch "^3.1.4"
+    dns-zonefile "git+https://github.com/firstdorsal/dns-zonefile.git"
 
 "@pektin/config@^1.0.28", "@pektin/config@^1.0.30":
   version "1.0.30"
@@ -1638,6 +1659,11 @@
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@pektin/toluol-wasm-bundler/-/toluol-wasm-bundler-0.3.0.tgz#c1cd46c3f420a11e4c35cbb35b96219b9229b573"
   integrity sha512-opYqYQmwweVpc8RM7KV95rUpKCNruKuIu0eAoSN8GRk5nBOGdoJhm9W6jQ/cSfcM3vm1hv2P7Guw1V76mfsXKw==
+
+"@pektin/toluol-wasm-nodejs@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@pektin/toluol-wasm-nodejs/-/toluol-wasm-nodejs-0.3.0.tgz#4e405933f76741b5aadad0ba1e22b455f30517b5"
+  integrity sha512-MesfupK4xZ9LYDFPQFRU6F+8bHJR9fQSi2tof8McVfhrCBD1G+HxUdlDPMQSyoRmuMSIMX6VitvAPUP4fXNhpA==
 
 "@pmmmwh/react-refresh-webpack-plugin@0.4.3":
   version "0.4.3"
@@ -1857,6 +1883,11 @@
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/@types/aria-query/-/aria-query-4.2.2.tgz#ed4e0ad92306a704f9fb132a0cfcf77486dbe2bc"
   integrity sha512-HnYpAE1Y6kRyKM/XkEuiRQhTHvkzMBurTHnpFLYLBGPIylZNPs9jJcuOOYWxPLJCSEtmZT0Y8rHDokKN7rRTig==
+
+"@types/async@^3.2.12":
+  version "3.2.12"
+  resolved "https://registry.yarnpkg.com/@types/async/-/async-3.2.12.tgz#0ebbfaf3f249ffa0fdc50179b07705f69c90d70c"
+  integrity sha512-4i4w4tfNDo73BOjk0qHcB2YJ8A2SjITCrU4BTsgdJFTsVr6atPDXa0T9r0QZTrX3axtWwkqpZqF4B3gR0TqBGw==
 
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
   version "7.1.18"
@@ -2793,6 +2824,11 @@ async@^2.6.2:
   integrity sha512-zflvls11DCy+dQWzTW2dzuilv8Z5X/pjfmZOWba6TNIVDm+2UDaJmXSOXlasHKfNBs8oo3M0aT50fDEWfKZjXg==
   dependencies:
     lodash "^4.17.14"
+
+async@^3.2.3:
+  version "3.2.3"
+  resolved "https://registry.yarnpkg.com/async/-/async-3.2.3.tgz#ac53dafd3f4720ee9e8a160628f18ea91df196c9"
+  integrity sha512-spZRyzKL5l5BZQrr/6m/SqFdBN0q3OCI0f9rjfBzCMBIP4p75P620rR3gTmaksNOhmzgdxcaxdNfMy6anrbM0g==
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -4484,6 +4520,10 @@ dns-txt@^2.0.2:
   integrity sha1-uR2Ab10nGI5Ks+fRB9iBocxGQrY=
   dependencies:
     buffer-indexof "^1.0.0"
+
+"dns-zonefile@git+https://github.com/firstdorsal/dns-zonefile.git":
+  version "0.3.0"
+  resolved "git+https://github.com/firstdorsal/dns-zonefile.git#0e3ce4a30dedb8e285230a3a7317505cab3b06ae"
 
 doctrine@^2.1.0:
   version "2.1.0"

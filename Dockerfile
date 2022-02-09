@@ -1,6 +1,6 @@
 # 0. build stage
 FROM node:16.13.0-alpine3.14 as build-stage
-RUN apk add git
+RUN apk add git bash sed
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn

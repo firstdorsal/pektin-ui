@@ -105,7 +105,7 @@
   },
   "scripts": {
     "start": "yarn fix-modules; react-app-rewired start",
-    "build": "bash scripts/before-build.sh && INLINE_RUNTIME_CHUNK=false GENERATE_SOURCEMAP=true IMAGE_INLINE_SIZE_LIMIT=0 react-app-rewired build",
+    "build": "INLINE_RUNTIME_CHUNK=false GENERATE_SOURCEMAP=true IMAGE_INLINE_SIZE_LIMIT=0 react-app-rewired build",
     "test": "react-app-rewired test",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "fix-modules": "bash scripts/install-modules.sh",

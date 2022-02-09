@@ -1620,21 +1620,20 @@
     "@pektin/global-registrar" "^1.0.13"
     cross-fetch "^3.1.4"
 
-"@pektin/client@^1.1.35":
-  version "1.1.35"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.35.tgz#1aa4051d14f8c4bd01d95bf2f1dfaf74d4eec8b2"
-  integrity sha512-UHOQ4GjpGlNLvtvJghL6JQWwp+j/kyNJIJN7e6fOyOkJRJfe7YyyaCA0GG9X7w2ulCNtxpadkoP46r+TIcYd5g==
+"@pektin/client@^1.1.64":
+  version "1.1.64"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.64.tgz#3332197d8241869acf8a69e15827a3f71de290ee"
+  integrity sha512-PdjtQKsvGBURut6VskIvqhO430Blr6pZ013NvOzwYGbTG4ByB5e47TMYiM9nNq6VakJrLeIeDEQdimc0Tze9Yg==
   dependencies:
     "@firstdorsal/powerdns-api" "^1.11.0"
-    "@pektin/config" "^1.0.28"
+    "@pektin/config" "^1.0.48"
+    "@pektin/dns-zonefile" "^0.3.1"
     "@pektin/global-registrar" "^1.0.13"
     "@pektin/toluol-wasm-nodejs" "^0.3.0"
-    "@types/async" "^3.2.12"
-    async "^3.2.3"
     cross-fetch "^3.1.4"
-    dns-zonefile "git+https://github.com/firstdorsal/dns-zonefile.git"
+    yaml "^1.10.2"
 
-"@pektin/config@^1.0.28", "@pektin/config@^1.0.30":
+"@pektin/config@^1.0.28":
   version "1.0.30"
   resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.30.tgz#83e6a1967684f0b990e0a8f6e6235eb114c59a00"
   integrity sha512-ybqYvi9OBMoIdXKZMYvEr+iw0SafTmjfC3Vc7OCQ30rv+9MxqpiJtOBlDnaFvus8rTaCQZ4XVELXvUaXgd/L+g==
@@ -1643,6 +1642,21 @@
     ajv "^8.9.0"
     lodash "^4.17.21"
     yaml "^1.10.2"
+
+"@pektin/config@^1.0.48":
+  version "1.0.48"
+  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.48.tgz#bdf373c71c0671f44cbb24f32c071fa229b3f5e3"
+  integrity sha512-5c0WpKCSE+HJMV30iZcAleCCcoe7k2U8tFxzm6oZHsyDjfPucCjoY7s175u4JvXnQMCFQVG75hpcHN8XH5fkOA==
+  dependencies:
+    "@pektin/client" "^1.1.32"
+    ajv "^8.9.0"
+    lodash "^4.17.21"
+    yaml "^1.10.2"
+
+"@pektin/dns-zonefile@^0.3.1":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@pektin/dns-zonefile/-/dns-zonefile-0.3.3.tgz#28d7f6be32b837223dc6ebe26420edfe7c33dcd0"
+  integrity sha512-2CK1iQHqqT0lEm+9G/u/hwkBJdfsr5w3g6QxgNw2u8ju4pBPJdAM2XmV0wBKwTNp8v989TAQbj5Wc/1qlhJpSg==
 
 "@pektin/global-registrar@^1.0.13":
   version "1.0.14"
@@ -1883,11 +1897,6 @@
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/@types/aria-query/-/aria-query-4.2.2.tgz#ed4e0ad92306a704f9fb132a0cfcf77486dbe2bc"
   integrity sha512-HnYpAE1Y6kRyKM/XkEuiRQhTHvkzMBurTHnpFLYLBGPIylZNPs9jJcuOOYWxPLJCSEtmZT0Y8rHDokKN7rRTig==
-
-"@types/async@^3.2.12":
-  version "3.2.12"
-  resolved "https://registry.yarnpkg.com/@types/async/-/async-3.2.12.tgz#0ebbfaf3f249ffa0fdc50179b07705f69c90d70c"
-  integrity sha512-4i4w4tfNDo73BOjk0qHcB2YJ8A2SjITCrU4BTsgdJFTsVr6atPDXa0T9r0QZTrX3axtWwkqpZqF4B3gR0TqBGw==
 
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
   version "7.1.18"
@@ -2824,11 +2833,6 @@ async@^2.6.2:
   integrity sha512-zflvls11DCy+dQWzTW2dzuilv8Z5X/pjfmZOWba6TNIVDm+2UDaJmXSOXlasHKfNBs8oo3M0aT50fDEWfKZjXg==
   dependencies:
     lodash "^4.17.14"
-
-async@^3.2.3:
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/async/-/async-3.2.3.tgz#ac53dafd3f4720ee9e8a160628f18ea91df196c9"
-  integrity sha512-spZRyzKL5l5BZQrr/6m/SqFdBN0q3OCI0f9rjfBzCMBIP4p75P620rR3gTmaksNOhmzgdxcaxdNfMy6anrbM0g==
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -4520,10 +4524,6 @@ dns-txt@^2.0.2:
   integrity sha1-uR2Ab10nGI5Ks+fRB9iBocxGQrY=
   dependencies:
     buffer-indexof "^1.0.0"
-
-"dns-zonefile@git+https://github.com/firstdorsal/dns-zonefile.git":
-  version "0.3.0"
-  resolved "git+https://github.com/firstdorsal/dns-zonefile.git#0e3ce4a30dedb8e285230a3a7317505cab3b06ae"
 
 doctrine@^2.1.0:
   version "2.1.0"

@@ -34,6 +34,10 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
   import = async () => {
     const t = new Toluol(this.props.recursorUrl, this.props.recursorAuth, this.state.toluol, this);
     const walked = await t.walk(this.state.domainName, this.state.limit);
+    if (!walked) {
+      //TODO display this error
+      return;
+    }
     const records = walked
       .map(t.toluolToApiRecord)
       .filter((r) => typeof r === "object")

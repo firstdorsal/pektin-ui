@@ -16,13 +16,15 @@ interface DomainMetaProps extends RouteComponentProps<RouteParams> {
 const dm = {
   registrar: "gandi",
   api: true,
-  expires: { api: true, date: Date.now() },
-  nameservers: { setAtRegistrar: [], resolvedAtSource: [] },
-  recordsResolve: {},
+  expires: { api: true, date: Date.now() }, // if the expiration time is set manually or via the api
+  nameservers: { setAtRegistrar: [], resolvedAtSource: [] }, // what nameserver are set at the registrar and what the actual resolved state is
+  recordsResolve: {}, // what records resolve publicly how
   certificates: {
-    past: [],
-    configured: [],
+    past: [], // what certificates were issued in the past
+    configured: [], // what certificates are set to be (re)issued on a regular basis
   },
+  notes: "",
+  primary: true,
 };
 
 interface DomainMetaState {}

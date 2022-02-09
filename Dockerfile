@@ -10,6 +10,6 @@ RUN yarn build
 
 # 1. execution stage
 FROM nginx:alpine
-ENV CSP_CONNECT_SRC=""
+ENV CSP_CONNECT_SRC=*
 COPY --from=build-stage /app/build/ /usr/share/nginx/html
 COPY ./server/nginx.conf.template /etc/nginx/templates/default.conf.template

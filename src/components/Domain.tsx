@@ -240,7 +240,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     if (!toUpdate) {
       this.handleReloadClick();
     } else {
-      const res = await this.props.client.get(toUpdate.map((r) => r.name + ":" + r.rr_type));
+      const res = await this.props.client.get(toUpdate);
       if (res.type === ApiResponseType.Success) {
         const updatedRecords = res.data.map((r) =>
           l.toUiRecord(this.props.config, r.data as ApiRecord)

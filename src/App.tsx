@@ -122,7 +122,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       throw Error(error);
     }
     try {
-      await client.getRecursorAuth();
+      await client.getAuth("recursor");
     } catch (error) {
       console.error(error);
     }

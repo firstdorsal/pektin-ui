@@ -1620,17 +1620,19 @@
     "@pektin/global-registrar" "^1.0.13"
     cross-fetch "^3.1.4"
 
-"@pektin/client@^1.1.64":
-  version "1.1.64"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.64.tgz#3332197d8241869acf8a69e15827a3f71de290ee"
-  integrity sha512-PdjtQKsvGBURut6VskIvqhO430Blr6pZ013NvOzwYGbTG4ByB5e47TMYiM9nNq6VakJrLeIeDEQdimc0Tze9Yg==
+"@pektin/client@^1.1.81":
+  version "1.1.81"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.81.tgz#70c5ce26eb59e030710440fa704d9df1d3a3af63"
+  integrity sha512-DdmHwpTpG21ZTYHZALsSQL4556xoj/HR/dCwtIlRuZQQzg2JB1PMywNV2r500i8eBO4YNgT6l9boxqf2+9Hk2w==
   dependencies:
     "@firstdorsal/powerdns-api" "^1.11.0"
-    "@pektin/config" "^1.0.48"
+    "@pektin/config" "^1.0.51"
     "@pektin/dns-zonefile" "^0.3.1"
     "@pektin/global-registrar" "^1.0.13"
     "@pektin/toluol-wasm-nodejs" "^0.3.0"
     cross-fetch "^3.1.4"
+    json-colorizer "^2.2.2"
+    punycode "1.4.1"
     yaml "^1.10.2"
 
 "@pektin/config@^1.0.28":
@@ -1643,10 +1645,10 @@
     lodash "^4.17.21"
     yaml "^1.10.2"
 
-"@pektin/config@^1.0.48":
-  version "1.0.48"
-  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.48.tgz#bdf373c71c0671f44cbb24f32c071fa229b3f5e3"
-  integrity sha512-5c0WpKCSE+HJMV30iZcAleCCcoe7k2U8tFxzm6oZHsyDjfPucCjoY7s175u4JvXnQMCFQVG75hpcHN8XH5fkOA==
+"@pektin/config@^1.0.51":
+  version "1.0.51"
+  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.51.tgz#2e82fb4c3763f1687a55d18741acddb6a9da0d03"
+  integrity sha512-sTPePDpTjVBfRq+2hzVA/H0+K9gJ5IiINdzZ0kp3bOWf54+Sye9Up8I5ELCm/4aX3sHr3tXutSGVKbwI1VgvTw==
   dependencies:
     "@pektin/client" "^1.1.32"
     ajv "^8.9.0"
@@ -7292,6 +7294,14 @@ jsesc@~0.5.0:
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-0.5.0.tgz#e7dee66e35d6fc16f710fe91d5cf69f70f08911d"
   integrity sha1-597mbjXW/Bb3EP6R1c9p9w8IkR0=
 
+json-colorizer@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/json-colorizer/-/json-colorizer-2.2.2.tgz#07c2ac8cef36558075948e1566c6cfb4ac1668e6"
+  integrity sha512-56oZtwV1piXrQnRNTtJeqRv+B9Y/dXAYLqBBaYl/COcUdoZxgLBLAO88+CnkbT6MxNs0c5E9mPBIb2sFcNz3vw==
+  dependencies:
+    chalk "^2.4.1"
+    lodash.get "^4.4.2"
+
 json-parse-better-errors@^1.0.1, json-parse-better-errors@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/json-parse-better-errors/-/json-parse-better-errors-1.0.2.tgz#bb867cfb3450e69107c131d1c514bab3dc8bcaa9"
@@ -7588,6 +7598,11 @@ lodash.debounce@^4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
   integrity sha1-gteb/zCmfEAF/9XiUVMArZyk168=
+
+lodash.get@^4.4.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
+  integrity sha1-LRd/ZS+jHpObRDjVNBSZ36OCXpk=
 
 lodash.memoize@^4.1.2:
   version "4.1.2"
@@ -9598,7 +9613,7 @@ punycode@1.3.2:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.3.2.tgz#9653a036fb7c1ee42342f2325cceefea3926c48d"
   integrity sha1-llOgNvt8HuQjQvIyXM7v6jkmxI0=
 
-punycode@^1.2.4:
+punycode@1.4.1, punycode@^1.2.4:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
   integrity sha1-wNWmOycYgArY4esPpSachN1BhF4=

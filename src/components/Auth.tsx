@@ -6,7 +6,7 @@ import { Refresh, Security } from "@material-ui/icons";
 import HelpPopper from "./HelpPopper";
 import { RouteComponentProps } from "react-router-dom";
 import { PektinClient } from "@pektin/client";
-import { PektinClientConnectionConfigOverride } from "@pektin/client";
+import { PC3 } from "@pektin/client";
 import App from "../App";
 
 const defaultAuthHelper = (
@@ -102,7 +102,7 @@ export default class Auth extends Component<AuthProps, AuthState> {
     }
 
     if (!authError && client !== undefined) {
-      await this.props.saveAuth(value as PektinClientConnectionConfigOverride, client);
+      await this.props.saveAuth(value as PC3, client);
       return this.props.history.push("/");
     }
     this.setState({ authField: value, authError, authHelper });

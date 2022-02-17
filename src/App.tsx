@@ -13,7 +13,7 @@ import ImportDomain from "./components/ImportDomain";
 import ConfigView from "./components/Config";
 import cloneDeep from "lodash/cloneDeep";
 import { HotKeys, configure as configureHotkeys, GlobalHotKeys } from "react-hotkeys";
-import { PektinClientConnectionConfigOverride } from "@pektin/client";
+import { PC3 } from "@pektin/client";
 import { PektinClient } from "@pektin/client";
 import DomainMeta from "./components/DomainMeta";
 
@@ -143,7 +143,7 @@ export default class App extends PureComponent<AppProps, AppState> {
     try {
       const ssr = sessionStorage.getItem("pccc");
       if (!ssr) throw Error();
-      const pccc: PektinClientConnectionConfigOverride = JSON.parse(ssr);
+      const pccc: PC3 = JSON.parse(ssr);
       const client = new PektinClient(pccc);
       const { domains } = await this.initClient(client);
 
@@ -199,7 +199,7 @@ export default class App extends PureComponent<AppProps, AppState> {
     document.removeEventListener("contextmenu", this.handleContextMenu);
   };
 
-  saveAuth = async (pccc: PektinClientConnectionConfigOverride, client: PektinClient) => {
+  saveAuth = async (pccc: PC3, client: PektinClient) => {
     sessionStorage.setItem("pccc", JSON.stringify(pccc));
 
     const { domains } = await this.initClient(client);

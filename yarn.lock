@@ -1620,18 +1620,19 @@
     "@pektin/global-registrar" "^1.0.13"
     cross-fetch "^3.1.4"
 
-"@pektin/client@^1.1.81":
-  version "1.1.81"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.1.81.tgz#70c5ce26eb59e030710440fa704d9df1d3a3af63"
-  integrity sha512-DdmHwpTpG21ZTYHZALsSQL4556xoj/HR/dCwtIlRuZQQzg2JB1PMywNV2r500i8eBO4YNgT6l9boxqf2+9Hk2w==
+"@pektin/client@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.2.1.tgz#ef34044abe93f93377d809b6209f1cea85eec5cd"
+  integrity sha512-iE9vOyFsreKkby2lU2YKnyjuwIhd4DFr+v8h32kfsEhbb3ji9ieCU49QcJwiU7FShnMk4Y1cSJ/m2VIVOZ87dw==
   dependencies:
     "@firstdorsal/powerdns-api" "^1.11.0"
-    "@pektin/config" "^1.0.51"
+    "@pektin/config" "^1.0.56"
     "@pektin/dns-zonefile" "^0.3.1"
     "@pektin/global-registrar" "^1.0.13"
     "@pektin/toluol-wasm-nodejs" "^0.3.0"
+    cfonts "^2.10.0"
+    chalk "^5.0.0"
     cross-fetch "^3.1.4"
-    json-colorizer "^2.2.2"
     punycode "1.4.1"
     yaml "^1.10.2"
 
@@ -1645,13 +1646,15 @@
     lodash "^4.17.21"
     yaml "^1.10.2"
 
-"@pektin/config@^1.0.51":
-  version "1.0.51"
-  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.51.tgz#2e82fb4c3763f1687a55d18741acddb6a9da0d03"
-  integrity sha512-sTPePDpTjVBfRq+2hzVA/H0+K9gJ5IiINdzZ0kp3bOWf54+Sye9Up8I5ELCm/4aX3sHr3tXutSGVKbwI1VgvTw==
+"@pektin/config@^1.0.56":
+  version "1.0.56"
+  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.56.tgz#a478956879cd19071deb05f4410c6a8702e85335"
+  integrity sha512-A0cHlueGCWZcxtrv4Ofow+ZSqSOaMsYNnfx0ISThynRsZOemHmOM02uSM72FPsuojhZO+0AsklbrpmnUb3MIrw==
   dependencies:
     "@pektin/client" "^1.1.32"
     ajv "^8.9.0"
+    cfonts "^2.10.0"
+    chalk "^5.0.0"
     lodash "^4.17.21"
     yaml "^1.10.2"
 
@@ -3501,6 +3504,14 @@ case-sensitive-paths-webpack-plugin@2.3.0:
   resolved "https://registry.yarnpkg.com/case-sensitive-paths-webpack-plugin/-/case-sensitive-paths-webpack-plugin-2.3.0.tgz#23ac613cc9a856e4f88ff8bb73bbb5e989825cf7"
   integrity sha512-/4YgnZS8y1UXXmC02xD5rRrBEu6T5ub+mQHLNRj0fzTRbgdBYhsNo2V5EqwgqrExjxsjtF/OpAKAMkKsxbD5XQ==
 
+cfonts@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/cfonts/-/cfonts-2.10.0.tgz#6230a1dc3de6aa9e406496e86d551958efe145f4"
+  integrity sha512-NWeeq6vrzAZjq8xX4DndeTI6j6p426MX1uUgYL7PjnhqG8FeENqP62fZKzrJkVLujGcB5IKiBo+X3Nc50vW9Sg==
+  dependencies:
+    chalk "^4.1.2"
+    window-size "^1.1.1"
+
 chalk@2.4.2, chalk@^2.0.0, chalk@^2.4.1, chalk@^2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
@@ -3518,13 +3529,18 @@ chalk@^3.0.0:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-chalk@^4.0.0, chalk@^4.1.0:
+chalk@^4.0.0, chalk@^4.1.0, chalk@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.2.tgz#aac4e2b7734a740867aeb16bf02aad556a1e7a01"
   integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
   dependencies:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
+
+chalk@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-5.0.0.tgz#bd96c6bb8e02b96e08c0c3ee2a9d90e050c7b832"
+  integrity sha512-/duVOqst+luxCQRKEo4bNxinsOQtMP80ZYm7mMqzuh5PociNL0PvmHFvREJ9ueYL2TxlHjBcmLCdmocx9Vg+IQ==
 
 char-regex@^1.0.2:
   version "1.0.2"
@@ -7294,14 +7310,6 @@ jsesc@~0.5.0:
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-0.5.0.tgz#e7dee66e35d6fc16f710fe91d5cf69f70f08911d"
   integrity sha1-597mbjXW/Bb3EP6R1c9p9w8IkR0=
 
-json-colorizer@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/json-colorizer/-/json-colorizer-2.2.2.tgz#07c2ac8cef36558075948e1566c6cfb4ac1668e6"
-  integrity sha512-56oZtwV1piXrQnRNTtJeqRv+B9Y/dXAYLqBBaYl/COcUdoZxgLBLAO88+CnkbT6MxNs0c5E9mPBIb2sFcNz3vw==
-  dependencies:
-    chalk "^2.4.1"
-    lodash.get "^4.4.2"
-
 json-parse-better-errors@^1.0.1, json-parse-better-errors@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/json-parse-better-errors/-/json-parse-better-errors-1.0.2.tgz#bb867cfb3450e69107c131d1c514bab3dc8bcaa9"
@@ -7598,11 +7606,6 @@ lodash.debounce@^4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
   integrity sha1-gteb/zCmfEAF/9XiUVMArZyk168=
-
-lodash.get@^4.4.2:
-  version "4.4.2"
-  resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
-  integrity sha1-LRd/ZS+jHpObRDjVNBSZ36OCXpk=
 
 lodash.memoize@^4.1.2:
   version "4.1.2"
@@ -12084,6 +12087,14 @@ which@^2.0.1, which@^2.0.2:
   integrity sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==
   dependencies:
     isexe "^2.0.0"
+
+window-size@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/window-size/-/window-size-1.1.1.tgz#9858586580ada78ab26ecd6978a6e03115c1af20"
+  integrity sha512-5D/9vujkmVQ7pSmc0SCBmHXbkv6eaHwXEx65MywhmUMsI8sGqJ972APq1lotfcwMKPFLuCFfL8xGHLIp7jaBmA==
+  dependencies:
+    define-property "^1.0.0"
+    is-number "^3.0.0"
 
 word-wrap@^1.2.3, word-wrap@~1.2.3:
   version "1.2.3"

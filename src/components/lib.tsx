@@ -341,7 +341,7 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       value: {
@@ -361,7 +361,7 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       value: {
@@ -381,7 +381,7 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       value: {
@@ -402,7 +402,7 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       value: {
@@ -429,7 +429,7 @@ export const rrTemplates: any = {
       retry: 0,
       expire: 0,
       minimum: 0,
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       mname: {
@@ -485,7 +485,7 @@ export const rrTemplates: any = {
     template: {
       preference: 10,
       exchange: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       preference: {
@@ -532,7 +532,7 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       value: {
@@ -581,7 +581,7 @@ export const rrTemplates: any = {
       weight: 1,
       port: 443,
       target: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       priority: {
@@ -625,7 +625,7 @@ export const rrTemplates: any = {
     template: {
       tag: "issue",
       caaValue: "letsencrypt.org",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       tag: {
@@ -687,7 +687,7 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       value: {
@@ -718,7 +718,7 @@ export const rrTemplates: any = {
       selector: 1,
       matching: 1,
       data: "",
-      ttl: 3600,
+      ttl: 60,
     },
     fields: {
       cert_usage: {

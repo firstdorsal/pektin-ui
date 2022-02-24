@@ -1133,8 +1133,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
           <PieButton
             title={(() => {
               if (this.props.variant === "import") return "Import selected records";
-              if (this.state.lastApiCall?.type === ApiResponseType.Success)
+
+              if (this.state.lastApiCall?.type === ApiResponseType.Success) {
                 return this.state.lastApiCall.message;
+              }
               if (this.state.changedRecords <= 0) return "";
               if (this.state.errorRecords) {
                 return "Can't save records";
@@ -1147,7 +1149,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
             onClick={this.saveAllChangedRecords}
             mode={(() => {
               if (this.props.variant === "import") return "ok";
-              if (this.state.lastApiCall?.type === ApiResponseType.Success) return "apiError";
+
+              if (this.state.lastApiCall?.type === ApiResponseType.Error) return "apiError";
               if (this.state.changedRecords > 0 && this.state.errorRecords) return "error";
               if (this.state.changedRecords > 0 && this.state.warningRecords) return "warning";
               if (this.state.changedRecords > 0) return "ok";

@@ -29,7 +29,13 @@ import { VscRegex, VscReplaceAll } from "react-icons/vsc";
 import { MdFlashOn } from "react-icons/md";
 import { HotKeys } from "react-hotkeys";
 import Helper from "../components/Helper";
-import { PektinClient, PektinRRType, ApiResponseType } from "@pektin/client";
+import {
+  PektinClient,
+  PektinRRType,
+  ApiResponseType,
+  clampTTL,
+  absoluteName,
+} from "@pektin/client";
 import { isSupportedRecordType } from "@pektin/client";
 
 import ContentLoader from "react-content-loader";
@@ -37,6 +43,7 @@ import ContentLoader from "react-content-loader";
 import Fade from "react-reveal/Fade";
 import PieButton from "./small/PieButton";
 import { ApiRecord, ApiResponseBody } from "@pektin/client";
+import { validateDomain } from "./validators/common";
 
 interface DomainState {
   readonly records: t.DisplayRecord[];
@@ -295,7 +302,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     } else if (fieldName === "ttl") {
       /*@ts-ignore*/
       record.rr_set = record.rr_set.map((e) => {
-        e.ttl = v ? parseInt(v) : 0;
+        e.ttl = v ? clampTTL(v) : 0;
         return e;
       });
     } else if (fieldName === "type") {
@@ -437,7 +444,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
   };
 
   validateRecord = (record: t.DisplayRecord, domainName: string): t.FieldValidity => {
-    const valName = l.validateDomain(this.props.config, record?.name, {
+    const valName = validateDomain(this.props.config, record?.name, {
       domainName,
     });
     const fieldValidity: t.FieldValidity = {
@@ -804,7 +811,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                     : fieldValue.replaceAll(search, replace);
                   /*@ts-ignore*/
                   records[recordIndex].rr_set[rrIndex][fieldNames[ii]] =
-                    typeof fieldValues[ii] === "number" ? parseInt(replaced) : replaced;
+                    typeof fieldValues[ii] === "number" ? clampTTL(replaced) : replaced;
                 }
               }
             });
@@ -883,7 +890,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       let defaultName = this.state.domainName;
       defaultName = defaultName ? defaultName : "";
       const newRecord: t.DisplayRecord = {
-        name: l.absoluteName(defaultName),
+        name: absoluteName(defaultName),
         rr_type: PektinRRType.AAAA,
         rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
       };

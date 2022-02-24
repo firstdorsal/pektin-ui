@@ -1,9 +1,9 @@
-import { Add, ImportExport, Settings, ShoppingCart, People } from "@material-ui/icons";
+import { Add, ImportExport, Settings, ShoppingCart, People, VpnKey } from "@material-ui/icons";
 import { Component, Fragment } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
 import Health from "./Health";
 import * as t from "./types";
-import { PektinClient } from "@pektin/client";
+import { PektinClient, isNameServer } from "@pektin/client";
 
 interface BaseProps extends Partial<RouteComponentProps> {
   readonly config: t.Config;
@@ -27,6 +27,10 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
             <NavLink exact className="link" activeClassName="navActive" to="/management/clients">
               <People />
               <span className="linkText">Clients</span>
+            </NavLink>
+            <NavLink exact className="link" activeClassName="navActive" to="/management/api-keys">
+              <VpnKey style={{ fontSize: "22px" }} />
+              <span className="linkText">Foreign API Keys</span>
             </NavLink>
             <br />
           </Fragment>
@@ -61,8 +65,12 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
         >
           {this.props.domains.length
             ? this.props.domains.map((domain: string, i: number) => {
+                const isNs =
+                  this.props.client.pektinConfig &&
+                  isNameServer(this.props.client.pektinConfig, domain);
+
                 return (
-                  <li key={i}>
+                  <li key={i} title={isNs ? "This is a nameserver domain" : ""}>
                     <NavLink
                       activeClassName="navActive"
                       className="link"
@@ -70,6 +78,7 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
                       to={`/domain/${domain}`}
                     >
                       {domain}
+                      {isNs ? " ⭐" : ""}
                     </NavLink>
                   </li>
                 );

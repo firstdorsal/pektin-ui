@@ -1,6 +1,5 @@
-import { regex } from "../lib";
-import * as t from "../types";
-import * as l from "../lib";
+import { Config, ValidationResult } from "../types";
+import { regex, validateDomain } from "./common";
 
 export const SPF1QualifierNames = ["Pass", "Fail", "SoftFail", "Neutral"];
 
@@ -25,7 +24,7 @@ interface SPF1Mechanism {
   prefixLength?: number;
 }
 export interface ParsedSPF1 {
-  mechanisms?: Array<SPF1Mechanism | t.ValidationResult>;
+  mechanisms?: Array<SPF1Mechanism | ValidationResult>;
   modifier?: "redirect" | "exp";
   modifierDomain?: string;
 }
@@ -50,12 +49,12 @@ const splitFirstAndRest = (string: string, seperator: string) => {
     return [string, ""];
   }
   return [
-    string.substr(0, string.indexOf(seperator)),
-    string.substr(string.indexOf(seperator) + 1),
+    string.substring(0, string.indexOf(seperator)),
+    string.substring(string.indexOf(seperator) + 1),
   ];
 };
 
-const checkSPF1Macros = (string: string): false | t.ValidationResult => {
+const checkSPF1Macros = (string: string): false | ValidationResult => {
   if (string.indexOf("%") === -1) return { type: "error", message: `invalid domain: ${string}` };
   if (!string.match(/.*(%{|%%|%-|%_).*/g)) {
     return {
@@ -104,7 +103,7 @@ const checkSPF1Macros = (string: string): false | t.ValidationResult => {
   return false;
 };
 
-const parseSPF1 = (config: t.Config, value: string): ParsedSPF1 | t.ValidationResult => {
+const parseSPF1 = (config: Config, value: string): ParsedSPF1 | ValidationResult => {
   const v = value.replaceAll(/\s+/g, " ").toLowerCase();
 
   const split = v.split(" ");
@@ -120,7 +119,7 @@ const parseSPF1 = (config: t.Config, value: string): ParsedSPF1 | t.ValidationRe
     e: string,
     index: number,
     length: number
-  ): SPF1Mechanism | t.ValidationResult => {
+  ): SPF1Mechanism | ValidationResult => {
     if (!e.length) return { type: "error", message: "invalid spf1 mechanism" };
     const mechanism: SPF1Mechanism = {} as SPF1Mechanism;
     if (["+", "-", "~", "?"].indexOf(e.charAt(0)) > -1) {
@@ -139,7 +138,7 @@ const parseSPF1 = (config: t.Config, value: string): ParsedSPF1 | t.ValidationRe
       const rest = r.toString();
 
       if (type === "exists" || type === "include" || type === "ptr") {
-        if (l.validateDomain(config, rest).type !== "error") {
+        if (validateDomain(config, rest).type !== "error") {
           mechanism.type = type;
           mechanism.domain = rest;
         } else {
@@ -158,7 +157,7 @@ const parseSPF1 = (config: t.Config, value: string): ParsedSPF1 | t.ValidationRe
         }
       } else if (type === "mx" || type === "a") {
         if (rest.indexOf("/") <= -1) {
-          if (l.validateDomain(config, rest).type !== "error") {
+          if (validateDomain(config, rest).type !== "error") {
             mechanism.type = type;
             mechanism.domain = rest;
           } else {
@@ -169,7 +168,7 @@ const parseSPF1 = (config: t.Config, value: string): ParsedSPF1 | t.ValidationRe
           }
         } else {
           const [domain, prefixLength] = splitFirstAndRest(rest, "/");
-          if (l.validateDomain(config, rest).type !== "error") {
+          if (validateDomain(config, rest).type !== "error") {
             if (checkPrefixLength(prefixLength)) {
               mechanism.type = type;
               mechanism.domain = domain;
@@ -279,11 +278,11 @@ const parseSPF1 = (config: t.Config, value: string): ParsedSPF1 | t.ValidationRe
   return parsed;
 };
 
-const validateSPF1 = (config: t.Config, string: string): t.ValidationResult => {
+const validateSPF1 = (config: Config, string: string): ValidationResult => {
   const parsedSpf = parseSPF1(config, string) as ParsedSPF1;
 
-  if ((parsedSpf as t.ValidationResult).type === "error") {
-    return parsedSpf as t.ValidationResult;
+  if ((parsedSpf as ValidationResult).type === "error") {
+    return parsedSpf as ValidationResult;
   }
   if (parsedSpf.mechanisms && parsedSpf.mechanisms.length) {
     const erroredMechanisms = parsedSpf.mechanisms.filter(
@@ -291,7 +290,7 @@ const validateSPF1 = (config: t.Config, string: string): t.ValidationResult => {
     );
 
     if (erroredMechanisms.length > 0) {
-      return erroredMechanisms[0] as t.ValidationResult;
+      return erroredMechanisms[0] as ValidationResult;
     }
 
     for (let i = 0; i < parsedSpf.mechanisms.length; i++) {
@@ -330,18 +329,18 @@ const validateSPF1 = (config: t.Config, string: string): t.ValidationResult => {
 // https://www.ietf.org/rfc/rfc6376.txt
 // https://www.iana.org/assignments/dkim-parameters/dkim-parameters.xhtml
 interface ParsedDKIM1 {
-  v: any | t.ValidationResult;
-  g: any | t.ValidationResult; // granularity
-  h: "sha1" | "sha256" | t.ValidationResult; // hash; a list of mechanisms that can be used to produce a digest of message data
-  k: "rsa" | "ed25519" | t.ValidationResult; // key type; a list of mechanisms that can be used to decode a DKIM signature
-  n: string | t.ValidationResult; // notes; notes for humans
-  p: string | t.ValidationResult; //public-key; base64 encoded public key
-  s: Array<"email" | "*"> | t.ValidationResult; // service types for example * or email
-  t: "y" | "s" | t.ValidationResult; // list of flags to modify the selector
+  v: any | ValidationResult;
+  g: any | ValidationResult; // granularity
+  h: "sha1" | "sha256" | ValidationResult; // hash; a list of mechanisms that can be used to produce a digest of message data
+  k: "rsa" | "ed25519" | ValidationResult; // key type; a list of mechanisms that can be used to decode a DKIM signature
+  n: string | ValidationResult; // notes; notes for humans
+  p: string | ValidationResult; //public-key; base64 encoded public key
+  s: Array<"email" | "*"> | ValidationResult; // service types for example * or email
+  t: "y" | "s" | ValidationResult; // list of flags to modify the selector
   //q: string; // query type for example "dns"
   //l: number; // size limit
 }
-const parseDKIM1 = (string: string): ParsedDKIM1 | t.ValidationResult => {
+const parseDKIM1 = (string: string): ParsedDKIM1 | ValidationResult => {
   let parsed = {} as ParsedDKIM1;
   string = string.replaceAll(" ", "").replaceAll("v=DKIM1;", "");
   const split = string.split(";");
@@ -445,8 +444,8 @@ const parseDKIM1 = (string: string): ParsedDKIM1 | t.ValidationResult => {
   return parsed;
 };
 
-const validateDKIM1 = (string: string): t.ValidationResult => {
-  const parsed = parseDKIM1(string) as t.ValidationResult;
+const validateDKIM1 = (string: string): ValidationResult => {
+  const parsed = parseDKIM1(string) as ValidationResult;
   if (parsed.type === "error") {
     return parsed;
   } else {
@@ -475,7 +474,7 @@ interface ParsedDMARC1 {
   ruf?: string[]; // report failure address: comma seperated list
   sp?: "none" | "quarantine" | "reject"; // subdomain policy
 }
-const parseDMARC1 = (string: string): ParsedDMARC1 | t.ValidationResult => {
+const parseDMARC1 = (string: string): ParsedDMARC1 | ValidationResult => {
   const parsed = {};
   string = string.replaceAll(" ", "");
   //const split = string.split(";");

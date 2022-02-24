@@ -229,17 +229,28 @@ h2 {
   cursor: text;
 }
 
+.tabs * {
+  user-select: text;
+  cursor: text;
+}
+
 code *,
 code,
 pre {
   font-family: monospace;
   font-size: 14px;
 }
+
+pre:focus-visible {
+  outline: none;
+}
+
 code,
 code * {
   white-space: pre-wrap !important;
   word-wrap: break-word;
   pointer-events: none;
+  caret-color: lightgrey !important;
 }
 
 aside {
@@ -527,4 +538,12 @@ button.error:hover {
 
 a.url {
   color: var(--a2) !important;
+}
+
+.AddDomain .soaField {
+  width: 100%;
+}
+
+.MuiTextField-root div {
+  width: 100%;
 }

@@ -486,7 +486,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                 <DataDisplay
                   style={{ maxHeight: "400px" }}
                   config={this.props.config}
-                  data={record}
+                  data={[record]}
                   client={this.props.client}
                 ></DataDisplay>
               </Grid>

@@ -22,7 +22,7 @@ SyntaxHighlighter.registerLanguage("yaml", yaml);
 //import { format } from "prettier/standalone";
 
 interface DataDisplayProps {
-  readonly data: t.DisplayRecord;
+  readonly data: t.DisplayRecord[];
   readonly config: t.Config;
   readonly style?: any;
   readonly client: PektinClient;
@@ -32,6 +32,13 @@ interface DataDisplayState {
   readonly activeTab: number;
 }
 
+const noop = (e: any) => {
+  if (!e.ctrlKey) {
+    e.preventDefault();
+    return false;
+  }
+};
+
 export default class DataDisplay extends Component<DataDisplayProps, DataDisplayState> {
   state: DataDisplayState = {
     activeTab: this.props.config.local.defaultActiveTab,
@@ -40,22 +47,64 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
   render = () => {
     const codeStyle = codeStyles[this.props.config.local.codeStyle];
     const tabs = [
-      <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="json">
-        {JSON.stringify(l.toPektinApiRecord(this.props.config, this.props.data), null, "    ")}
+      <SyntaxHighlighter
+        contentEditable="true"
+        showLineNumbers={false}
+        style={codeStyle}
+        onCut={noop}
+        onPaste={noop}
+        onKeyDown={noop}
+        onDragStart={noop}
+        language="json"
+      >
+        {JSON.stringify(
+          this.props.data?.map((record) => l.toPektinApiRecord(this.props.config, record)),
+          null,
+          "    "
+        )}
       </SyntaxHighlighter>,
-      <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="yaml">
-        {toYaml(l.toPektinApiRecord(this.props.config, this.props.data))}
+      <SyntaxHighlighter
+        contentEditable="true"
+        showLineNumbers={false}
+        style={codeStyle}
+        onCut={noop}
+        onPaste={noop}
+        onKeyDown={noop}
+        onDragStart={noop}
+        language="yaml"
+      >
+        {toYaml(this.props.data.map((record) => l.toPektinApiRecord(this.props.config, record)))}
       </SyntaxHighlighter>,
-      <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="javascript">
+      <SyntaxHighlighter
+        contentEditable="true"
+        showLineNumbers={false}
+        style={codeStyle}
+        onCut={noop}
+        onPaste={noop}
+        onKeyDown={noop}
+        onDragStart={noop}
+        language="javascript"
+      >
         TODO
       </SyntaxHighlighter>,
       <CurlTab
         client={this.props.client}
         config={this.props.config}
-        data={l.toPektinApiRecord(this.props.config, this.props.data)}
+        data={this.props.data.map((record) => l.toPektinApiRecord(this.props.config, record))}
       />,
-      <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="text">
-        {l.displayRecordToBind(l.toPektinApiRecord(this.props.config, this.props.data))}
+      <SyntaxHighlighter
+        contentEditable="true"
+        showLineNumbers={false}
+        style={codeStyle}
+        onCut={noop}
+        onPaste={noop}
+        onKeyDown={noop}
+        onDragStart={noop}
+        language="text"
+      >
+        {this.props.data
+          ?.map((record) => l.toPektinApiRecord(this.props.config, record))
+          .map((r) => l.displayRecordToBind(r))}
       </SyntaxHighlighter>,
     ];
 
@@ -66,7 +115,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         item
         xs={12}
       >
-        <Paper style={{ maxHeight: "100%" }} elevation={3}>
+        <Paper style={{ height: "100%" }} elevation={3}>
           <div style={{ height: "80px", paddingTop: "0px" }}>
             <Tabs
               variant="fullWidth"
@@ -105,10 +154,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
               <Tab label="BIND" icon={<MdShortText style={{ width: "20px" }} />} value={4} />
             </Tabs>
           </div>
-          <div
-            style={{ overflowY: "auto", maxHeight: "360px", height: "100%" }}
-            className="tabs selectable"
-          >
+          <div style={{ overflowY: "auto", height: "calc(100% - 80px)" }} className="tabs">
             {tabs[this.state.activeTab]}
           </div>
         </Paper>
@@ -118,7 +164,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
 }
 
 interface CurlTabProps {
-  readonly data: ApiRecord;
+  readonly data: ApiRecord[];
   readonly config: t.Config;
   readonly client: PektinClient;
 }
@@ -160,7 +206,16 @@ class CurlTab extends Component<CurlTabProps, CurlTabState> {
           <Switch onChange={() => this.setState(({ multiline }) => ({ multiline: !multiline }))} />
           Multiline
         </Container>
-        <SyntaxHighlighter showLineNumbers={true} style={codeStyle} language="sh">
+        <SyntaxHighlighter
+          contentEditable="true"
+          showLineNumbers={false}
+          style={codeStyle}
+          onCut={noop}
+          onPaste={noop}
+          onKeyDown={noop}
+          onDragStart={noop}
+          language="sh"
+        >
           {this.curl(this.state.multiline)}
         </SyntaxHighlighter>
       </React.Fragment>

@@ -1616,10 +1616,27 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@pektin/client@^1.1.32", "@pektin/client@^1.2.8":
+"@pektin/client@^1.1.32":
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.2.8.tgz#699c13ef51bf617d16f85b50a5ef209dd674ef7f"
   integrity sha512-sZ5Oj4HjtstThAYp/g/I+T+KHedgQN40TiDCvVm3kl/gmM47frLuRC234msFTqkr19nHnA9BYn+spMJgkpjS8w==
+  dependencies:
+    "@firstdorsal/powerdns-api" "^1.11.0"
+    "@pektin/config" "^1.0.63"
+    "@pektin/declare-fs" "^1.7.9"
+    "@pektin/dns-zonefile" "^0.3.1"
+    "@pektin/global-registrar" "^1.0.13"
+    "@pektin/toluol-wasm-nodejs" "^0.3.0"
+    cfonts "^2.10.0"
+    chalk "5.0.0"
+    cross-fetch "^3.1.4"
+    punycode "1.4.1"
+    yaml "^1.10.2"
+
+"@pektin/client@^1.2.9":
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.2.9.tgz#42fc42a6de7870cbbddfc602c9ced26fdd4a0ddc"
+  integrity sha512-ANXS6ZhLKrWczSS3fVyPvUmf3rzKp70ULCiOn1gcptrIM9dEIcuXwxTpSJN/bfV1oejndxBqG/J757tVSrFV6g==
   dependencies:
     "@firstdorsal/powerdns-api" "^1.11.0"
     "@pektin/config" "^1.0.63"

@@ -153,7 +153,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
                 bottom: "5px",
                 right: "0px",
               }}
-              onClick={(e) => this.props.removeRRValue(this.props.recordIndex, rrIndex)}
+              onClick={() => this.props.removeRRValue(this.props.recordIndex, rrIndex)}
             >
               <RemoveCircle />
             </IconButton>

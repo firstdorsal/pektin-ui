@@ -16,6 +16,7 @@ import { HotKeys, configure as configureHotkeys, GlobalHotKeys } from "react-hot
 import { PC3 } from "@pektin/client";
 import { PektinClient } from "@pektin/client";
 import DomainMeta from "./components/DomainMeta";
+import ExecuteQuery from "./components/ExecuteQuery";
 
 configureHotkeys({ ignoreTags: [] });
 
@@ -246,7 +247,7 @@ export default class App extends PureComponent<AppProps, AppState> {
         }}
         handlers={{
           G_SETTINGS: () => {
-            this.router.history.push("/settings");
+            this.router.history.push("/settings/");
           },
         }}
       >
@@ -372,7 +373,7 @@ export default class App extends PureComponent<AppProps, AppState> {
             />
             <Route
               exact
-              path="/settings"
+              path="/settings/"
               render={(routeProps: any) => {
                 return (
                   <Fragment>
@@ -384,6 +385,25 @@ export default class App extends PureComponent<AppProps, AppState> {
                     ></Sidebar>
                     <main>
                       <ConfigView g={this.state.g} config={this.state.config} />
+                    </main>
+                  </Fragment>
+                );
+              }}
+            />
+            <Route
+              exact
+              path="/execute-query/"
+              render={(routeProps: any) => {
+                return (
+                  <Fragment>
+                    <Sidebar
+                      health={this.state.health}
+                      domains={this.state.domains}
+                      config={this.state.config}
+                      client={this.state.client}
+                    ></Sidebar>
+                    <main>
+                      <ExecuteQuery g={this.state.g} config={this.state.config} />
                     </main>
                   </Fragment>
                 );

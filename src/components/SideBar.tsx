@@ -1,4 +1,12 @@
-import { Add, ImportExport, Settings, ShoppingCart, People, VpnKey } from "@material-ui/icons";
+import {
+  Add,
+  ImportExport,
+  Settings,
+  ShoppingCart,
+  People,
+  VpnKey,
+  DoubleArrow,
+} from "@material-ui/icons";
 import { Component, Fragment } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
 import Health from "./Health";
@@ -24,11 +32,11 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
         {this.props.client?.managerPassword ? (
           <Fragment>
             <h2>Access Management</h2>
-            <NavLink exact className="link" activeClassName="navActive" to="/management/clients">
+            <NavLink exact className="link" activeClassName="navActive" to="/management/clients/">
               <People />
               <span className="linkText">Clients</span>
             </NavLink>
-            <NavLink exact className="link" activeClassName="navActive" to="/management/api-keys">
+            <NavLink exact className="link" activeClassName="navActive" to="/management/api-keys/">
               <VpnKey style={{ fontSize: "22px" }} />
               <span className="linkText">Foreign API Keys</span>
             </NavLink>
@@ -39,18 +47,18 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
         )}
 
         <h2>Add Existing Domain</h2>
-        <NavLink exact className="link" activeClassName="navActive" to="/add/existing/manual">
+        <NavLink exact className="link" activeClassName="navActive" to="/add/existing/manual/">
           <Add />
           <span className="linkText">Manually</span>
         </NavLink>
-        <NavLink exact className="link" activeClassName="navActive" to="/add/existing/import">
+        <NavLink exact className="link" activeClassName="navActive" to="/add/existing/import/">
           <ImportExport />
           <span className="linkText">Import</span>
         </NavLink>
 
         <br />
         <h2>Create New</h2>
-        <NavLink className="link" activeClassName="navActive" to="/add/buy">
+        <NavLink className="link" activeClassName="navActive" to="/add/buy/">
           <ShoppingCart />
           <span className="linkText">Buy</span>
         </NavLink>
@@ -75,7 +83,7 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
                       activeClassName="navActive"
                       className="link"
                       exact
-                      to={`/domain/${domain}`}
+                      to={`/domain/${domain}/`}
                     >
                       {domain}
                       {isNs ? " ⭐" : ""}
@@ -85,14 +93,12 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
               })
             : ""}
         </ul>
+        <NavLink exact className="link exec" activeClassName="navActive" to="/execute-query/">
+          <DoubleArrow />
+          <span className="linkText">Execute Query</span>
+        </NavLink>
 
-        <NavLink
-          style={{ background: "var(--bg-color-dark)" }}
-          exact
-          className="link config"
-          activeClassName="navActive"
-          to="/settings"
-        >
+        <NavLink exact className="link config" activeClassName="navActive" to="/settings/">
           <Settings />
           <span className="linkText">Settings</span>
         </NavLink>

@@ -1,5 +1,6 @@
 TODO add https://crt.sh/?q=y.gy&output=json
 TODO add a scrollmap like in vscode for the record colors
+// TODO handle unauthorized and internal
 
 # features
 

@@ -94,7 +94,7 @@ export class ContextMenu extends Component<ContextMenuProps, ContextMenuState> {
               title="Add Variable"
               style={{ margin: "5px" }}
               className="contextMenu"
-              to="/settings"
+              to="/settings/"
             >
               <IconButton size="small">
                 <FaPlusCircle />

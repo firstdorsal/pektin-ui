@@ -142,9 +142,8 @@ export default class Auth extends Component<AuthProps, AuthState> {
             <Refresh />
           </IconButton>
 
-          <HelpPopper style={{ top: "10px", right: "10px", position: "absolute" }}>
-            {l.help.auth}
-          </HelpPopper>
+          <HelpPopper style={{ top: "10px", right: "10px", position: "absolute" }} helper="auth" />
+
           <br />
           <br />
         </Paper>

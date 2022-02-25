@@ -10,6 +10,7 @@ import { absoluteName, ApiRecord, CAARecord, isAbsolute } from "@pektin/client";
 import { cloneDeep } from "lodash";
 import { PektinRRType } from "@pektin/client";
 import { regex, validateDomain, validateIp } from "./validators/common";
+import { EditorProps } from "@monaco-editor/react";
 
 export const defaultSearchMatch = {
   name: false,
@@ -140,6 +141,65 @@ const defaultVaultAuth: t.VaultAuth = {
   token: "",
 };
 
+export const codeEditorOptions: EditorProps["options"] = {
+  acceptSuggestionOnCommitCharacter: true,
+  acceptSuggestionOnEnter: "on",
+  accessibilitySupport: "auto",
+  autoIndent: "full",
+  automaticLayout: true,
+  codeLens: true,
+  colorDecorators: true,
+  contextmenu: true,
+  cursorBlinking: "blink",
+  cursorSmoothCaretAnimation: false,
+  cursorStyle: "line",
+  disableLayerHinting: false,
+  disableMonospaceOptimizations: false,
+  dragAndDrop: false,
+  fixedOverflowWidgets: false,
+  folding: true,
+  foldingStrategy: "auto",
+  fontLigatures: false,
+  formatOnPaste: false,
+  formatOnType: false,
+  hideCursorInOverviewRuler: false,
+  links: true,
+  mouseWheelZoom: false,
+  multiCursorMergeOverlapping: true,
+  multiCursorModifier: "ctrlCmd",
+  overviewRulerBorder: true,
+  overviewRulerLanes: 2,
+  quickSuggestions: true,
+  quickSuggestionsDelay: 100,
+  readOnly: false,
+  renderControlCharacters: true,
+  renderFinalNewline: true,
+  renderLineHighlight: "none",
+  renderWhitespace: "all",
+  revealHorizontalRightPadding: 30,
+  roundedSelection: false,
+  rulers: [],
+  scrollBeyondLastColumn: 5,
+  scrollBeyondLastLine: true,
+  selectOnLineNumbers: true,
+  selectionClipboard: true,
+  selectionHighlight: false,
+  showFoldingControls: "mouseover",
+  smoothScrolling: false,
+  suggestOnTriggerCharacters: true,
+  wordBasedSuggestions: true,
+  wordSeparators: "~!@#$%^&*()-=+[{]}|;:'\",.<>/?",
+  wordWrap: "on",
+  wordWrapBreakAfterCharacters: "\t})]?|&,;",
+  wordWrapBreakBeforeCharacters: "{([+",
+  wordWrapColumn: 80,
+  wrappingIndent: "none",
+  autoClosingBrackets: "never",
+  bracketPairColorization: { enabled: true },
+  matchBrackets: "never",
+  occurrencesHighlight: false,
+};
+
 const defaultLocalConfig: t.LocalConfig = {
   defaultActiveTab: 0,
   codeStyle: "dracula",
@@ -147,6 +207,7 @@ const defaultLocalConfig: t.LocalConfig = {
   synesthesia: false,
   replaceVariables: true,
   helper: true,
+  codeEditor: codeEditorOptions,
 };
 
 export const defaulConfig: t.Config = {
@@ -184,10 +245,6 @@ export const displayRecordToBind = (rec: ApiRecord, onlyValues: boolean = false)
     } ${soa.mname} ${soa.rname} 0 0 0 0 0`;
   }
   return "Not Implemented for this record";
-};
-
-export const help: any = {
-  auth: <div>helper text for auth</div>,
 };
 
 export const supportedRecords = [
@@ -540,7 +597,7 @@ export const rrTemplates: any = {
           if (isAbsolute(field)) {
             return {
               type: "warning",
-              message: `CAA values should NOT be absolute names (NOT end with a dot)`,
+              message: `CAA values must NOT be absolute names (NOT end with a dot)`,
             };
           }
           return validateDomain(config, field + ".");

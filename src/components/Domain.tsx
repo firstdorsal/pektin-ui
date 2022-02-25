@@ -195,7 +195,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       if (res.type !== "error") {
         this.props.g.loadDomains();
         this.props.history.push({
-          pathname: `/domain/${this.state.domainName}`,
+          pathname: `/domain/${this.state.domainName}/`,
         });
       }
     } else {
@@ -1446,7 +1446,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
                 title="Domain Metadata"
                 onClick={() => {
                   this.props.history.push({
-                    pathname: `/domain/${this.state.domainName}/meta`,
+                    pathname: `/domain/${this.state.domainName}/meta/`,
                   });
                 }}
               >

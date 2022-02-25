@@ -14,7 +14,6 @@ import {
 import { PektinConfig } from "@pektin/config/dist/js/config-types";
 import App from "../App";
 import { CodeStyle } from "./code-styles";
-import { EditorProps } from "@monaco-editor/react";
 
 import { PektinRRType } from "@pektin/client";
 export interface DOHQuery {
@@ -80,7 +79,6 @@ export interface LocalConfig {
   synesthesia: boolean;
   replaceVariables: boolean;
   helper: boolean;
-  codeEditor: EditorProps["options"];
 }
 
 export interface ValueSearchMatch {

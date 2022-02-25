@@ -241,11 +241,6 @@ h2 {
   cursor: text;
 }
 
-.tabs * {
-  user-select: text;
-  cursor: text;
-}
-
 code *,
 code,
 pre {
@@ -569,8 +564,4 @@ a.url {
 
 .disabled {
   opacity: 50%;
-}
-
-.codeEditor {
-  border: 20px;
 }

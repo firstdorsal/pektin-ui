@@ -8,7 +8,6 @@ import { ContextMenu } from "./ContextMenu";
 import { RouteComponentProps } from "react-router-dom";
 import {
   absoluteName,
-  CAARecord,
   clampTTL,
   concatDomain,
   getMainNameServers,
@@ -73,7 +72,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
   };
 
   componentDidMount = () => {
-    if (this.props.client.pektinConfig) {
+    if (this.props?.client?.pektinConfig) {
       const config = this.props.client.pektinConfig;
       const mainNS = getMainNameServers(config);
       this.setState(({ soaRecord: record, nsRecord: nameserver }) => {
@@ -88,7 +87,6 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
             return { ttl: 60, value: absoluteName(concatDomain(ns.domain, ns.subDomain)) };
           }),
         };
-        console.log(nameserver);
 
         return { soaRecord: record, nsRecord: nameserver };
       });
@@ -182,7 +180,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
         </div>
         <div className={d ? "disabled" : ""}>
           {(() => {
-            if (this.props.client.pektinConfig) {
+            if (this.props?.client?.pektinConfig) {
               return (
                 <ul style={{ width: "100%", display: "block" }}>
                   {(this.state.nsRecord.rr_set as NSRecord[]).map((rr, i) => {

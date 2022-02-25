@@ -1,4 +1,5 @@
 #!/bin/bash
+yarn fix-modules
 yarn build
 xdg-open "http://localhost:4002"
 

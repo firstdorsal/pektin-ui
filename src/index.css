@@ -592,8 +592,7 @@ div[class*="ace_br"] {
   color: #89ca78;
 }
 .ace-one-dark .ace_indent-guide {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACAQMAAACjTyRkAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAANQTFRFO0BIBzqxDAAAAAxJREFUeJxjYGBgAAAABAAB9hc4VQAAAABJRU5ErkJggg==)
-    right repeat-y;
+  background: url("./code-editor-lines.png") right repeat-y;
   padding-bottom: 1px;
 }
 .ace_invisible_eol {
@@ -607,7 +606,6 @@ div[class*="ace_br"] {
   box-sizing: content-box;
   border-left-width: 2px;
 }
-
 .ace_multiselect .ace_cursor {
   border-left-width: 2px;
 }

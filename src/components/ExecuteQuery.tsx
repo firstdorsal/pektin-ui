@@ -1,4 +1,4 @@
-import { Button, Checkbox, Grid, MenuItem, Select, TextField } from "@material-ui/core";
+import { Button, Grid, TextField } from "@material-ui/core";
 import { Send } from "@material-ui/icons";
 import { Component, CSSProperties } from "react";
 import { Config, Glob } from "./types";
@@ -20,7 +20,6 @@ import { setCompleters } from "ace-builds/src-noconflict/ext-language_tools";
 import {
   isKnownApiMethod,
   methodToFunctionName,
-  pektinApiRequest,
   PektinClient,
   simpleBeautify,
   supportedMethods,

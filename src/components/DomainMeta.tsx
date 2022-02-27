@@ -12,7 +12,7 @@ interface DomainMetaProps extends RouteComponentProps<RouteParams> {
   readonly g: Glob;
   readonly client: PektinClient;
 }
-
+// eslint-disable-next-line
 const dm = {
   registrar: "gandi",
   api: true,

@@ -1,7 +1,6 @@
 import { Container, IconButton, Paper, TextField } from "@material-ui/core";
 import React, { Component, ReactElement } from "react";
 import * as t from "./types";
-import * as l from "./lib";
 import { Refresh, Security } from "@material-ui/icons";
 import HelpPopper from "./HelpPopper";
 import { RouteComponentProps } from "react-router-dom";

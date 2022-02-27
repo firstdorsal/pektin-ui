@@ -403,7 +403,11 @@ export default class App extends PureComponent<AppProps, AppState> {
                       client={this.state.client}
                     ></Sidebar>
                     <main>
-                      <ExecuteQuery g={this.state.g} config={this.state.config} />
+                      <ExecuteQuery
+                        g={this.state.g}
+                        client={this.state.client}
+                        config={this.state.config}
+                      />
                     </main>
                   </Fragment>
                 );

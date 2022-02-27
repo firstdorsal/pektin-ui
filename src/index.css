@@ -565,3 +565,62 @@ a.url {
 .disabled {
   opacity: 50%;
 }
+
+/*ace fixes*/
+
+.ace_invisible {
+  color: #3b4048;
+}
+
+div[class*="ace_br"] {
+  border-radius: 0px !important;
+}
+
+.ace_bracket.ace_start {
+  visibility: hidden;
+}
+
+.ace-one-dark .ace_cursor {
+  color: #777;
+}
+
+.ace-one-dark .ace_variable {
+  color: #ef596f;
+}
+
+.ace-one-dark .ace_string {
+  color: #89ca78;
+}
+.ace-one-dark .ace_indent-guide {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACAQMAAACjTyRkAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAANQTFRFO0BIBzqxDAAAAAxJREFUeJxjYGBgAAAABAAB9hc4VQAAAABJRU5ErkJggg==)
+    right repeat-y;
+  padding-bottom: 1px;
+}
+.ace_invisible_eol {
+  visibility: hidden;
+}
+.ace_scroller {
+  cursor: text !important;
+}
+.ace_cursor {
+  padding-left: 2px;
+  box-sizing: content-box;
+  border-left-width: 2px;
+}
+
+.ace_multiselect .ace_cursor {
+  border-left-width: 2px;
+}
+
+.ace_gutter-cell {
+  color: #495162;
+}
+
+.ace_gutter-active-line {
+  background-color: #0000 !important;
+  color: #ccc;
+}
+
+.ace_cursor-layer {
+  transform: translate(-1px, 0px);
+}

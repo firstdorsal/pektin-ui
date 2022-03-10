@@ -113,6 +113,7 @@ body {
   overflow: hidden;
   user-select: none;
   background: var(--bg-color);
+  color: var(--font-color);
   font-family: "Inter", sans-serif;
 }
 
@@ -636,4 +637,8 @@ div[class*="ace_br"] {
 .ace_tooltip {
   background: #3b4048;
   color: white;
+}
+
+.ClientsList ul li span {
+  margin: 10px;
 }

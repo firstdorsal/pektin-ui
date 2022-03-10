@@ -49,6 +49,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
     const tabs = [
       <SyntaxHighlighter
         contentEditable="true"
+        suppressContentEditableWarning={true}
         showLineNumbers={false}
         style={codeStyle}
         onCut={noop}
@@ -65,6 +66,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
       </SyntaxHighlighter>,
       <SyntaxHighlighter
         contentEditable="true"
+        suppressContentEditableWarning={true}
         showLineNumbers={false}
         style={codeStyle}
         onCut={noop}
@@ -83,6 +85,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
         onPaste={noop}
         onKeyDown={noop}
         onDragStart={noop}
+        suppressContentEditableWarning={true}
         language="javascript"
       >
         TODO
@@ -95,6 +98,7 @@ export default class DataDisplay extends Component<DataDisplayProps, DataDisplay
       <SyntaxHighlighter
         contentEditable="true"
         showLineNumbers={false}
+        suppressContentEditableWarning={true}
         style={codeStyle}
         onCut={noop}
         onPaste={noop}

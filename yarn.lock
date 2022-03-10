@@ -1633,14 +1633,14 @@
     punycode "1.4.1"
     yaml "^1.10.2"
 
-"@pektin/client@^1.2.10":
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.2.10.tgz#5061c70fbef1ba9da4b88a74793d9967d382600f"
-  integrity sha512-ZEisCTskPDqahMBmFnMEZCu4SNlq03sBO+1OV/MRzCcHlTKun0cMgWsAfobTpsPdyoez/68Ea8IelLG9+SM7kA==
+"@pektin/client@^1.2.22":
+  version "1.2.22"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.2.22.tgz#309927ed132095e4fc5bb87dfe498a8112fa46e9"
+  integrity sha512-8XiU1jI2PCmhvo9Grc0PvX3ZdlkvYVQ108Fi91zcB+vtTjRNRucSGiKP+uElTGlRlIqA/4qAq0K34lQPN9+6HQ==
   dependencies:
     "@firstdorsal/powerdns-api" "^1.11.0"
-    "@pektin/config" "^1.0.63"
-    "@pektin/declare-fs" "^1.7.9"
+    "@pektin/config" "^1.0.64"
+    "@pektin/declare-fs" "^2.2.1"
     "@pektin/dns-zonefile" "^0.3.1"
     "@pektin/global-registrar" "^1.0.13"
     "@pektin/toluol-wasm-nodejs" "^0.3.0"
@@ -1662,10 +1662,27 @@
     lodash "^4.17.21"
     yaml "^1.10.2"
 
+"@pektin/config@^1.0.64":
+  version "1.0.64"
+  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.64.tgz#ea0ec1039cb1c56ce9835d47722f25c6e0c68508"
+  integrity sha512-6TxamX+7She+l6ou2SMMdxwM62AYue9W+f0ewSLi8aoUe4wfkKBs4QhvrOVTwWYhE2++oOvq2N0XX/KZdX9eNQ==
+  dependencies:
+    "@pektin/client" "^1.1.32"
+    ajv "^8.9.0"
+    cfonts "^2.10.0"
+    chalk "^5.0.0"
+    lodash "^4.17.21"
+    yaml "^1.10.2"
+
 "@pektin/declare-fs@^1.7.9":
   version "1.7.9"
   resolved "https://registry.yarnpkg.com/@pektin/declare-fs/-/declare-fs-1.7.9.tgz#f3e6bb4ec98240d9a945b36246d805eea2ce46ea"
   integrity sha512-iPy3lvPN9IaFp9dWuJblAOexyGCu5WxmpTTdOdNUyZ5JMQhE5R8I13J79AAqLRKnz0WShlWxILARpdGZQjiQvg==
+
+"@pektin/declare-fs@^2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@pektin/declare-fs/-/declare-fs-2.2.1.tgz#990e6c87e019ae6c9a36af9a42489939a029f985"
+  integrity sha512-0sc8Px0Dm2tXfO6bxeJCab8VA7n659vZ4ZWF5LyaJbZBPHpBrBZz5olDdquMY+/lHPweUJfNHTRaT1ReqKkpJQ==
 
 "@pektin/dns-zonefile@^0.3.1":
   version "0.3.3"

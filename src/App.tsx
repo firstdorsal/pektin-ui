@@ -17,6 +17,7 @@ import { PC3 } from "@pektin/client";
 import { PektinClient } from "@pektin/client";
 import DomainMeta from "./components/DomainMeta";
 import ExecuteQuery from "./components/ExecuteQuery";
+import Clients from "./components/routes/Clients";
 
 configureHotkeys({ ignoreTags: [] });
 
@@ -253,7 +254,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       >
         <GlobalHotKeys />
         <Router ref={(ref) => (this.router = ref)}>
-          {this.state.configError ? <Redirect to="/auth" /> : ""}
+          {this.state.configError ? <Redirect to="/auth/" /> : ""}
           {this.state.g.contextMenu ? (
             <div
               onClick={this.handleContextMenuOffClick}
@@ -267,12 +268,34 @@ export default class App extends PureComponent<AppProps, AppState> {
           <Switch>
             <Route
               exact
-              path="/auth"
+              path="/auth/"
               render={(routeProps) => (
                 <Auth config={this.state.config} saveAuth={this.saveAuth} {...routeProps} />
               )}
             />
-
+            <Route
+              exact
+              path="/management/clients/"
+              render={(routeProps: any) => {
+                return (
+                  <Fragment>
+                    <Sidebar
+                      health={this.state.health}
+                      domains={this.state.domains}
+                      config={this.state.config}
+                      client={this.state.client}
+                    ></Sidebar>
+                    <main>
+                      <Clients
+                        g={this.state.g}
+                        config={this.state.config}
+                        client={this.state.client}
+                      />
+                    </main>
+                  </Fragment>
+                );
+              }}
+            />
             <Route
               exact
               path="/add/existing/manual"

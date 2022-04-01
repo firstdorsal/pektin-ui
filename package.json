@@ -115,9 +115,9 @@
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "fix-modules": "bash scripts/install-modules.sh",
     "upgrade-pektin": "yarn upgrade @pektin/client @pektin/config --latest; yarn fix-modules",
-    "run-nginx-baked": "bash scripts/run-nginx-baked.sh",
-    "run-nginx-build-mount": "bash scripts/run-nginx-build-mount.sh",
-    "run-nginx-mount": "bash scripts/run-nginx-mount.sh"
+    "run-baked": "bash scripts/run-baked.sh",
+    "build-run-mounted": "bash scripts/build-run-mounted.sh",
+    "run-mounted": "bash scripts/run-mounted.sh"
   },
   "eslintConfig": {
     "extends": [

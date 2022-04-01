@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  nginx:
+    image: pektin/feoco
+    volumes:
+      - ../build:/public/
+      - ../server/config.yml:/config.yml
+    environment:
+      - CSP_CONNECT_SRC=*
+    ports:
+      - 4002:80

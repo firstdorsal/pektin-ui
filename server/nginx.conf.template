@@ -4,13 +4,18 @@ add_header x-content-type-options nosniff;
 add_header x-permitted-cross-domain-policies none;
 add_header x-download-options noopen;
 add_header x-xss-protection "1; mode=block";
-add_header Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'wasm-eval' ; style-src 'self' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-gixU7LtMo8R4jqjOifcbHB/dd61eJUxZHCC6RXtUKOQ=' 'sha256-Dn0vMZLidJplZ4cSlBMg/F5aa7Vol9dBMHzBF4fGEtk=' 'sha256-jX63Mkkw8FdoZGmV5pbbuvq3E6LQBUufPYlkJKSN5T4=' 'sha256-1Gz2g8CAv9x9EG1JNQpf4aunCZm7ce4CiOAYSHedtk8=' 'sha256-wWWgqv2I1eslvJWGxct2TL1YWfkLJFISQBUcrfymfYI=' 'sha256-AviY8ukUNt0M5R4KQLfmyNSp65NLzZO6kpngDHGe2f8='; manifest-src 'self'; connect-src ${CSP_CONNECT_SRC}; img-src 'self'; font-src 'self';";
+add_header Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'wasm-eval' ; style-src 'self' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-gixU7LtMo8R4jqjOifcbHB/dd61eJUxZHCC6RXtUKOQ=' 'sha256-Dn0vMZLidJplZ4cSlBMg/F5aa7Vol9dBMHzBF4fGEtk=' 'sha256-jX63Mkkw8FdoZGmV5pbbuvq3E6LQBUufPYlkJKSN5T4=' 'sha256-1Gz2g8CAv9x9EG1JNQpf4aunCZm7ce4CiOAYSHedtk8=' 'sha256-wWWgqv2I1eslvJWGxct2TL1YWfkLJFISQBUcrfymfYI=' 'sha256-AviY8ukUNt0M5R4KQLfmyNSp65NLzZO6kpngDHGe2f8='; manifest-src 'self'; connect-src ${CSP_CONNECT_SRC}; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';";
 
 add_header Strict-Transport-Security "max-age=315360000; includeSubdomains; preload";
 add_header referrer-policy no-referrer;
 add_header feature-policy "camera 'none';microphone 'none';payment 'none';usb 'none';geolocation 'none'";
 
+add_header Cache-Control "public, max-age=31536000";
+
+
 server {
+  gzip on;
+  gzip_types text/plain application/json text/css application/javascript;
 
   listen 80;
 
@@ -18,12 +23,6 @@ server {
     root   /usr/share/nginx/html;
     index  index.html;
     try_files $uri $uri/ /index.html;
-  }
-
-  error_page 500 502 503 504 /50x.html;
-
-  location = /50x.html {
-      root /usr/share/nginx/html;
   }
 
 }

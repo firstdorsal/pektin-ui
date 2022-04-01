@@ -13,6 +13,7 @@ import { regex, validateDomain, validateIp } from "./validators/common";
 
 export const defaultSearchMatch = {
   name: false,
+  ttl: false,
   rr_type: false,
   rr_set: [],
 };
@@ -37,7 +38,6 @@ export const toPektinApiRecord = (config: t.Config, displayRecord: t.DisplayReco
     case PektinRRType.SOA:
       apiRecord.rr_set = displayRecord.rr_set.map((rr) => {
         return {
-          ttl: rr.ttl,
           mname: rr.mname,
           rname: rr.rname,
           serial: 0,
@@ -51,7 +51,6 @@ export const toPektinApiRecord = (config: t.Config, displayRecord: t.DisplayReco
     case PektinRRType.CAA:
       apiRecord.rr_set = displayRecord.rr_set.map((rr) => {
         return {
-          ttl: rr.ttl,
           value: rr.caaValue,
           tag: rr.tag,
           issuer_critical: true,
@@ -73,7 +72,6 @@ export const toUiRecord = (config: t.Config, apiRecord: ApiRecord): t.DisplayRec
     case PektinRRType.SOA:
       displayRecord.rr_set = apiRecord.rr_set.map((rr) => {
         return {
-          ttl: rr.ttl,
           mname: rr.mname,
           rname: rr.rname,
         };
@@ -82,7 +80,6 @@ export const toUiRecord = (config: t.Config, apiRecord: ApiRecord): t.DisplayRec
     case PektinRRType.CAA:
       displayRecord.rr_set = apiRecord.rr_set.map((rr) => {
         return {
-          ttl: rr.ttl,
           caaValue: rr.value,
           tag: rr.tag,
           issuer_critical: true,
@@ -179,9 +176,9 @@ export const displayRecordToBind = (rec: ApiRecord, onlyValues: boolean = false)
   if (rec.rr_type === "SOA") {
     const soa = rec.rr_set[0];
     if (onlyValues) return `${soa.mname} ${soa.rname}`;
-    return `${absoluteName(rec.name)} ${rec.rr_set[0].ttl ? rec.rr_set[0].ttl : ""} IN ${
-      rec.rr_type
-    } ${soa.mname} ${soa.rname} 0 0 0 0 0`;
+    return `${absoluteName(rec.name)} ${rec.ttl ?? ""} IN ${rec.rr_type} ${soa.mname} ${
+      soa.rname
+    } 0 0 0 0 0`;
   }
   return "Not Implemented for this record";
 };
@@ -205,7 +202,6 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 60,
     },
     fields: {
       value: {
@@ -225,7 +221,6 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 60,
     },
     fields: {
       value: {
@@ -245,7 +240,6 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 60,
     },
     fields: {
       value: {
@@ -266,7 +260,6 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 60,
     },
     fields: {
       value: {
@@ -293,7 +286,6 @@ export const rrTemplates: any = {
       retry: 0,
       expire: 0,
       minimum: 0,
-      ttl: 60,
     },
     fields: {
       mname: {
@@ -349,7 +341,6 @@ export const rrTemplates: any = {
     template: {
       preference: 10,
       exchange: "",
-      ttl: 60,
     },
     fields: {
       preference: {
@@ -396,7 +387,6 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 60,
     },
     fields: {
       value: {
@@ -445,7 +435,6 @@ export const rrTemplates: any = {
       weight: 1,
       port: 443,
       target: "",
-      ttl: 60,
     },
     fields: {
       priority: {
@@ -489,7 +478,6 @@ export const rrTemplates: any = {
     template: {
       tag: "issue",
       caaValue: "letsencrypt.org",
-      ttl: 60,
     },
     fields: {
       tag: {
@@ -551,7 +539,6 @@ export const rrTemplates: any = {
     sortBy: "value",
     template: {
       value: "",
-      ttl: 60,
     },
     fields: {
       value: {
@@ -582,7 +569,6 @@ export const rrTemplates: any = {
       selector: 1,
       matching: 1,
       data: "",
-      ttl: 60,
     },
     fields: {
       cert_usage: {

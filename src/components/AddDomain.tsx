@@ -20,21 +20,25 @@ import App from "../App";
 import { SetResponseError, SOARecord } from "@pektin/client";
 import { validateDomain } from "./validators/common";
 import HelpPopper from "./HelpPopper";
+import { cloneDeep } from "lodash";
 
 const defaultSOA: t.DisplayRecord = {
   name: "",
+  ttl: 60,
   rr_type: PektinRRType.SOA,
   rr_set: [l.rrTemplates.SOA.template],
 };
 
 const defaultNS: t.DisplayRecord = {
   name: "",
+  ttl: 60,
   rr_type: PektinRRType.NS,
   rr_set: [l.rrTemplates.NS.template],
 };
 
 const defaultCAA: t.DisplayRecordCAA = {
   name: "",
+  ttl: 60,
   rr_type: PektinRRType.CAA,
   rr_set: [l.rrTemplates.CAA.template, { ...l.rrTemplates.CAA.template, tag: "issuewild" }],
 };
@@ -82,9 +86,10 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
         record.rr_set[0].rname = absoluteName(concatDomain(mainNS[0].domain, `hostmaster`));
         nameserver = {
           name: "",
+          ttl: 60,
           rr_type: PektinRRType.NS,
           rr_set: getNameServersByDomain(config, mainNS[0].domain).map((ns) => {
-            return { ttl: 60, value: absoluteName(concatDomain(ns.domain, ns.subDomain)) };
+            return { value: absoluteName(concatDomain(ns.domain, ns.subDomain)) };
           }),
         };
 
@@ -101,7 +106,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     this.setState(({ soaRecord, nsRecord, caaRecord }) => {
       if (soaRecord.rr_type === PektinRRType.SOA) {
         if (n === "ttl") {
-          soaRecord.rr_set[0].ttl = clampTTL(v);
+          soaRecord.ttl = clampTTL(v);
         } else if (n === "mname") {
           soaRecord.rr_set[0].mname = v;
         } else if (n === "rname") {
@@ -121,7 +126,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     this.setState(({ nsRecord: nameserver }) => {
       if (nameserver.rr_type === PektinRRType.NS) {
         if (n === `ttl`) {
-          nameserver.rr_set[i].ttl = clampTTL(v);
+          nameserver.ttl = clampTTL(v);
         } else {
           nameserver.rr_set[i].value = v;
         }
@@ -140,7 +145,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
   addNS = () => {
     this.setState(({ nsRecord: nameserver }) => {
       if (nameserver.rr_type === PektinRRType.NS) {
-        nameserver.rr_set = [{ ttl: 60, value: "" }, ...nameserver.rr_set];
+        nameserver.rr_set = [{ value: "" }, ...nameserver.rr_set];
       }
       return { nsRecord: nameserver };
     });
@@ -202,7 +207,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                           name="ttl"
                           style={{ display: "inline-block", width: "18%", marginRight: "2%" }}
                           variant="standard"
-                          value={rr.ttl}
+                          value={this.state.nsRecord.ttl}
                         />
                         <IconButton
                           onClick={() => this.removeNS(i)}
@@ -229,13 +234,14 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
       if (caaRecord.rr_type === PektinRRType.CAA) {
         caaRecord.rr_set = caaRecord.rr_set.map((rr) => {
           if (n === `ttl`) {
-            rr.ttl = clampTTL(v);
+            caaRecord.ttl = clampTTL(v);
           } else {
             rr.caaValue = v;
           }
           return rr;
         });
       }
+      caaRecord = cloneDeep(caaRecord);
       return { caaRecord };
     });
   };
@@ -278,7 +284,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     const d = !this.state.useCaa;
     const title = "Only allow tls certificates from this issuer for this domain";
     const value = this.state.caaRecord.rr_set[0].caaValue;
-    const ttl = this.state.caaRecord.rr_set[0].ttl;
+    const ttl = this.state.caaRecord.ttl;
     const validate = l.rrTemplates["CAA"]?.fields.caaValue?.validate(
       this.props.config,
       value,
@@ -459,7 +465,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     type="number"
                     onChange={this.handleSoaChange}
                     name="ttl"
-                    value={this.state.soaRecord.rr_set[0].ttl}
+                    value={this.state.soaRecord.ttl}
                     inputProps={{
                       min: 0,
                     }}

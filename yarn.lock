@@ -1633,10 +1633,10 @@
     punycode "1.4.1"
     yaml "^1.10.2"
 
-"@pektin/client@^1.2.22":
-  version "1.2.22"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.2.22.tgz#309927ed132095e4fc5bb87dfe498a8112fa46e9"
-  integrity sha512-8XiU1jI2PCmhvo9Grc0PvX3ZdlkvYVQ108Fi91zcB+vtTjRNRucSGiKP+uElTGlRlIqA/4qAq0K34lQPN9+6HQ==
+"@pektin/client@^1.2.23":
+  version "1.2.23"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.2.23.tgz#4e5b99a544779ea798fb454194921341088ca5ec"
+  integrity sha512-keUx2CPAnxuaAobBzPOCznxbFwVCYuhwD/V1i5BH6sME8DD+Bv2Tr0iYMyhdgnpYE49CDJuCLFA4E0ok3i7x+A==
   dependencies:
     "@firstdorsal/powerdns-api" "^1.11.0"
     "@pektin/config" "^1.0.64"

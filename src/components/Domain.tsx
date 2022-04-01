@@ -302,7 +302,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
     } else if (fieldName === "ttl") {
       /*@ts-ignore*/
       record.rr_set = record.rr_set.map((e) => {
-        e.ttl = v ? clampTTL(v) : 0;
+        record.ttl = v ? clampTTL(v) : 0;
         return e;
       });
     } else if (fieldName === "type") {
@@ -610,7 +610,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
         (key) => {
           if (currentSortDirection === 0) return key[2];
           if (name === "name") return key[0].name;
-          if (name === "ttl") return key[0].rr_set[0].ttl;
+          if (name === "ttl") return key[0].ttl;
           if (name === "type") return key[0].rr_type;
           if (name === "search") return key[1].searchMatch;
         },
@@ -891,6 +891,8 @@ export default class Domain extends Component<DomainProps, DomainState> {
       defaultName = defaultName ? defaultName : "";
       const newRecord: t.DisplayRecord = {
         name: absoluteName(defaultName),
+        ttl: 60,
+
         rr_type: PektinRRType.AAAA,
         rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
       };
@@ -900,6 +902,7 @@ export default class Domain extends Component<DomainProps, DomainState> {
       newMeta.validity = this.validateRecord(newRecord, this.state.domainName);
       const newOgData: t.DisplayRecord = {
         name: "",
+        ttl: 60,
         rr_type: "NEW" as PektinRRType,
         rr_set: [cloneDeep(l.rrTemplates.AAAA.template)],
       };

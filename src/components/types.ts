@@ -9,7 +9,6 @@ import {
   ApiRecordSRV,
   ApiRecordTLSA,
   ApiRecordTXT,
-  ResourceRecordBase,
 } from "@pektin/client";
 import { PektinConfig } from "@pektin/config/dist/js/config-types";
 import App from "../App";
@@ -88,6 +87,7 @@ export interface ValueSearchMatch {
 export interface SearchMatch {
   name: boolean;
   rr_type: boolean;
+  ttl: boolean;
   rr_set: ValueSearchMatch;
 }
 
@@ -98,6 +98,7 @@ export interface ValueFieldChanged {
 export interface FieldsChanged {
   name: boolean;
   type: boolean;
+  ttl: boolean;
   values: ValueFieldChanged[];
 }
 
@@ -129,7 +130,7 @@ export interface DisplayRecordSOA extends ApiRecordBase {
   rr_type: PektinRRType.SOA;
   rr_set: DisplayResourceRecordSOA[];
 }
-export interface DisplayResourceRecordSOA extends ResourceRecordBase {
+export interface DisplayResourceRecordSOA {
   mname: string;
   rname: string;
 }
@@ -138,7 +139,7 @@ export interface DisplayRecordCAA extends ApiRecordBase {
   rr_type: PektinRRType.CAA;
   rr_set: DisplayResourceRecordCAA[];
 }
-export interface DisplayResourceRecordCAA extends ResourceRecordBase {
+export interface DisplayResourceRecordCAA {
   caaValue: string;
   tag: string;
 }

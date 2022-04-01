@@ -337,8 +337,8 @@ export default class RecordRow extends Component<RowProps, RowState> {
               top: "18px",
             }}
             className={(() => {
-              let c = this.props.meta.searchMatch.rr_set[0]?.ttl ? "searchMatch" : "";
-              c += this.props.meta.changed.values[0]?.ttl ? " changed" : "";
+              let c = this.props.meta.searchMatch.ttl ? "searchMatch" : "";
+              c += this.props.meta.changed.ttl ? " changed" : "";
               return c;
             })()}
           >
@@ -346,7 +346,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
               onInput={(e) => this.props.handleChange(e)}
               name={`${p.recordIndex}:ttl:`}
               type="number"
-              value={record.rr_set[0]?.ttl}
+              value={record.ttl}
               inputProps={{
                 min: 0,
               }}

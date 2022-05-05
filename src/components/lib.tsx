@@ -195,11 +195,13 @@ export const supportedRecords = [
   "CAA",
   "OPENPGPKEY",
   "TLSA",
+  "DNSKEY",
 ];
 
 export const rrTemplates: any = {
   AAAA: {
     sortBy: "value",
+    readonly: false,
     template: {
       value: "",
     },
@@ -219,6 +221,7 @@ export const rrTemplates: any = {
   },
   A: {
     sortBy: "value",
+    readonly: false,
     template: {
       value: "",
     },
@@ -238,6 +241,7 @@ export const rrTemplates: any = {
   },
   NS: {
     sortBy: "value",
+    readonly: false,
     template: {
       value: "",
     },
@@ -258,6 +262,7 @@ export const rrTemplates: any = {
   },
   CNAME: {
     sortBy: "value",
+    readonly: false,
     template: {
       value: "",
     },
@@ -278,6 +283,7 @@ export const rrTemplates: any = {
   },
   SOA: {
     sortBy: "mname",
+    readonly: true,
     template: {
       mname: "",
       rname: "hostmaster.",
@@ -338,6 +344,7 @@ export const rrTemplates: any = {
   },
   MX: {
     sortBy: "exchange",
+    readonly: false,
     template: {
       preference: 10,
       exchange: "",
@@ -385,6 +392,7 @@ export const rrTemplates: any = {
   },
   TXT: {
     sortBy: "value",
+    readonly: false,
     template: {
       value: "",
     },
@@ -430,6 +438,7 @@ export const rrTemplates: any = {
   },
   SRV: {
     sortBy: "target",
+    readonly: false,
     template: {
       priority: 1,
       weight: 1,
@@ -475,6 +484,7 @@ export const rrTemplates: any = {
   },
   CAA: {
     sortBy: "caaValue",
+    readonly: false,
     template: {
       tag: "issue",
       caaValue: "letsencrypt.org",
@@ -537,6 +547,7 @@ export const rrTemplates: any = {
   },
   OPENPGPKEY: {
     sortBy: "value",
+    readonly: false,
     template: {
       value: "",
     },
@@ -564,6 +575,7 @@ export const rrTemplates: any = {
   },
   TLSA: {
     sortBy: "data",
+    readonly: false,
     template: {
       usage: 3,
       selector: 1,

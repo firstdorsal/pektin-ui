@@ -65,6 +65,7 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
         <br />
         <h2>Your Domains</h2>
         <ul
+          className="yourDomains"
           style={{
             overflowX: "hidden",
             overflowY: "scroll",
@@ -81,7 +82,7 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
                   <li key={i} title={isNs ? "This is a nameserver domain" : ""}>
                     <NavLink
                       activeClassName="navActive"
-                      className="link"
+                      className="link domainLink"
                       exact
                       to={`/domain/${domain}/`}
                     >

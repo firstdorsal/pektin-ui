@@ -53,6 +53,18 @@ export const snippets = [
     meta: "request body",
   },
   {
+    caption: "search",
+    description: "A basic pektin-api search request body",
+    snippet: `[
+      {
+          "name": "\${1:}",
+          "rr_type": "\${2:}"
+      }
+]`,
+    type: "snippet",
+    meta: "request body",
+  },
+  {
     caption: "health",
     description: "Health doesn't need a request body",
     snippet: `{}`,

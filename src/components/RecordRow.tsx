@@ -63,6 +63,9 @@ export default class RecordRow extends Component<RowProps, RowState> {
       const { rr_type } = record;
 
       const fields = l.rrTemplates[rr_type]?.fields;
+
+      if (!fields) return <div className="invalidRecord">Invalid Record</div>;
+
       const fieldNames = Object.keys(fields);
 
       const fieldValues = Object.values(fields);
@@ -173,7 +176,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
     let v: any = rr[0];
 
     const fields = l.rrTemplates[type]?.fields;
-
+    if (!fields) return <div className="invalidRecord">Invalid Record</div>;
     const fieldNames = Object.keys(fields);
     const fieldValues = Object.values(fields);
     return (
@@ -239,12 +242,17 @@ export default class RecordRow extends Component<RowProps, RowState> {
   render = () => {
     const p = this.props;
     const { record } = p;
-    if (!record) return <div>Invalid Record</div>;
-    const editable = record.rr_type === "SOA" && this.props.variant !== "import" ? false : true;
-    const color =
-      JSON.stringify(l.rrTemplates[record.rr_type]?.color).replace("[", "").replace("]", "") ||
-      "0 0 0";
+    if (!record) return <div className="invalidRecord">Invalid Record</div>;
+    const validType = l.rrTemplates[record.rr_type];
+    const editable =
+      l.rrTemplates[record.rr_type]?.readonly !== false && this.props.variant !== "import"
+        ? false
+        : true;
 
+    const color = validType
+      ? JSON.stringify(l.rrTemplates[record.rr_type]?.color).replace("[", "").replace("]", "") ||
+        "0 0 0"
+      : "0 0 0";
     const backgroundColor = this.props.config.local?.synesthesia ? `rgba(${color},0.2)` : "";
     const borderBottom = this.props.config.local?.synesthesia
       ? ""
@@ -310,7 +318,7 @@ export default class RecordRow extends Component<RowProps, RowState> {
               return c;
             })()}
           >
-            {record.rr_type === "SOA" ? (
+            {l.rrTemplates[record.rr_type]?.readonly !== false ? (
               <Input disabled={!editable} value={record.rr_type} />
             ) : (
               <Select

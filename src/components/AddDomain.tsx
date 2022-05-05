@@ -10,6 +10,7 @@ import {
   absoluteName,
   clampTTL,
   concatDomain,
+  createPektinSigner,
   getMainNameServers,
   getNameServersByDomain,
   NSRecord,
@@ -96,6 +97,27 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
         return { soaRecord: record, nsRecord: nameserver };
       });
     }
+  };
+
+  addDomain = async () => {
+    const addSigner = await this.props.client.createPektinSigner(this.state.soaRecord.name);
+
+    const setRes = await this.props.client.set(
+      [
+        this.state.soaRecord,
+        ...(this.state.useNameserver ? [this.state.nsRecord] : []),
+        ...(this.state.useCaa ? [this.state.caaRecord] : []),
+      ].map((r) => l.toPektinApiRecord(this.props.config, r)),
+      false
+    );
+    if (setRes.type === "error" && (setRes as SetResponseError).data) {
+      return this.setState({
+        apiError: setRes.message + "\n" + (setRes as SetResponseError).data[0],
+      });
+    }
+    await this.props.loadDomains();
+    if (this.props.history)
+      this.props.history.push(`/domain/${absoluteName(this.state.soaRecord.name)}/`);
   };
 
   handleSoaChange = (e: any, mode: string = "default") => {
@@ -474,30 +496,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                 <div style={{ margin: "30px 0px" }}>{this.nameserverPanel()}</div>
                 <div style={{ margin: "30px 0px" }}>{this.caaPanel()}</div>
                 <div>
-                  <Button
-                    color="primary"
-                    variant="contained"
-                    onClick={async () => {
-                      const setRes = await this.props.client.set(
-                        [
-                          this.state.soaRecord,
-                          ...(this.state.useNameserver ? [this.state.nsRecord] : []),
-                          ...(this.state.useCaa ? [this.state.caaRecord] : []),
-                        ].map((r) => l.toPektinApiRecord(this.props.config, r)),
-                        false
-                      );
-                      if (setRes.type === "error" && (setRes as SetResponseError).data) {
-                        return this.setState({
-                          apiError: setRes.message + "\n" + (setRes as SetResponseError).data[0],
-                        });
-                      }
-                      await this.props.loadDomains();
-                      if (this.props.history)
-                        this.props.history.push(
-                          `/domain/${absoluteName(this.state.soaRecord.name)}/`
-                        );
-                    }}
-                  >
+                  <Button color="primary" variant="contained" onClick={() => this.addDomain()}>
                     Add Domain
                   </Button>
                 </div>

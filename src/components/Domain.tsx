@@ -4,8 +4,10 @@ import * as t from "./types";
 import {
   AddCircle,
   Assignment,
+  Build,
   CheckBox,
   Close,
+  Dashboard,
   Delete,
   KeyboardArrowUp,
   Refresh,
@@ -549,7 +551,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
       if (res.type === ApiResponseType.Success) {
         const records = res.data[0].data as ApiRecord[];
         this.initData(
-          records.map((r) => l.toUiRecord(this.props.config, r)),
+          records
+            /*@ts-ignore*/
+            .filter((r) => r.rr_type !== "DNSKEY")
+            .map((r) => l.toUiRecord(this.props.config, r)),
           this.props.match.params.domainName
         );
       }
@@ -566,7 +571,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
         const records = res.data[0].data as ApiRecord[];
 
         this.initData(
-          records.map((r) => l.toUiRecord(this.props.config, r)),
+          records
+            /*@ts-ignore*/
+            .filter((r) => r.rr_type !== "DNSKEY")
+            .map((r) => l.toUiRecord(this.props.config, r)),
           domainName
         );
       }
@@ -862,9 +870,12 @@ export default class Domain extends Component<DomainProps, DomainState> {
           return this.state.ogRecords[i].rr_type !== ("NEW" as PektinRRType);
         });
       }
-      await this.props.client.deleteRecords(
-        toBeDeletedOnServer.map((r) => ({ name: r.name, rr_type: r.rr_type }))
-      );
+      await Promise.all([
+        this.props.client.deleteRecords(
+          toBeDeletedOnServer.map((r) => ({ name: r.name, rr_type: r.rr_type }))
+        ),
+        this.props.client.deletePektinSigner(this.state.domainName),
+      ]);
     }
     if (deletedSoa) {
       this.props.g.loadDomains();
@@ -945,7 +956,10 @@ export default class Domain extends Component<DomainProps, DomainState> {
       const records = res.data[0].data as ApiRecord[];
 
       this.initData(
-        records.map((r) => l.toUiRecord(this.props.config, r)),
+        records
+          /*@ts-ignore*/
+          .filter((r) => r.rr_type !== "DNSKEY")
+          .map((r) => l.toUiRecord(this.props.config, r)),
         this.props.match.params.domainName
       );
     }
@@ -1435,6 +1449,16 @@ export default class Domain extends Component<DomainProps, DomainState> {
             ""
           ) : (
             <Fragment>
+              <IconButton
+                title="Domain Dashboard"
+                onClick={() => {
+                  this.props.history.push({
+                    pathname: `/domain/${this.state.domainName}/dashboard/`,
+                  });
+                }}
+              >
+                {<Dashboard />}
+              </IconButton>
               <IconButton title="Refresh List ctrl+r" onClick={this.handleReloadClick}>
                 {<Refresh />}
               </IconButton>
@@ -1443,17 +1467,6 @@ export default class Domain extends Component<DomainProps, DomainState> {
               </IconButton>
               <IconButton title="Delete Selected" onClick={this.handleDeleteClick}>
                 {<Delete />}
-              </IconButton>
-              <IconButton
-                style={{ marginLeft: "30px" }}
-                title="Domain Metadata"
-                onClick={() => {
-                  this.props.history.push({
-                    pathname: `/domain/${this.state.domainName}/meta/`,
-                  });
-                }}
-              >
-                {<Assignment />}
               </IconButton>
             </Fragment>
           )}

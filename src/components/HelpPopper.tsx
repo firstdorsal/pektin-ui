@@ -94,9 +94,63 @@ const helpers = {
       </div>
     ),
   },
+  dnssecInfoFlag: {
+    message: (
+      <div>
+        <p>TODO</p>
+      </div>
+    ),
+  },
+  dnssecInfoAlgorithm: {
+    message: (
+      <div>
+        <p>TODO</p>
+      </div>
+    ),
+  },
+  dnssecInfoKeyTag: {
+    message: (
+      <div>
+        <p>TODO</p>
+      </div>
+    ),
+  },
+  dnssecInfoDigests: {
+    message: (
+      <div>
+        <p>TODO</p>
+      </div>
+    ),
+  },
+  dnssecInfoPublicKeys: {
+    message: (
+      <div>
+        <p>TODO</p>
+      </div>
+    ),
+  },
+
+  TODO: {
+    message: (
+      <div>
+        <p>TODO!</p>
+      </div>
+    ),
+  },
 };
 
-type Helpers = `caaHelp` | `auth` | `soaName` | `soaMname` | `soaRname`;
+type Helpers =
+  | `caaHelp`
+  | `auth`
+  | `soaName`
+  | `soaMname`
+  | `soaRname`
+  | `dnssecInfoFlag`
+  | `dnssecInfoAlgorithm`
+  | `dnssecInfoKeyTag`
+  | `dnssecInfoDigests`
+  | `dnssecInfoPublicKeys`
+  | `TODO`;
 /*
 soaName: {
     message: (

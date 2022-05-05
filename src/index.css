@@ -242,6 +242,11 @@ h2 {
   cursor: text;
 }
 
+.selectable-all {
+  user-select: all;
+  cursor: text;
+}
+
 code *,
 code,
 pre {
@@ -641,4 +646,52 @@ div[class*="ace_br"] {
 
 .ClientsList ul li span {
   margin: 10px;
+}
+
+div.invalidRecord {
+  margin-top: 20px;
+  font-weight: 600;
+  color: var(--error);
+}
+
+.DomainMeta {
+  margin-top: 20px;
+}
+
+.DnssecParams {
+  margin-left: 20px;
+  padding: 10px;
+  width: 350px;
+}
+.DnssecParams h2 {
+  margin: 10px;
+}
+
+.DnssecParams > div.basicInfo > span {
+  float: left;
+  margin: 10px;
+}
+
+.DnssecParams > div.digests {
+  clear: both;
+}
+
+.DnssecParams .label {
+  font-weight: 600;
+  margin: 5px;
+}
+
+.DnssecParams .digests,
+.DnssecParams .publicKeys {
+  margin: 10px;
+}
+
+.code {
+  font-family: monospace;
+  background: var(--bg-color-lighter);
+  padding: 5px;
+  margin: 2px;
+  border-radius: 5px;
+  word-wrap: break-word;
+  white-space: pre-line;
 }

@@ -371,7 +371,7 @@ export default class App extends PureComponent<AppProps, AppState> {
               }}
             />
             <Route
-              path={`/domain/:domainName/meta`}
+              path={`/domain/:domainName/dashboard/`}
               exact
               render={(routeProps: any) => {
                 return (

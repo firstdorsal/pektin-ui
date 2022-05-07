@@ -196,7 +196,7 @@ export const supportedRecords = [
   "OPENPGPKEY",
   "TLSA",
   "DNSKEY",
-];
+] as const;
 
 export const rrTemplates: any = {
   AAAA: {
@@ -617,7 +617,7 @@ export const rrTemplates: any = {
     color: [255, 217, 0],
     complex: true,
   },
-};
+} as const;
 
 export const codeStyles = [
   "a11yDark",
@@ -714,4 +714,4 @@ export const codeStyles = [
   "xcode",
   "xt256",
   "zenburn",
-];
+] as const;

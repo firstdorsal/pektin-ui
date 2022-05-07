@@ -148,16 +148,16 @@ const defaultLocalConfig: t.LocalConfig = {
 
 export const defaulConfig: t.Config = {
   vaultAuth: defaultVaultAuth,
-  recursorAuth: null,
+  trinitrotoluolAuth: null,
   foreignApis: [
     {
       name: "Wanderlust",
       class: Wanderlust,
       description: (
         <div>
-          Wanderlust imports a single domain per import with NSEC zone walking using the Pektin
-          recursor. Due to issues with the Content-Security-Policy this may not work with older
-          browsers.{" "}
+          Wanderlust imports a single domain per import with NSEC zone walking using the Pektin dns
+          client trinitrotoluol. Due to issues with the Content-Security-Policy this may not work
+          with older browsers.{" "}
           <a href="https://github.com/w3c/webappsec-csp/pull/293" className="url" rel="norefferer">
             More
           </a>

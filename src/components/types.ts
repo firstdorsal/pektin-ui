@@ -61,7 +61,7 @@ export interface VaultAuth {
 
 export interface Config {
   vaultAuth: VaultAuth;
-  recursorAuth: string | null;
+  trinitrotoluolAuth: string | null;
   foreignApis: any[];
   local: LocalConfig;
   pektin: PektinConfig | undefined;

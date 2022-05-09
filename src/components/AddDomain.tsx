@@ -10,7 +10,6 @@ import {
   absoluteName,
   clampTTL,
   concatDomain,
-  createPektinSigner,
   getMainNameServers,
   getNameServersByDomain,
   NSRecord,
@@ -100,7 +99,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
   };
 
   addDomain = async () => {
-    const addSigner = await this.props.client.createPektinSigner(this.state.soaRecord.name);
+    await this.props.client.createPektinSigner(this.state.soaRecord.name);
 
     const setRes = await this.props.client.set(
       [

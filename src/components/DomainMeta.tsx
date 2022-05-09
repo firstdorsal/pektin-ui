@@ -1,4 +1,4 @@
-import { Input, Paper } from "@material-ui/core";
+import { Paper } from "@material-ui/core";
 import { PektinClient, PublicDnssecData } from "@pektin/client";
 import { Component, CSSProperties, useEffect, useState } from "react";
 import { RouteComponentProps } from "react-router-dom";

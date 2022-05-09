@@ -3,8 +3,6 @@ import { Checkbox, IconButton, TextField } from "@material-ui/core";
 import * as t from "./types";
 import {
   AddCircle,
-  Assignment,
-  Build,
   CheckBox,
   Close,
   Dashboard,

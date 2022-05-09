@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Paper } from "@material-ui/core";
+import { Container, Grid, Paper } from "@material-ui/core";
 import { PektinClient, getPektinClients, Client } from "@pektin/client";
 import { Component } from "react";
 import { Config, Glob } from "../types";

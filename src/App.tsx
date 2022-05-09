@@ -124,7 +124,7 @@ export default class App extends PureComponent<AppProps, AppState> {
       throw Error(error);
     }
     try {
-      await client.getAuth("trinitrotoluol");
+      await client.getAuth("tnt");
     } catch (error) {
       console.error(error);
     }

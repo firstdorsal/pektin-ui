@@ -11,8 +11,8 @@ import { Toluol } from "@pektin/client";
 interface WanderlustProps {
   readonly import: InstanceType<typeof ImportDomain>["import"];
   readonly config: t.Config;
-  readonly trinitrotoluolUrl: string;
-  readonly trinitrotoluolAuth: string;
+  readonly tntUrl: string;
+  readonly tntAuth: string;
 }
 interface WanderlustState {
   readonly domainName: string;
@@ -32,12 +32,7 @@ export default class Wanderlust extends Component<WanderlustProps, WanderlustSta
     this.setState((state) => ({ ...state, [e.target.name]: e.target.value }));
   };
   import = async () => {
-    const t = new Toluol(
-      this.props.trinitrotoluolUrl,
-      this.props.trinitrotoluolAuth,
-      this.state.toluol,
-      this
-    );
+    const t = new Toluol(this.props.tntUrl, this.props.tntAuth, this.state.toluol, this);
     const walked = await t.walk(this.state.domainName, this.state.limit);
     if (!walked) {
       //TODO display this error

@@ -67,10 +67,10 @@ export default class ImportDomain extends Component<ImportDomainProps, ImportDom
                 ? React.createElement(fapi.class, {
                     import: this.import,
                     config: this.props.config,
-                    trinitrotoluolUrl: this.props.client?.pektinConfig
-                      ? getPektinEndpoint(this.props.client?.pektinConfig, "trinitrotoluol")
+                    tntUrl: this.props.client?.pektinConfig
+                      ? getPektinEndpoint(this.props.client?.pektinConfig, "tnt")
                       : "",
-                    trinitrotoluolAuth: this.props.client?.trinitrotoluolAuth,
+                    tntAuth: this.props.client?.tntAuth,
                   })
                 : ""}
             </Container>

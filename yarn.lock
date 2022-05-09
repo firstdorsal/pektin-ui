@@ -1633,13 +1633,13 @@
     punycode "1.4.1"
     yaml "^1.10.2"
 
-"@pektin/client@^1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.4.1.tgz#036b054e6f77bbc8c435c47e1b01540682a08518"
-  integrity sha512-PJfP37MYFaAx1ZsXHjtdfX1kg/wfuc3qwGBF+ZBPloPZB6JoJwlG2HuKqP/BN0OVENZBJVyYJ8zdTCf+UMrzTg==
+"@pektin/client@^1.4.5":
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.4.5.tgz#4eff3acb9b44be381839ba5f9ce622623a27c13f"
+  integrity sha512-9WgLT5LhkEybDjPFBAaB+iis9JBTlB26AH0t2/MOQ7RpFqITShY2PbH9bfoiap4re4f9eluyndJyiODfVthfuw==
   dependencies:
     "@firstdorsal/powerdns-api" "^1.11.0"
-    "@pektin/config" "^1.1.4"
+    "@pektin/config" "^1.1.6"
     "@pektin/declare-fs" "^2.2.1"
     "@pektin/dns-zonefile" "^0.3.1"
     "@pektin/global-registrar" "^1.0.13"
@@ -1662,10 +1662,10 @@
     lodash "^4.17.21"
     yaml "^1.10.2"
 
-"@pektin/config@^1.1.4":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.1.4.tgz#e0e77a5faaa5748457d0a768257861d7f74d7f60"
-  integrity sha512-DgPT3TU1mlSyso7quj1a1dDtsBKbvsO+rERFTGeXWS8wAtdho3v0QLGATgG7Lf8KeuiE4oN8IYRTEUvpOaSdfA==
+"@pektin/config@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.1.6.tgz#0be51640312d914730d15498da0af05e9c4e507a"
+  integrity sha512-sRZc9MjXGQ90tf0N8VoeVvxObi7y992jirZboz0Sm1ZWWMdh8aptKS6G4e5K8AkIXiVlwgPkRwVmyskUX+WfLw==
   dependencies:
     "@pektin/client" "^1.1.32"
     ajv "^8.9.0"

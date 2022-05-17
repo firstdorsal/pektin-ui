@@ -29,9 +29,10 @@ export const snippets = [
     {
         "name": "\${1:}",
         "rr_type": "\${2:}",
+        "ttl": 60\${3:},
         "rr_set": [
             {
-                \${3:}
+                "value":"\${3:}"
             }
         ]
     }

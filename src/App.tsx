@@ -18,6 +18,7 @@ import { PektinClient } from "@pektin/client";
 import DomainMeta from "./components/DomainMeta";
 import ExecuteQuery from "./components/ExecuteQuery";
 import Clients from "./components/routes/Clients";
+import ForeignApiKeys from "./components/routes/ForeignApiKeys";
 
 configureHotkeys({ ignoreTags: [] });
 
@@ -287,6 +288,29 @@ export default class App extends PureComponent<AppProps, AppState> {
                     ></Sidebar>
                     <main>
                       <Clients
+                        g={this.state.g}
+                        config={this.state.config}
+                        client={this.state.client}
+                      />
+                    </main>
+                  </Fragment>
+                );
+              }}
+            />
+            <Route
+              exact
+              path="/management/foreign-api-keys/"
+              render={(routeProps: any) => {
+                return (
+                  <Fragment>
+                    <Sidebar
+                      health={this.state.health}
+                      domains={this.state.domains}
+                      config={this.state.config}
+                      client={this.state.client}
+                    ></Sidebar>
+                    <main>
+                      <ForeignApiKeys
                         g={this.state.g}
                         config={this.state.config}
                         client={this.state.client}

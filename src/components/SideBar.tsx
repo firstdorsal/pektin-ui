@@ -36,7 +36,12 @@ export default class Sidebar extends Component<BaseProps, BaseState> {
               <People />
               <span className="linkText">Clients</span>
             </NavLink>
-            <NavLink exact className="link" activeClassName="navActive" to="/management/api-keys/">
+            <NavLink
+              exact
+              className="link"
+              activeClassName="navActive"
+              to="/management/foreign-api-keys/"
+            >
               <VpnKey style={{ fontSize: "22px" }} />
               <span className="linkText">Foreign API Keys</span>
             </NavLink>

@@ -2314,28 +2314,20 @@ label + .MuiInput-formControl {
 }
 .MuiFab-primary {
   color: var(--bg-color-light);
-  background-color: #3f51b5;
+  background-color: var(--a2);
 }
 .MuiFab-primary:hover {
-  background-color: #303f9f;
+  background-color: var(--a2-hover);
 }
-@media (hover: none) {
-  .MuiFab-primary:hover {
-    background-color: #3f51b5;
-  }
-}
+
 .MuiFab-secondary {
   color: var(--bg-color-light);
   background-color: var(--checkbox);
 }
 .MuiFab-secondary:hover {
-  background-color: #c51162;
+  background-color: var(--a2-hover);
 }
-@media (hover: none) {
-  .MuiFab-secondary:hover {
-    background-color: var(--checkbox);
-  }
-}
+
 .MuiFab-extended {
   width: auto;
   height: 48px;

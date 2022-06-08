@@ -21,6 +21,9 @@ import { SetResponseError, SOARecord } from "@pektin/client";
 import { validateDomain } from "./validators/common";
 import HelpPopper from "./HelpPopper";
 import { cloneDeep } from "lodash";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+
+const registrars = [{ id: "gandi", name: "Gandi" }];
 
 const defaultSOA: t.DisplayRecord = {
   name: "",
@@ -61,6 +64,9 @@ interface AddDomainState {
   readonly useCaa: boolean;
   readonly caaIssue: boolean;
   readonly caaIssueWild: boolean;
+  readonly registrarSelectorText: string;
+  readonly registrarSelector: string;
+  readonly registrarAccountIndex: number;
 }
 
 export default class AddDomain extends Component<AddDomainProps, AddDomainState> {
@@ -73,6 +79,9 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     useCaa: true,
     caaIssue: true,
     caaIssueWild: true,
+    registrarSelectorText: "",
+    registrarSelector: "",
+    registrarAccountIndex: 0,
   };
 
   componentDidMount = () => {
@@ -100,6 +109,14 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
 
   addDomain = async () => {
     await this.props.client.createPektinSigner(this.state.soaRecord.name);
+
+    if (this.state.registrarSelector !== "") {
+      this.state.soaRecord.meta = JSON.stringify({
+        pektin: {
+          registrar: { id: this.state.registrarSelector, i: this.state.registrarAccountIndex },
+        },
+      });
+    }
 
     const setRes = await this.props.client.set(
       [
@@ -301,6 +318,52 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
     });
   };
 
+  metaPanel = () => {
+    return (
+      <div>
+        <div className="tfName" style={{ display: "inline-block" }}>
+          Meta
+          <HelpPopper helper="meta" />
+        </div>
+        <div>
+          <Autocomplete
+            style={{ width: "80%", display: "inline-block", marginRight: "5%" }}
+            id="selectMethod"
+            freeSolo
+            forcePopupIcon={true}
+            selectOnFocus={true}
+            openOnFocus={true}
+            clearOnEscape
+            value={this.state.registrarSelector}
+            onChange={(e, value) => {
+              this.setState({ registrarSelector: value ?? "" });
+            }}
+            inputValue={this.state.registrarSelectorText}
+            onInputChange={(event, newInputValue) => {
+              this.setState({ registrarSelectorText: newInputValue });
+            }}
+            options={registrars.map((r) => r.id)}
+            renderInput={(params) => (
+              <TextField {...params} label="Registrar" margin="none" variant="standard" />
+            )}
+          />
+
+          <TextField
+            style={{ width: "10%", display: "inline-block" }}
+            label="Index"
+            margin="none"
+            variant="standard"
+            type={"number"}
+            value={this.state.registrarAccountIndex}
+            onChange={(e) =>
+              this.setState({ registrarAccountIndex: Math.max(parseInt(e.target.value), 0) })
+            }
+          />
+        </div>
+      </div>
+    );
+  };
+
   caaPanel = () => {
     const d = !this.state.useCaa;
     const title = "Only allow tls certificates from this issuer for this domain";
@@ -492,6 +555,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
                     }}
                   />
                 </div>
+                <div style={{ margin: "30px 0px" }}>{this.metaPanel()}</div>
                 <div style={{ margin: "30px 0px" }}>{this.nameserverPanel()}</div>
                 <div style={{ margin: "30px 0px" }}>{this.caaPanel()}</div>
                 <div>

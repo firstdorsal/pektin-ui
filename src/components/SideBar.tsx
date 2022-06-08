@@ -1,12 +1,4 @@
-import {
-  Add,
-  ImportExport,
-  Settings,
-  ShoppingCart,
-  People,
-  VpnKey,
-  DoubleArrow,
-} from "@material-ui/icons";
+import { Add, ImportExport, Settings, ShoppingCart, People, DoubleArrow } from "@material-ui/icons";
 import { Component, Fragment } from "react";
 import { NavLink, RouteComponentProps } from "react-router-dom";
 import Health from "./Health";

@@ -129,6 +129,13 @@ const helpers = {
       </div>
     ),
   },
+  meta: {
+    message: (
+      <div>
+        <p>TODO</p>
+      </div>
+    ),
+  },
 
   TODO: {
     message: (
@@ -150,6 +157,7 @@ type Helpers =
   | `dnssecInfoKeyTag`
   | `dnssecInfoDigests`
   | `dnssecInfoPublicKeys`
+  | `meta`
   | `TODO`;
 /*
 soaName: {

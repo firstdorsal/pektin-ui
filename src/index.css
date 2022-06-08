@@ -664,6 +664,8 @@ div.invalidRecord {
   margin-left: 20px;
   padding: 10px;
   width: 350px;
+  display: inline-block;
+  vertical-align: top;
 }
 .DnssecParams h2 {
   margin: 10px;
@@ -696,4 +698,12 @@ div.invalidRecord {
   border-radius: 5px;
   word-wrap: break-word;
   white-space: pre-line;
+}
+
+.RegistrarInfo {
+  margin-left: 20px;
+  padding: 10px;
+  width: 350px;
+  display: inline-block;
+  vertical-align: top;
 }

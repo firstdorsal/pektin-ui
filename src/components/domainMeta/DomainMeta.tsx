@@ -3,8 +3,9 @@ import { PektinClient } from "@pektin/client";
 import { Component } from "react";
 import { RouteComponentProps } from "react-router-dom";
 import { Config, Glob } from "../types";
-import { LockOutlined } from "@material-ui/icons";
+import { Add, LockOutlined, Mail } from "@material-ui/icons";
 import { MdSettingsInputSvideo } from "react-icons/md";
+import { TbCertificate } from "react-icons/tb";
 import { DnssecParams } from "./dnssec/DnssecInfo";
 import { RegistrarInfo } from "./registrar/RegistrarInfo";
 
@@ -29,6 +30,8 @@ export default class DomainMeta extends Component<DomainMetaProps, DomainMetaSta
     };
   }
   render = () => {
+    const apiCreds = this.props.client.pc3.info?.apiCredentials;
+
     return (
       <div className="DomainMeta">
         <h1>{this.props.match.params.domainName}</h1>
@@ -46,6 +49,10 @@ export default class DomainMeta extends Component<DomainMetaProps, DomainMetaSta
             icon={<MdSettingsInputSvideo style={{ transform: "scale(1.5)" }} />}
             label="REGISTRAR"
           />
+          <Tab icon={<TbCertificate style={{ transform: "scale(1.5)" }} />} label="CERTIFICATES" />
+          {apiCreds?.mailcow && <Tab icon={<Mail />} label="MAILCOW" />}
+
+          <Tab icon={<Add style={{ transform: "scale(1.5)" }} />} />
         </Tabs>
         <TabPanel value={this.state.currentPanel} index={0}>
           <DnssecParams

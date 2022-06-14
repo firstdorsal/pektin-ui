@@ -1650,10 +1650,39 @@
     punycode "1.4.1"
     yaml "^1.10.2"
 
+"@pektin/client@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@pektin/client/-/client-1.5.1.tgz#beb82e61a32dbf051a7a6f9210372aee08fa4529"
+  integrity sha512-Khv4Gm41+2Sgs/DqPmdaLHQdry+XavVrI4bxvQ2TdftmBHIhrZzdJIqx7Ss+ncaekbLTu6GR4jNy+W5Vg50I+Q==
+  dependencies:
+    "@firstdorsal/powerdns-api" "^1.11.0"
+    "@pektin/config" "^1.1.13"
+    "@pektin/declare-fs" "^2.2.2"
+    "@pektin/dns-zonefile" "^0.3.1"
+    "@pektin/global-registrar" "^1.0.13"
+    "@pektin/toluol-wasm-nodejs" "^0.3.0"
+    cfonts "^2.10.0"
+    chalk "4"
+    cross-fetch "^3.1.4"
+    punycode "1.4.1"
+    yaml "^1.10.2"
+
 "@pektin/config@^1.0.28", "@pektin/config@^1.0.63":
   version "1.0.63"
   resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.0.63.tgz#1149fc24c97390ef8b38030aba031f338f190e32"
   integrity sha512-+IVq2qBDJ+j3VyctcfGL3kOyhIvRFkzinPXg0j5aNCknSYDJMHYMXux5GophGPNidLg/KbBet2koT6mTH+vkdA==
+  dependencies:
+    "@pektin/client" "^1.1.32"
+    ajv "^8.9.0"
+    cfonts "^2.10.0"
+    chalk "^5.0.0"
+    lodash "^4.17.21"
+    yaml "^1.10.2"
+
+"@pektin/config@^1.0.29", "@pektin/config@^1.1.13":
+  version "1.1.16"
+  resolved "https://registry.yarnpkg.com/@pektin/config/-/config-1.1.16.tgz#337c386d5e050290c7d79760cd57bc3382b6e9c0"
+  integrity sha512-6HYIT7SjjDUxIGAnYh9ZuQIpcYyd5NGn4jnJK09KDQrxhMOj4VC0TT3XrlhmP8TtueN0VRBQHG3o469fRDGhrw==
   dependencies:
     "@pektin/client" "^1.1.32"
     ajv "^8.9.0"
@@ -1684,6 +1713,11 @@
   resolved "https://registry.yarnpkg.com/@pektin/declare-fs/-/declare-fs-2.2.1.tgz#990e6c87e019ae6c9a36af9a42489939a029f985"
   integrity sha512-0sc8Px0Dm2tXfO6bxeJCab8VA7n659vZ4ZWF5LyaJbZBPHpBrBZz5olDdquMY+/lHPweUJfNHTRaT1ReqKkpJQ==
 
+"@pektin/declare-fs@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@pektin/declare-fs/-/declare-fs-2.2.2.tgz#cc09caffdb0274583a1f2c899453cc2b5fa35f83"
+  integrity sha512-OysYYBw9UTdGlGSLm7nTvsOj+iYF7oFYHMDUcXQFba1gYfvhSrhZ/QGbzSILkMA8KpRAjrK5js28DZhb7fWusQ==
+
 "@pektin/dns-zonefile@^0.3.1":
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/@pektin/dns-zonefile/-/dns-zonefile-0.3.3.tgz#28d7f6be32b837223dc6ebe26420edfe7c33dcd0"
@@ -1699,6 +1733,18 @@
     "@types/lodash" "^4.14.178"
     cross-fetch "^3.1.5"
     lodash "^4.17.21"
+
+"@pektin/global-registrar@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@pektin/global-registrar/-/global-registrar-1.1.0.tgz#871eb3891b23cff76755e1ebc23bbd63b2841728"
+  integrity sha512-D/3rxPEjhwULRf4JyMajY5Ztcuv047m8AtAOKInUMWAJnlOVdAvd7LmqZxNQMxP5jULPwLz8kl52trT00C1BZA==
+  dependencies:
+    "@pektin/client" "^1.5.1"
+    "@pektin/config" "^1.0.29"
+    "@types/lodash" "^4.14.178"
+    cross-fetch "^3.1.5"
+    lodash "^4.17.21"
+    ovh "^2.0.3"
 
 "@pektin/toluol-wasm-bundler@^0.3.0":
   version "0.3.0"
@@ -3242,7 +3288,7 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@^3.5.5:
+bluebird@^3.4.0, bluebird@^3.5.5:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
@@ -8843,6 +8889,14 @@ os-browserify@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/os-browserify/-/os-browserify-0.3.0.tgz#854373c7f5c2315914fc9bfc6bd8238fdda1ec27"
   integrity sha1-hUNzx/XCMVkU/Jv8a9gjj92h7Cc=
+
+ovh@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/ovh/-/ovh-2.0.3.tgz#e3a709360bd3bfd2275caf65b7648368afe76fc6"
+  integrity sha512-K2XpfSYza7PHVDqAP6BNk92X3f+BvaNd6eSgMqguLTaUz/DYzOyHsbGFu7lyHTkIUUb9qamvJ9FC6OTzk7tj3Q==
+  dependencies:
+    async "0.9.x"
+    bluebird "^3.4.0"
 
 p-each-series@^2.1.0:
   version "2.2.0"

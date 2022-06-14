@@ -13,6 +13,7 @@
     "@material-ui/lab": "^4.0.0-alpha.60",
     "@pektin/client": "^1.4.5",
     "@pektin/config": "^1.1.6",
+    "@pektin/global-registrar": "^1.1.0",
     "@pektin/toluol-wasm-bundler": "^0.3.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
     "@svgr/webpack": "5.5.0",

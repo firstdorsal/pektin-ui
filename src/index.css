@@ -700,7 +700,8 @@ div.invalidRecord {
   white-space: pre-line;
 }
 
-.RegistrarInfo {
+.RegistrarInfo,
+.ShouldIsTable {
   margin-left: 20px;
   padding: 10px;
   width: 350px;

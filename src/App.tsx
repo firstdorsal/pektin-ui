@@ -15,7 +15,7 @@ import cloneDeep from "lodash/cloneDeep";
 import { HotKeys, configure as configureHotkeys, GlobalHotKeys } from "react-hotkeys";
 import { PC3 } from "@pektin/client";
 import { PektinClient } from "@pektin/client";
-import DomainMeta from "./components/DomainMeta";
+import DomainMeta from "./components/domainMeta/DomainMeta";
 import ExecuteQuery from "./components/ExecuteQuery";
 import Clients from "./components/routes/Clients";
 

@@ -24,8 +24,7 @@ interface RegistrarInfoState {
   loaded: boolean;
   domainMeta: Meta;
   proxyOptions: ProxyOptions;
-  domainInfo: any;
-  gr: GlobalRegistrar;
+  gr?: GlobalRegistrar;
 }
 export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarInfoState> {
   constructor(props: RegistrarInfoProps) {
@@ -34,8 +33,6 @@ export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarIn
       loaded: false,
       domainMeta: {},
       proxyOptions: {} as ProxyOptions,
-      domainInfo: {},
-      gr: {} as GlobalRegistrar,
     };
   }
   componentDidMount = async () => {
@@ -43,13 +40,16 @@ export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarIn
       { name: this.props.domainName, rr_type: PektinRRType.SOA },
     ]);
 
-    const domainMeta = JSON.parse(soa.data?.[0]?.data?.meta ?? "{}");
-    const { id, index } = domainMeta?.pektin?.registrar;
+    let domainMeta;
+    try {
+      domainMeta = JSON.parse(soa.data?.[0]?.data?.meta ?? "{}");
+    } catch (error) {}
+    const id = domainMeta?.pektin?.registrar?.id;
+    const index = domainMeta?.pektin?.registrar?.index;
     const proxyOptions = await this.props.client.getProxyOptions(id);
     const data = this.props.client.pc3?.info?.apiCredentials?.[id ?? ""]?.[index ?? 0];
 
-    let domainInfo;
-    let gr = {} as GlobalRegistrar;
+    let gr;
     try {
       gr = new GlobalRegistrar(
         {
@@ -60,17 +60,13 @@ export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarIn
         FetchType.proxy,
         proxyOptions
       );
-      domainInfo = await gr.getDomainInfo(this.props.domainName);
     } catch (error) {
       console.log(error);
     }
 
-    console.log(domainInfo);
-
     this.setState({
       domainMeta,
       proxyOptions,
-      domainInfo,
       loaded: true,
       gr,
     });
@@ -101,7 +97,16 @@ export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarIn
             </Fragment>
           )}
         </Paper>
-        <ShouldIsTable></ShouldIsTable>
+
+        {this.state.loaded === false ? (
+          <div>Loading</div>
+        ) : (
+          <ShouldIsTable
+            gr={this.state.gr}
+            domain={this.props.domainName}
+            client={this.props.client}
+          ></ShouldIsTable>
+        )}
       </div>
     );
   };

@@ -666,30 +666,30 @@ div.invalidRecord {
   width: 350px;
   display: inline-block;
   vertical-align: top;
-}
-.DnssecParams h2 {
-  margin: 10px;
-}
 
-.DnssecParams > div.basicInfo > span {
-  float: left;
-  margin: 10px;
-}
+  h2 {
+    margin: 10px;
+  }
 
-.DnssecParams > div.digests {
-  clear: both;
-}
+  > div.basicInfo > span {
+    float: left;
+    margin: 10px;
+  }
 
-.DnssecParams .label {
-  font-weight: 600;
-  margin: 5px;
-}
+  > div.digests {
+    clear: both;
+  }
 
-.DnssecParams .digests,
-.DnssecParams .publicKeys {
-  margin: 10px;
-}
+  .label {
+    font-weight: 600;
+    margin: 5px;
+  }
 
+  .digests,
+  .publicKeys {
+    margin: 10px;
+  }
+}
 .code {
   font-family: monospace;
   background: var(--bg-color-lighter);
@@ -700,11 +700,31 @@ div.invalidRecord {
   white-space: pre-line;
 }
 
-.RegistrarInfo,
-.ShouldIsTable {
-  margin-left: 20px;
-  padding: 10px;
-  width: 350px;
-  display: inline-block;
-  vertical-align: top;
+.DomainMeta {
+  .RegistrarInfo,
+  .ShouldIsTable,
+  .Certificates {
+    margin-left: 20px;
+    padding: 10px;
+    width: 350px;
+    display: inline-block;
+    vertical-align: top;
+  }
+  .ShouldIsTable {
+    width: 800px;
+    .is,
+    .should {
+      width: 300px;
+    }
+    td {
+      vertical-align: top;
+    }
+    .code {
+      user-select: text;
+    }
+  }
+  .break {
+    word-wrap: break-word;
+    word-break: break-all;
+  }
 }

@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import "./mui.css";
-import "./index.css";
+import "./index.scss";
 
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";

@@ -10,7 +10,7 @@ headers:
     Content-Security-Policy: >-
       default-src 'none';
 
-      script-src 'self' 'wasm-unsafe-eval' 'wasm-eval';
+      script-src 'self';
                   
       style-src 'self' 
       'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 

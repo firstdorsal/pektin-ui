@@ -7,8 +7,8 @@ import {
   TableBody,
   Table,
 } from "@material-ui/core";
-import { absoluteName, PektinClient, PektinRRType } from "@pektin/client";
-import { DNSECKey, GlobalRegistrar } from "@pektin/global-registrar";
+import { absoluteName, concatDomain, deAbsolute, PektinClient, PektinRRType } from "@pektin/client";
+import { DNSECKey, GlobalRegistrar, GlueRecord } from "@pektin/global-registrar";
 import { PureComponent } from "react";
 
 interface ShouldIsTableProps {
@@ -18,6 +18,7 @@ interface ShouldIsTableProps {
 }
 interface ShouldIsTableState {
   rows: ShouldIsRows;
+  needsGlue: boolean;
 }
 
 type ShouldIsRows = [
@@ -30,8 +31,8 @@ type ShouldIsRows = [
   {
     id: string;
     name: string;
-    should: string[];
-    is: string[];
+    should: GlueRecord[];
+    is: GlueRecord[];
   },
   {
     id: string;
@@ -67,8 +68,11 @@ export default class ShouldIsTable extends PureComponent<ShouldIsTableProps, Sho
     super(props);
     this.state = {
       rows: defaultRows,
+      needsGlue: false,
     };
   }
+
+  componentWillUnmount = () => {};
 
   componentDidMount = async () => {
     if (this.props.gr === undefined) return;
@@ -79,7 +83,42 @@ export default class ShouldIsTable extends PureComponent<ShouldIsTableProps, Sho
       this.props.client.getPublicDnssecData(this.props.domain),
     ]);
 
-    const nsShould = nsShouldReq?.data?.[0]?.data?.rr_set?.map((ns) => (ns as any).value).sort();
+    const nsShould = nsShouldReq?.data?.[0]?.data?.rr_set?.map((ns) => (ns as any).value).sort() as
+      | string[]
+      | undefined;
+
+    // check if domain refers to itself and therefore needs a glue record
+    const needsGlue =
+      (nsShould && absoluteName(nsShould[0]).endsWith(absoluteName(this.props.domain))) ?? false;
+
+    let glueShould: GlueRecord[] = [];
+    let glueIs: GlueRecord[] = [];
+    if (nsShould && needsGlue) {
+      const glueShouldRes = await this.props.client.get(
+        nsShould.flatMap((ns) => {
+          return [
+            { name: ns, rr_type: PektinRRType.AAAA },
+            { name: ns, rr_type: PektinRRType.A },
+          ];
+        })
+      );
+
+      glueShould = nsShould.map((ns, i) => {
+        const ips = glueShouldRes?.data?.[i * 2]?.data?.rr_set?.map((r) => (r as any).value);
+        const legacyIps = glueShouldRes?.data?.[i * 2 + 1]?.data?.rr_set?.map(
+          (r) => (r as any).value
+        );
+        return {
+          ips,
+          legacyIps,
+          domain: this.props.domain,
+          subDomain: deAbsolute(ns.replace(this.props.domain, "")),
+        };
+      });
+
+      glueIs = await this.props.gr.getGlueRecords(this.props.domain);
+    }
+
     const nsIs = domainInfo?.nameservers?.map((ns: string) => absoluteName(ns)).sort();
 
     this.setState(({ rows }) => {
@@ -102,11 +141,13 @@ export default class ShouldIsTable extends PureComponent<ShouldIsTableProps, Sho
               ] ?? [],
             is: dnssecIs ?? [],
           };
+        } else if (row.id === "glue") {
+          return { ...row, should: glueShould, is: glueIs };
         }
         return row;
       }) as ShouldIsRows;
 
-      return { rows };
+      return { rows, needsGlue, glueShould };
     });
   };
 
@@ -116,6 +157,8 @@ export default class ShouldIsTable extends PureComponent<ShouldIsTableProps, Sho
       await this.props.gr.setNameServers(this.props.domain, this.state.rows[0].should);
     } else if (id === "dnssec") {
       await this.props.gr.setDNSSECKeys(this.props.domain, this.state.rows[2].should);
+    } else if (id === "glue") {
+      await this.props.gr.setGlueRecords(this.state.rows[1].should);
     }
   };
 
@@ -134,24 +177,35 @@ export default class ShouldIsTable extends PureComponent<ShouldIsTableProps, Sho
             </TableHead>
             <TableBody>
               {this.state.rows.map((row) => {
-                console.log(row);
+                if (row.id === "glue" && !this.state.needsGlue) return null;
                 return (
                   <TableRow key={row.id}>
                     <TableCell>{row.name}</TableCell>
                     <TableCell className="should">
                       {row.should.map((r) => (
                         <div
-                          key={"should" + r}
+                          key={"should" + JSON.stringify(r)}
                           className={row.id === "dnssec" ? "break code" : "code"}
                         >
-                          {typeof r === "string" ? r : r.publicKey}
+                          {row.id === "glue"
+                            ? renderGlue(r as GlueRecord)
+                            : row.id === "dnssec"
+                            ? renderDNSSEC(r as DNSECKey)
+                            : r}
                         </div>
                       ))}
                     </TableCell>
                     <TableCell className="is">
                       {row.is.map((r) => (
-                        <div key={"is" + r} className={row.id === "dnssec" ? "break code" : "code"}>
-                          {typeof r === "string" ? r : r.publicKey}
+                        <div
+                          key={"is" + JSON.stringify(r)}
+                          className={row.id === "dnssec" ? "break code" : "code"}
+                        >
+                          {row.id === "glue"
+                            ? renderGlue(r as GlueRecord)
+                            : row.id === "dnssec"
+                            ? renderDNSSEC(r as DNSECKey)
+                            : r}
                         </div>
                       ))}
                     </TableCell>
@@ -169,3 +223,17 @@ export default class ShouldIsTable extends PureComponent<ShouldIsTableProps, Sho
     );
   };
 }
+
+const renderDNSSEC = (r: DNSECKey) => {
+  return <div>{r.publicKey}</div>;
+};
+
+const renderGlue = (r: GlueRecord) => {
+  return (
+    <div>
+      <div>{absoluteName(concatDomain(r.domain, r.subDomain))}</div>
+      <div>{r.ips}</div>
+      <div>{r.legacyIps}</div>
+    </div>
+  );
+};

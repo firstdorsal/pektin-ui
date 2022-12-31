@@ -11,6 +11,8 @@ import { cloneDeep } from "lodash";
 import { PektinRRType } from "@pektin/client";
 import { regex, validateDomain, validateIp } from "./validators/common";
 
+export const registrars = [{ id: "gandi", name: "Gandi" }];
+
 export const defaultSearchMatch = {
   name: false,
   ttl: false,

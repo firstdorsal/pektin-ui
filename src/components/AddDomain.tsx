@@ -23,8 +23,6 @@ import HelpPopper from "./HelpPopper";
 import { cloneDeep } from "lodash";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 
-const registrars = [{ id: "gandi", name: "Gandi" }];
-
 const defaultSOA: t.DisplayRecord = {
   name: "",
   ttl: 60,
@@ -342,7 +340,7 @@ export default class AddDomain extends Component<AddDomainProps, AddDomainState>
             onInputChange={(event, newInputValue) => {
               this.setState({ registrarSelectorText: newInputValue });
             }}
-            options={registrars.map((r) => r.id)}
+            options={l.registrars.map((r) => r.id)}
             renderInput={(params) => (
               <TextField {...params} label="Registrar" margin="none" variant="standard" />
             )}

@@ -8,6 +8,7 @@ import { MdSettingsInputSvideo } from "react-icons/md";
 import { TbCertificate } from "react-icons/tb";
 import { DnssecParams } from "./dnssec/DnssecInfo";
 import { RegistrarInfo } from "./registrar/RegistrarInfo";
+import Mailcow from "./mailcow/Mailcow";
 
 interface RouteParams {
   readonly domainName: string;
@@ -49,11 +50,16 @@ export default class DomainMeta extends Component<DomainMetaProps, DomainMetaSta
             icon={<MdSettingsInputSvideo style={{ transform: "scale(1.5)" }} />}
             label="REGISTRAR"
           />
-          <Tab icon={<TbCertificate style={{ transform: "scale(1.5)" }} />} label="CERTIFICATES" />
-          {apiCreds?.mailcow && <Tab icon={<Mail />} label="MAILCOW" />}
+          <Tab
+            tabIndex={2}
+            icon={<TbCertificate style={{ transform: "scale(1.5)" }} />}
+            label="CERTIFICATES"
+          />
+          {apiCreds?.mailcow && <Tab tabIndex={3} icon={<Mail />} label="MAILCOW" />}
 
           <Tab icon={<Add style={{ transform: "scale(1.5)" }} />} />
         </Tabs>
+
         <TabPanel value={this.state.currentPanel} index={0}>
           <DnssecParams
             client={this.props.client}
@@ -66,6 +72,11 @@ export default class DomainMeta extends Component<DomainMetaProps, DomainMetaSta
             domainName={this.props.match.params.domainName}
           />
         </TabPanel>
+        {apiCreds?.mailcow && (
+          <TabPanel value={this.state.currentPanel} index={3}>
+            <Mailcow client={this.props.client} domainName={this.props.match.params.domainName} />
+          </TabPanel>
+        )}
       </div>
     );
   };
@@ -90,18 +101,3 @@ function TabPanel(props: TabPanelProps) {
     </div>
   );
 }
-
-// eslint-disable-next-line
-const dm = {
-  registrar: "gandi",
-  api: true,
-  expires: { api: true, date: Date.now() }, // if the expiration time is set manually or via the api
-  nameservers: { setAtRegistrar: [], resolvedAtSource: [] }, // what nameserver are set at the registrar and what the actual resolved state is
-  recordsResolve: {}, // what records resolve publicly how
-  certificates: {
-    past: [], // what certificates were issued in the past
-    configured: [], // what certificates are set to be (re)issued on a regular basis
-  },
-  notes: "",
-  primary: true,
-};

@@ -1,8 +1,13 @@
-import { Paper } from "@material-ui/core";
-import { PektinClient, ProxyOptions, PektinRRType } from "@pektin/client";
-import { GlobalRegistrar, PluginNames, FetchType } from "@pektin/global-registrar";
+import { Button, Paper, TextField } from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import { PektinClient, ProxyOptions, PektinRRType, FetchType, ApiRecord } from "@pektin/client";
+import { GlobalRegistrar, PluginNames } from "@pektin/global-registrar";
 import { CSSProperties, PureComponent, Fragment } from "react";
+import { registrars } from "../../lib";
 import ShouldIsTable from "./ShouldIsTable";
+import update from "immutability-helper";
+import { Save } from "@material-ui/icons";
+import { cloneDeep } from "lodash";
 
 interface Meta {
   readonly pektin?: MetaPektin;
@@ -25,6 +30,7 @@ interface RegistrarInfoState {
   domainMeta: Meta;
   proxyOptions: ProxyOptions;
   gr?: GlobalRegistrar;
+  soa?: ApiRecord | null;
 }
 export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarInfoState> {
   constructor(props: RegistrarInfoProps) {
@@ -40,14 +46,14 @@ export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarIn
       { name: this.props.domainName, rr_type: PektinRRType.SOA },
     ]);
 
-    let domainMeta;
+    let domainMeta = null;
     try {
       domainMeta = JSON.parse(soa.data?.[0]?.data?.meta ?? "{}");
     } catch (error) {}
-    const id = domainMeta?.pektin?.registrar?.id;
-    const index = domainMeta?.pektin?.registrar?.index;
+    const id = domainMeta?.pektin?.registrar?.id ?? "";
+    const index = domainMeta?.pektin?.registrar?.index ?? 0;
     const proxyOptions = await this.props.client.getProxyOptions(id);
-    const data = this.props.client.pc3?.info?.apiCredentials?.[id ?? ""]?.[index ?? 0];
+    const data = this.props.client.pc3?.info?.apiCredentials?.[id]?.[index];
 
     let gr;
     try {
@@ -65,17 +71,18 @@ export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarIn
     }
 
     this.setState({
-      domainMeta,
+      domainMeta: domainMeta ?? { pektin: { registrar: { id, index } } },
       proxyOptions,
       loaded: true,
       gr,
+      soa: soa.data?.[0]?.data,
     });
   };
 
   render = () => {
-    const id = this.state.domainMeta?.pektin?.registrar?.id;
+    const id = this.state.domainMeta?.pektin?.registrar?.id ?? "";
 
-    const index = this.state.domainMeta?.pektin?.registrar?.i;
+    const index = this.state.domainMeta?.pektin?.registrar?.i ?? 0;
     return (
       <div className="RegistrarTab">
         <Paper className="RegistrarInfo">
@@ -85,13 +92,82 @@ export class RegistrarInfo extends PureComponent<RegistrarInfoProps, RegistrarIn
             <Fragment>
               <h2>Registrar Information</h2>
               <div className="basicInfo">
-                <div>id: {id ?? "unknown"}</div>
-                <div>index: {index}</div>
                 <div>
-                  api key in pc3?:
-                  {this.props.client.pc3?.info?.apiCredentials?.[id ?? ""]?.[index ?? 0]
-                    ? " true"
-                    : " false"}
+                  <Autocomplete
+                    style={{ width: "80%", display: "inline-block", marginRight: "5%" }}
+                    id="selectMethod"
+                    freeSolo
+                    forcePopupIcon={true}
+                    selectOnFocus={true}
+                    openOnFocus={true}
+                    clearOnEscape
+                    value={id}
+                    onChange={(e, value) =>
+                      this.setState((state) =>
+                        update(state, {
+                          domainMeta: {
+                            pektin: {
+                              registrar: { id: { $set: value ?? "" } },
+                            },
+                          },
+                        })
+                      )
+                    }
+                    inputValue={id}
+                    onInputChange={(event, newInputValue) =>
+                      this.setState((state) =>
+                        update(state, {
+                          domainMeta: {
+                            pektin: {
+                              registrar: { id: { $set: newInputValue ?? "" } },
+                            },
+                          },
+                        })
+                      )
+                    }
+                    options={registrars.map((r) => r.id)}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Registrar" margin="none" variant="standard" />
+                    )}
+                  />
+
+                  <TextField
+                    style={{ width: "10%", display: "inline-block" }}
+                    label="Index"
+                    margin="none"
+                    variant="standard"
+                    type={"number"}
+                    value={index}
+                    onChange={(e) =>
+                      this.setState((state) =>
+                        update(state, {
+                          domainMeta: {
+                            pektin: {
+                              registrar: { i: { $set: Math.max(parseInt(e.target.value), 0) } },
+                            },
+                          },
+                        })
+                      )
+                    }
+                  />
+                  <Button
+                    onClick={async () => {
+                      const soa = cloneDeep(this.state.soa);
+                      if (!soa) return;
+                      soa.meta = JSON.stringify(this.state.domainMeta);
+                      await this.props.client.set([soa]);
+                    }}
+                    variant="contained"
+                    size="small"
+                    color="primary"
+                    startIcon={<Save />}
+                  >
+                    Save
+                  </Button>
+                </div>
+                <div>
+                  api key in pc3?
+                  {this.props.client.pc3?.info?.apiCredentials?.[id]?.[index] ? " true" : " false"}
                 </div>
               </div>
             </Fragment>
